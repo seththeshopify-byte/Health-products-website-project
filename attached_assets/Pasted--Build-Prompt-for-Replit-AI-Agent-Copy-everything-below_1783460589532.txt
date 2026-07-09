@@ -1,0 +1,91 @@
+# Build Prompt for Replit AI Agent
+
+Copy everything below into Replit's Agent chat to kick off the build.
+
+---
+
+Build a full-stack web application called **"Ruth Health Products & Services"** — a professional, polished medical products, services, and referral platform. Use a modern stack: React (frontend), Node.js/Express (backend), and PostgreSQL (database, use Replit's built-in Postgres). Use Stripe for payments (test mode to start). Use JWT-based authentication.
+
+The business is based in Canada but serves customers worldwide, so design with international visitors in mind (clear currency display, shipping expectations, and a footer noting the Canadian base of operations).
+
+## Overview
+This platform lets a seller market medical products and services. Visitors can browse freely, but registered members get discounted pricing. Members can also refer others using a personal promo/referral code and earn commission both on product sales and on new member sign-ups they refer. Courses are free (lead-generation/education, not a revenue item). There's a custom booking calendar for scheduled Zoom info sessions.
+
+## Brand & Design Direction
+This is a premium medical/wellness brand — it must look expert, trustworthy, and polished, not like a generic template or a typical MLM landing page. Design direction:
+- Clean, clinical-but-warm aesthetic: whitespace, soft rounded cards, a calming but professional color palette (e.g. deep teal/navy or sage green as primary, warm neutral background, one confident accent color) — avoid cliché "salesy" reds/oranges and stock MLM styling.
+- Strong typography hierarchy (a refined serif or clean geometric sans for headings, a highly legible sans for body).
+- High-quality product photography placeholders, subtle shadows/depth, smooth micro-interactions (hover states, gentle transitions) rather than flashy animation.
+- Trust signals throughout: detailed testimonials, credentials/certifications section, clear contact/about info, professional footer.
+- Fully responsive and fast — this should feel like a real healthcare brand's site.
+
+## User Roles
+1. **Guest (unregistered)** — can browse all public pages, sees standard (higher) prices, can book a free Zoom info session, can sign up.
+2. **Member (registered)** — logged in, sees discounted member pricing, has a personal dashboard showing: their own unique promo/referral code, their referral link, a log of sales made with their code, a log of new members they referred, and total commission earned (broken into "product sales commission" and "referral/recruitment commission").
+3. **Admin (you)** — manage products, services, courses, testimonials, pricing (both tiers), view all members and their commission balances, approve/mark commission payouts, manage the Zoom booking calendar (set available days/time slots), view all bookings.
+
+## Core Pages
+- **Home** — hero section, brief pitch, links to Products/Services/Courses/Testimonials, CTA to join or book a call.
+- **Products** — grid of medical products, each showing name, description, image, and price (dynamically shown as member price if logged in, guest price otherwise). "Buy" button applies the referring promo code automatically if the visitor arrived via a referral link (store this in a cookie/localStorage at landing, e.g. `?ref=CODE123`).
+- **Services** — similar layout, for service offerings.
+- **Courses** — list of free courses/educational content with description and an "Enroll" or "Access" button (no payment involved — free for everyone, though you may still want to require login to enroll so you can track engagement and nurture leads).
+- **Testimonials** — customer testimonial cards (text + optional photo/name), pulled from database so admin can add new ones.
+- **Join / Register** — signup form (name, email, password, optional "referred by" code pre-filled from URL param). On successful registration, if a referral code was used, credit that referrer with a "new member" commission entry.
+- **Book a Call** — custom calendar widget (see below) where visitors pick an open slot for a Zoom session.
+- **Login / Member Dashboard** — after login, member sees: their promo code + shareable link, sales attributed to their code, referrals they've brought in, running commission total, and payout history.
+- **Admin Dashboard** — protected route, only accessible to admin role. Manage products/services/courses/testimonials (CRUD), view/manage all members, view/adjust commission ledger, manage calendar availability and view/cancel bookings.
+
+## Pricing Logic
+- Every product/service has two prices in the database: `guest_price` and `member_price`. Courses have no price field (or `is_free = true`) and are excluded from checkout/Stripe entirely.
+- The frontend checks auth state and displays the correct price.
+- At checkout, the backend re-validates the user's auth/member status server-side (never trust the frontend price) before charging via Stripe.
+
+## Shipping Fee Logic
+- Shipping is free for certain locations (e.g. local/domestic addresses) and a shipping fee applies automatically for farther/international addresses — this should be calculated and applied behind the scenes based on the shipping address entered at checkout, not shown as a separate line item the customer configures.
+- Implement this as a simple rule-based function for now: e.g. a `shipping_zones` table or config (region/country/postal-code prefix → flat fee or "free"), which the backend looks up automatically when an order is placed and adds to the order total before charging.
+- Keep this logic in one clearly isolated function/module (e.g. `calculateShipping(address)`) so it's easy for me to edit the actual zones and fees later without touching the rest of checkout.
+
+## Commission & Referral System
+- Each member gets a unique `promo_code` generated at signup (e.g. random 6-8 character alphanumeric).
+- When a purchase happens with a promo code applied, log a `commission_events` row: type = "sale", referring_member_id, order_id, commission_amount (e.g. a configurable % of the sale, set by admin per product).
+- When a new user signs up using another member's referral code, log a `commission_events` row: type = "referral", referring_member_id, new_member_id, commission_amount (a flat fee set by admin).
+- Member dashboard sums these events to show total earned, and admin can mark them as "paid".
+- Important: tie referral/recruitment commissions primarily to actual product purchases where possible, not purely to sign-ups, to keep the compensation structure aligned with standard affiliate-program norms rather than pure recruitment-based payouts (this is a business/compliance best practice, not a hard requirement, so make the commission amount configurable).
+
+## Custom Booking Calendar (Zoom sessions)
+- Admin sets recurring or specific available days and time slots (e.g. "every Tuesday and Thursday, 3 slots at 10am, 2pm, 6pm").
+- Visitors pick an available slot, enter name/email/phone, and confirm.
+- On booking, store: name, email, phone, date/time, and status (booked/completed/cancelled).
+- Send a confirmation email (use a simple email service like Resend or Nodemailer with a free SMTP) with the Zoom link (admin can set one default Zoom link, or a new one per session).
+- Prevent double-booking the same slot.
+- Admin view shows a calendar/list of all upcoming bookings with attendee details.
+
+## Database Tables (suggested)
+- `users` (id, name, email, password_hash, role, promo_code, referred_by_code, created_at)
+- `products` (id, name, description, image_url, guest_price, member_price, commission_pct)
+- `services` (similar structure to products)
+- `courses` (id, name, description, image_url, content_url_or_body, created_at) — no price fields, free by design
+- `testimonials` (id, name, photo_url, text, created_at)
+- `orders` (id, user_id or null, product_id, promo_code_used, item_amount, shipping_fee, total_amount, shipping_address, stripe_payment_id, created_at)
+- `shipping_zones` (id, country, region_or_postal_prefix, fee_amount or is_free, created_at)
+- `commission_events` (id, referring_member_id, type [sale/referral], related_id, amount, status [pending/paid], created_at)
+- `booking_slots` (id, date, time, is_booked)
+- `bookings` (id, slot_id, name, email, phone, status, created_at)
+
+## Compliance Notes to Bake In
+- Add a small disclaimer footer on product pages: something like "Individual results may vary. Consult a healthcare professional before use." (placeholder — I'll customize the exact medical disclaimer text later).
+- Do not let the AI agent invent specific medical claims about the products; leave descriptions as placeholders for me to fill in with accurate, compliant text.
+- Since the business is based in Canada but serves customers worldwide, include a basic privacy policy page and cookie/consent notice as placeholders (Canadian privacy law (PIPEDA) and international visitors both expect this) — I'll refine the actual legal text later.
+
+## Build Order (suggested for the agent)
+1. Set up project scaffold, database schema, and auth (signup/login/JWT).
+2. Build Products/Services pages with tiered pricing logic, and the free Courses page/enrollment flow.
+3. Build promo code capture (URL param → cookie) and checkout flow with Stripe.
+4. Build commission_events logging on purchase and on referral signup.
+5. Build member dashboard (code, referrals, commission totals).
+6. Build admin dashboard (CRUD for content, commission management).
+7. Build custom booking calendar (admin availability + visitor booking flow) and confirmation emails.
+8. Build Testimonials page (admin-manageable).
+9. Polish UI/UX, responsive design, and add the disclaimer footer.
+
+Start with step 1 and confirm the schema with me before moving to step 2.

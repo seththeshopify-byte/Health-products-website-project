@@ -3,13 +3,38 @@ info:
   # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Ruth Health Products & Services API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: auth
+    description: Authentication
+  - name: products
+    description: Medical products
+  - name: services
+    description: Medical services
+  - name: courses
+    description: Free educational courses
+  - name: testimonials
+    description: Customer testimonials
+  - name: orders
+    description: Orders and checkout
+  - name: bookings
+    description: Zoom session bookings
+  - name: booking-slots
+    description: Available booking slots
+  - name: commission
+    description: Commission events
+  - name: users
+    description: User management
+  - name: dashboard
+    description: Dashboard summaries
+  - name: shipping-zones
+    description: Shipping zone configuration
+
 paths:
   /healthz:
     get:
@@ -24,6 +49,864 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  # AUTH
+  /auth/login:
+    post:
+      operationId: login
+      tags: [auth]
+      summary: Login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+      responses:
+        "200":
+          description: Logged in
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AuthResponse"
+        "401":
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /auth/me:
+    get:
+      operationId: getMe
+      tags: [auth]
+      summary: Get current user
+      responses:
+        "200":
+          description: Current user
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  # PRODUCTS
+  /products:
+    get:
+      operationId: listProducts
+      tags: [products]
+      summary: List all products
+      responses:
+        "200":
+          description: List of products
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Product"
+    post:
+      operationId: createProduct
+      tags: [products]
+      summary: Create a product (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+
+  /products/{id}:
+    get:
+      operationId: getProduct
+      tags: [products]
+      summary: Get a product
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Product
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateProduct
+      tags: [products]
+      summary: Update a product (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ProductUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Product"
+    delete:
+      operationId: deleteProduct
+      tags: [products]
+      summary: Delete a product (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # SERVICES
+  /services:
+    get:
+      operationId: listServices
+      tags: [services]
+      summary: List all services
+      responses:
+        "200":
+          description: List of services
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Service"
+    post:
+      operationId: createService
+      tags: [services]
+      summary: Create a service (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+
+  /services/{id}:
+    get:
+      operationId: getService
+      tags: [services]
+      summary: Get a service
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Service
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateService
+      tags: [services]
+      summary: Update a service (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ServiceUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Service"
+    delete:
+      operationId: deleteService
+      tags: [services]
+      summary: Delete a service (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # COURSES
+  /courses:
+    get:
+      operationId: listCourses
+      tags: [courses]
+      summary: List all courses
+      responses:
+        "200":
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Course"
+    post:
+      operationId: createCourse
+      tags: [courses]
+      summary: Create a course (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+
+  /courses/{id}:
+    get:
+      operationId: getCourse
+      tags: [courses]
+      summary: Get a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Course
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateCourse
+      tags: [courses]
+      summary: Update a course (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CourseUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Course"
+    delete:
+      operationId: deleteCourse
+      tags: [courses]
+      summary: Delete a course (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /courses/{id}/enroll:
+    post:
+      operationId: enrollCourse
+      tags: [courses]
+      summary: Enroll in a course (requires login)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Enrolled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # TESTIMONIALS
+  /testimonials:
+    get:
+      operationId: listTestimonials
+      tags: [testimonials]
+      summary: List all testimonials
+      responses:
+        "200":
+          description: List of testimonials
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimonial"
+    post:
+      operationId: createTestimonial
+      tags: [testimonials]
+      summary: Create a testimonial (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+
+  /testimonials/{id}:
+    patch:
+      operationId: updateTestimonial
+      tags: [testimonials]
+      summary: Update a testimonial (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TestimonialUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Testimonial"
+    delete:
+      operationId: deleteTestimonial
+      tags: [testimonials]
+      summary: Delete a testimonial (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ORDERS
+  /orders:
+    get:
+      operationId: listOrders
+      tags: [orders]
+      summary: List orders (admin or own orders)
+      responses:
+        "200":
+          description: List of orders
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Order"
+    post:
+      operationId: createOrder
+      tags: [orders]
+      summary: Create a checkout session
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderInput"
+      responses:
+        "200":
+          description: Checkout session URL
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CheckoutSession"
+
+  /orders/{id}:
+    get:
+      operationId: getOrder
+      tags: [orders]
+      summary: Get an order
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Order
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+
+  /orders/webhook:
+    post:
+      operationId: stripeWebhook
+      tags: [orders]
+      summary: Stripe webhook handler
+      responses:
+        "200":
+          description: Processed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # BOOKING SLOTS
+  /booking-slots:
+    get:
+      operationId: listBookingSlots
+      tags: [booking-slots]
+      summary: List available booking slots
+      responses:
+        "200":
+          description: List of slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BookingSlot"
+    post:
+      operationId: createBookingSlot
+      tags: [booking-slots]
+      summary: Create a booking slot (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingSlotInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BookingSlot"
+
+  /booking-slots/{id}:
+    delete:
+      operationId: deleteBookingSlot
+      tags: [booking-slots]
+      summary: Delete a booking slot (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # BOOKINGS
+  /bookings:
+    get:
+      operationId: listBookings
+      tags: [bookings]
+      summary: List all bookings (admin)
+      responses:
+        "200":
+          description: List of bookings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Booking"
+    post:
+      operationId: createBooking
+      tags: [bookings]
+      summary: Book a slot
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/BookingInput"
+      responses:
+        "201":
+          description: Booked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+        "409":
+          description: Slot already booked
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /bookings/{id}/cancel:
+    patch:
+      operationId: cancelBooking
+      tags: [bookings]
+      summary: Cancel a booking (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Cancelled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Booking"
+
+  # COMMISSION
+  /commission:
+    get:
+      operationId: listCommissionEvents
+      tags: [commission]
+      summary: List commission events (admin or own)
+      responses:
+        "200":
+          description: List of commission events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/CommissionEvent"
+
+  /commission/{id}/mark-paid:
+    patch:
+      operationId: markCommissionPaid
+      tags: [commission]
+      summary: Mark commission as paid (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Marked paid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommissionEvent"
+
+  # USERS
+  /users:
+    get:
+      operationId: listUsers
+      tags: [users]
+      summary: List all users (admin)
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+    post:
+      operationId: createUser
+      tags: [users]
+      summary: Create a member account with login credentials (admin only)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateUserInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+        "400":
+          description: Validation error
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /users/{id}:
+    get:
+      operationId: getUser
+      tags: [users]
+      summary: Get a user (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: User
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+    patch:
+      operationId: updateUser
+      tags: [users]
+      summary: Update a user (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  # DASHBOARD
+  /dashboard/summary:
+    get:
+      operationId: getDashboardSummary
+      tags: [dashboard]
+      summary: Admin dashboard summary stats
+      responses:
+        "200":
+          description: Summary stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardSummary"
+
+  /dashboard/member:
+    get:
+      operationId: getMemberDashboard
+      tags: [dashboard]
+      summary: Member dashboard data
+      responses:
+        "200":
+          description: Member dashboard
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberDashboard"
+
+  # SHIPPING ZONES
+  /shipping-zones:
+    get:
+      operationId: listShippingZones
+      tags: [shipping-zones]
+      summary: List shipping zones
+      responses:
+        "200":
+          description: List of zones
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ShippingZone"
+    post:
+      operationId: createShippingZone
+      tags: [shipping-zones]
+      summary: Create a shipping zone (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShippingZoneInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShippingZone"
+
+  /shipping-zones/{id}:
+    patch:
+      operationId: updateShippingZone
+      tags: [shipping-zones]
+      summary: Update a shipping zone (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ShippingZoneUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ShippingZone"
+    delete:
+      operationId: deleteShippingZone
+      tags: [shipping-zones]
+      summary: Delete a shipping zone (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ZOOM SETTINGS
+  /admin/zoom-link:
+    get:
+      operationId: getZoomLink
+      tags: [dashboard]
+      summary: Get the default Zoom link
+      responses:
+        "200":
+          description: Zoom link
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ZoomSettings"
+    patch:
+      operationId: updateZoomLink
+      tags: [dashboard]
+      summary: Update the default Zoom link (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ZoomSettingsUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ZoomSettings"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +917,569 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    # AUTH
+    CreateUserInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 6
+        role:
+          type: string
+          enum: [member, admin]
+        referredByCode:
+          type: ["string", "null"]
+
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+
+    AuthResponse:
+      type: object
+      required: [token, user]
+      properties:
+        token:
+          type: string
+        user:
+          $ref: "#/components/schemas/User"
+
+    User:
+      type: object
+      required: [id, name, email, role, promoCode, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [guest, member, admin]
+        promoCode:
+          type: string
+        referredByCode:
+          type: ["string", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    UserUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        role:
+          type: string
+          enum: [member, admin]
+
+    # PRODUCTS
+    Product:
+      type: object
+      required: [id, name, description, imageUrl, guestPrice, memberPrice, commissionPct, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    ProductInput:
+      type: object
+      required: [name, description, guestPrice, memberPrice, commissionPct]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+
+    ProductUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+
+    # SERVICES
+    Service:
+      type: object
+      required: [id, name, description, imageUrl, guestPrice, memberPrice, commissionPct, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    ServiceInput:
+      type: object
+      required: [name, description, guestPrice, memberPrice, commissionPct]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+
+    ServiceUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+
+    # COURSES
+    Course:
+      type: object
+      required: [id, name, description, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        contentUrl:
+          type: ["string", "null"]
+        contentBody:
+          type: ["string", "null"]
+        isEnrolled:
+          type: ["boolean", "null"]
+        createdAt:
+          type: string
+          format: date-time
+
+    CourseInput:
+      type: object
+      required: [name, description]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        contentUrl:
+          type: ["string", "null"]
+        contentBody:
+          type: ["string", "null"]
+
+    CourseUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        contentUrl:
+          type: ["string", "null"]
+        contentBody:
+          type: ["string", "null"]
+
+    # TESTIMONIALS
+    Testimonial:
+      type: object
+      required: [id, name, text, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        text:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+
+    TestimonialInput:
+      type: object
+      required: [name, text]
+      properties:
+        name:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        text:
+          type: string
+
+    TestimonialUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        photoUrl:
+          type: ["string", "null"]
+        text:
+          type: string
+
+    # ORDERS
+    OrderInput:
+      type: object
+      required: [itemType, itemId, shippingAddress]
+      properties:
+        itemType:
+          type: string
+          enum: [product, service]
+        itemId:
+          type: integer
+        promoCodeUsed:
+          type: ["string", "null"]
+        shippingAddress:
+          $ref: "#/components/schemas/ShippingAddress"
+
+    Order:
+      type: object
+      required: [id, itemType, itemId, itemAmount, shippingFee, totalAmount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        userId:
+          type: ["integer", "null"]
+        itemType:
+          type: string
+          enum: [product, service]
+        itemId:
+          type: integer
+        itemName:
+          type: ["string", "null"]
+        promoCodeUsed:
+          type: ["string", "null"]
+        itemAmount:
+          type: number
+        shippingFee:
+          type: number
+        totalAmount:
+          type: number
+        shippingAddress:
+          type: ["string", "null"]
+        stripePaymentId:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [pending, paid, failed, refunded]
+        createdAt:
+          type: string
+          format: date-time
+
+    ShippingAddress:
+      type: object
+      required: [country]
+      properties:
+        line1:
+          type: string
+        city:
+          type: string
+        province:
+          type: string
+        postalCode:
+          type: string
+        country:
+          type: string
+
+    CheckoutSession:
+      type: object
+      required: [checkoutUrl, orderId]
+      properties:
+        checkoutUrl:
+          type: string
+        orderId:
+          type: integer
+
+    # BOOKING SLOTS
+    BookingSlot:
+      type: object
+      required: [id, date, time, isBooked]
+      properties:
+        id:
+          type: integer
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+        isBooked:
+          type: boolean
+
+    BookingSlotInput:
+      type: object
+      required: [date, time]
+      properties:
+        date:
+          type: string
+          format: date
+        time:
+          type: string
+
+    # BOOKINGS
+    Booking:
+      type: object
+      required: [id, slotId, name, email, status, createdAt]
+      properties:
+        id:
+          type: integer
+        slotId:
+          type: integer
+        slotDate:
+          type: ["string", "null"]
+        slotTime:
+          type: ["string", "null"]
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: ["string", "null"]
+        zoomLink:
+          type: ["string", "null"]
+        status:
+          type: string
+          enum: [booked, completed, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+
+    BookingInput:
+      type: object
+      required: [slotId, name, email]
+      properties:
+        slotId:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        phone:
+          type: ["string", "null"]
+
+    # COMMISSION
+    CommissionEvent:
+      type: object
+      required: [id, referringMemberId, type, amount, status, createdAt]
+      properties:
+        id:
+          type: integer
+        referringMemberId:
+          type: integer
+        referringMemberName:
+          type: ["string", "null"]
+        type:
+          type: string
+          enum: [sale, referral]
+        relatedId:
+          type: ["integer", "null"]
+        amount:
+          type: number
+        status:
+          type: string
+          enum: [pending, paid]
+        createdAt:
+          type: string
+          format: date-time
+
+    # DASHBOARD
+    DashboardSummary:
+      type: object
+      required: [totalMembers, totalOrders, totalRevenue, totalCommissionPending, recentOrders, topReferrers]
+      properties:
+        totalMembers:
+          type: integer
+        totalOrders:
+          type: integer
+        totalRevenue:
+          type: number
+        totalCommissionPending:
+          type: number
+        recentOrders:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        topReferrers:
+          type: array
+          items:
+            $ref: "#/components/schemas/ReferrerSummary"
+
+    ReferrerSummary:
+      type: object
+      required: [memberId, memberName, promoCode, totalCommission, referralCount]
+      properties:
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        promoCode:
+          type: string
+        totalCommission:
+          type: number
+        referralCount:
+          type: integer
+
+    MemberDashboard:
+      type: object
+      required: [promoCode, referralLink, salesCommission, referralCommission, totalCommission, commissionEvents, referredMembers]
+      properties:
+        promoCode:
+          type: string
+        referralLink:
+          type: string
+        salesCommission:
+          type: number
+        referralCommission:
+          type: number
+        totalCommission:
+          type: number
+        commissionEvents:
+          type: array
+          items:
+            $ref: "#/components/schemas/CommissionEvent"
+        referredMembers:
+          type: array
+          items:
+            $ref: "#/components/schemas/User"
+
+    # SHIPPING ZONES
+    ShippingZone:
+      type: object
+      required: [id, country, feeAmount, isFree]
+      properties:
+        id:
+          type: integer
+        country:
+          type: string
+        regionOrPostalPrefix:
+          type: ["string", "null"]
+        feeAmount:
+          type: number
+        isFree:
+          type: boolean
+
+    ShippingZoneInput:
+      type: object
+      required: [country, feeAmount, isFree]
+      properties:
+        country:
+          type: string
+        regionOrPostalPrefix:
+          type: ["string", "null"]
+        feeAmount:
+          type: number
+        isFree:
+          type: boolean
+
+    ShippingZoneUpdate:
+      type: object
+      properties:
+        country:
+          type: string
+        regionOrPostalPrefix:
+          type: ["string", "null"]
+        feeAmount:
+          type: number
+        isFree:
+          type: boolean
+
+    # ZOOM SETTINGS
+    ZoomSettings:
+      type: object
+      required: [zoomLink]
+      properties:
+        zoomLink:
+          type: ["string", "null"]
+
+    ZoomSettingsUpdate:
+      type: object
+      required: [zoomLink]
+      properties:
+        zoomLink:
+          type: string

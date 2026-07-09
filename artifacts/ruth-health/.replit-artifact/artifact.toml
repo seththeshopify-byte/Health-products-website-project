@@ -1,0 +1,27 @@
+kind = "web"
+previewPath = "/"
+title = "Ruth Health Products & Services"
+version = "1.0.0"
+id = "artifacts/ruth-health"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 23191
+
+[services.development]
+run = "pnpm --filter @workspace/ruth-health run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/ruth-health", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/ruth-health/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "23191"
+BASE_PATH = "/"
