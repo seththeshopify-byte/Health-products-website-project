@@ -44,8 +44,9 @@ export function SupportWidget() {
         </div>
       )}
 
-      <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all">
-        {open ? <X className="w-6 h-6" /> : <HelpCircle className="w-6 h-6" />}
+      <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3">
+        {open ? <X className="w-5 h-5" /> : <HelpCircle className="w-5 h-5" />}
+        <span className="text-sm font-medium">{open ? "Close" : "Get Help"}</span>
       </button>
     </div>
   );
