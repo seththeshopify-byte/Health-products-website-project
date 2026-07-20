@@ -1,4 +1,5 @@
 import { Navbar } from "./Navbar";
+import { SupportWidget } from "./SupportWidget";
 import { Footer } from "./Footer";
 import { useRefCode } from "@/hooks/use-ref-code";
 import { useEffect, useState } from "react";
@@ -28,6 +29,7 @@ export function PageShell({ children }: { children: React.ReactNode }) {
         {children}
       </main>
       <Footer />
+      <SupportWidget />
       
       {showCookie && (
         <div className="fixed bottom-0 left-0 right-0 p-4 bg-card border-t shadow-[0_-4px_20px_rgba(0,0,0,0.05)] z-50 animate-in slide-in-from-bottom-full">
