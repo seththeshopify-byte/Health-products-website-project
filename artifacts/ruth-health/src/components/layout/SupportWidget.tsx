@@ -18,7 +18,7 @@ export function SupportWidget() {
   const [open, setOpen] = useState(false);
 
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 left-5 z-50 flex flex-col items-start gap-3">
       {open && (
         <div className="flex flex-col gap-2">
           <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
