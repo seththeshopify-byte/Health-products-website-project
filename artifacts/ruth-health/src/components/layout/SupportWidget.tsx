@@ -20,33 +20,22 @@ export function SupportWidget() {
   return (
     <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="flex flex-col gap-2 animate-in slide-in-from-bottom-4 fade-in duration-200">
-          
-            href={`https://wa.me/${WHATSAPP_NUMBER}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl hover:-translate-y-0.5 transition-all"
-          >
+        <div className="flex flex-col gap-2">
+          <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
             <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white">
               <WhatsAppIcon className="w-5 h-5" />
             </span>
             <span className="text-sm font-medium">WhatsApp</span>
           </a>
 
-          
-            href={`sms:${PHONE_TEL}`}
-            className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl hover:-translate-y-0.5 transition-all"
-          >
+          <a href={"sms:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
             <span className="flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground">
               <MessageSquare className="w-5 h-5" />
             </span>
             <span className="text-sm font-medium">Text Us</span>
           </a>
 
-          
-            href={`tel:${PHONE_TEL}`}
-            className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl hover:-translate-y-0.5 transition-all"
-          >
+          <a href={"tel:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
             <span className="flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground">
               <Phone className="w-5 h-5" />
             </span>
@@ -55,11 +44,7 @@ export function SupportWidget() {
         </div>
       )}
 
-      <button
-        onClick={() => setOpen((v) => !v)}
-        aria-label={open ? "Close support menu" : "Get help"}
-        className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transition-all"
-      >
+      <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center justify-center w-14 h-14 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all">
         {open ? <X className="w-6 h-6" /> : <HelpCircle className="w-6 h-6" />}
       </button>
     </div>
