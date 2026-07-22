@@ -7,7 +7,7 @@ import { db, usersTable } from "@workspace/db";
 
 const ADMIN_NAME = "Seth";
 const ADMIN_EMAIL = "seth.theshopify@gmail.com"; // change if you want a different admin email
-const ADMIN_PASSWORD = "ChangeMe123!"; // change this to your own password before running
+const ADMIN_PASSWORD = "RuthHealth"; // change this to your own password before running
 
 function generatePromoCode() {
   const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
