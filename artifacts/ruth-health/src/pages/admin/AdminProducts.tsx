@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { formatPrice } from "@/lib/utils";
-import { Plus, Edit2, Trash2, Image as ImageIcon } from "lucide-react";
+import { Plus, Edit2, Trash2, Image as ImageIcon, Sparkles } from "lucide-react";
 
 export default function AdminProducts() {
   const { data: products, isLoading } = useListProducts({ query: { queryKey: getListProductsQueryKey() } });
@@ -22,6 +22,7 @@ export default function AdminProducts() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [isUploading, setIsUploading] = useState(false);
+  const [keywords, setKeywords] = useState("");
   
   const [formData, setFormData] = useState({
     name: "",
@@ -75,9 +76,34 @@ export default function AdminProducts() {
     }
   };
 
+  const generateDescription = () => {
+    const name = formData.name.trim() || "This product";
+    const benefits = keywords
+      .split(",")
+      .map(b => b.trim())
+      .filter(Boolean);
+
+    const benefitPhrase =
+      benefits.length === 0
+        ? "your everyday wellness routine"
+        : benefits.length === 1
+        ? benefits[0]
+        : benefits.slice(0, -1).join(", ") + " and " + benefits[benefits.length - 1];
+
+    const templates = [
+      `${name} is a premium, carefully sourced wellness product designed to support ${benefitPhrase}. Made with quality and purity in mind, it's a trusted addition to your daily routine.`,
+      `Discover ${name}, thoughtfully formulated to help with ${benefitPhrase}. Backed by quality ingredients, it's crafted for those who value natural, effective care.`,
+      `${name} combines natural ingredients with modern wellness standards to support ${benefitPhrase}. A dependable choice for anyone looking to enhance their health journey.`,
+    ];
+
+    const chosen = templates[Math.floor(Math.random() * templates.length)];
+    setFormData(prev => ({ ...prev, description: chosen }));
+  };
+
   const handleOpenCreate = () => {
     setEditingId(null);
     setFormData({ name: "", description: "", imageUrl: "", guestPrice: 0, memberPrice: 0, commissionPct: 10 });
+    setKeywords("");
     setIsModalOpen(true);
   };
 
@@ -91,6 +117,7 @@ export default function AdminProducts() {
       memberPrice: product.memberPrice,
       commissionPct: product.commissionPct,
     });
+    setKeywords("");
     setIsModalOpen(true);
   };
 
@@ -205,10 +232,22 @@ export default function AdminProducts() {
                 <Label htmlFor="name">Name</Label>
                 <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
               </div>
+
               <div className="grid gap-2">
-                <Label htmlFor="description">Description</Label>
+                <Label htmlFor="keywords">Key Benefits (comma-separated, optional)</Label>
+                <Input id="keywords" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="e.g. boosts energy, supports immunity" />
+              </div>
+
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="description">Description</Label>
+                  <Button type="button" variant="outline" size="sm" className="gap-1" onClick={generateDescription}>
+                    <Sparkles size={14} /> Generate Description
+                  </Button>
+                </div>
                 <Textarea id="description" className="min-h-[80px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
               </div>
+
               <div className="grid gap-2">
                 <Label htmlFor="imageUpload">Product Photo</Label>
                 <Input id="imageUpload" type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
@@ -224,6 +263,7 @@ export default function AdminProducts() {
                   <img src={formData.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded border" />
                 )}
               </div>
+
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
                   <Label htmlFor="guestPrice">Guest Price ($)</Label>
