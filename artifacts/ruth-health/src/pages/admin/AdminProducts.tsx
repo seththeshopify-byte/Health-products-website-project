@@ -266,11 +266,11 @@ export default function AdminProducts() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
-                  <Label htmlFor="guestPrice">Guest Price ($)</Label>
+                  <Label htmlFor="guestPrice">Guest Price (₦)</Label>
                   <Input id="guestPrice" type="number" step="0.01" value={formData.guestPrice} onChange={e => setFormData({...formData, guestPrice: parseFloat(e.target.value)})} required />
                 </div>
                 <div className="grid gap-2">
-                  <Label htmlFor="memberPrice">Member Price ($)</Label>
+                  <Label htmlFor="memberPrice">Member Price (₦)</Label>
                   <Input id="memberPrice" type="number" step="0.01" value={formData.memberPrice} onChange={e => setFormData({...formData, memberPrice: parseFloat(e.target.value)})} required />
                 </div>
               </div>
