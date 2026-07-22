@@ -21,6 +21,7 @@ export default function AdminProducts() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   
   const [formData, setFormData] = useState({
     name: "",
@@ -30,6 +31,31 @@ export default function AdminProducts() {
     memberPrice: 0,
     commissionPct: 10,
   });
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", "ruth_health_products");
+      const res = await fetch("https://api.cloudinary.com/v1_1/djzigoye/image/upload", {
+        method: "POST",
+        body: data,
+      });
+      const json = await res.json();
+      if (json.secure_url) {
+        setFormData(prev => ({ ...prev, imageUrl: json.secure_url }));
+      } else {
+        alert("Image upload failed. Please try again.");
+      }
+    } catch (err) {
+      alert("Image upload failed. Please try again.");
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   const handleOpenCreate = () => {
     setEditingId(null);
@@ -166,8 +192,12 @@ export default function AdminProducts() {
                 <Textarea id="description" className="min-h-[80px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="imageUrl">Image URL</Label>
-                <Input id="imageUrl" value={formData.imageUrl} onChange={e => setFormData({...formData, imageUrl: e.target.value})} placeholder="https://..." />
+                <Label htmlFor="imageUpload">Product Photo</Label>
+                <Input id="imageUpload" type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                {isUploading && <p className="text-sm text-muted-foreground">Uploading photo...</p>}
+                {formData.imageUrl && !isUploading && (
+                  <img src={formData.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded border" />
+                )}
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="grid gap-2">
