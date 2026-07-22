@@ -83,21 +83,17 @@ export default function AdminProducts() {
       .map(b => b.trim())
       .filter(Boolean);
 
-    const benefitPhrase =
-      benefits.length === 0
-        ? "your everyday wellness routine"
-        : benefits.length === 1
-        ? benefits[0]
-        : benefits.slice(0, -1).join(", ") + " and " + benefits[benefits.length - 1];
+    if (benefits.length === 0) {
+      setFormData(prev => ({ ...prev, description: `${name} — a premium wellness product for your daily routine.` }));
+      return;
+    }
 
-    const templates = [
-      `${name} is a premium, carefully sourced wellness product designed to support ${benefitPhrase}. Made with quality and purity in mind, it's a trusted addition to your daily routine.`,
-      `Discover ${name}, thoughtfully formulated to help with ${benefitPhrase}. Backed by quality ingredients, it's crafted for those who value natural, effective care.`,
-      `${name} combines natural ingredients with modern wellness standards to support ${benefitPhrase}. A dependable choice for anyone looking to enhance their health journey.`,
-    ];
+    const bulletList = benefits
+      .map(b => `• ${b.charAt(0).toUpperCase() + b.slice(1)}`)
+      .join("\n");
 
-    const chosen = templates[Math.floor(Math.random() * templates.length)];
-    setFormData(prev => ({ ...prev, description: chosen }));
+    const description = `${name}\n${bulletList}`;
+    setFormData(prev => ({ ...prev, description }));
   };
 
   const handleOpenCreate = () => {
@@ -245,7 +241,7 @@ export default function AdminProducts() {
                     <Sparkles size={14} /> Generate Description
                   </Button>
                 </div>
-                <Textarea id="description" className="min-h-[80px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
+                <Textarea id="description" className="min-h-[110px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
               </div>
 
               <div className="grid gap-2">
