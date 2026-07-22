@@ -32,9 +32,7 @@ export default function AdminProducts() {
     commissionPct: 10,
   });
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  const uploadImageFile = async (file: File) => {
     setIsUploading(true);
     try {
       const data = new FormData();
@@ -54,6 +52,26 @@ export default function AdminProducts() {
       alert("Image upload failed. Please try again.");
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    uploadImageFile(file);
+  };
+
+  const handleImagePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
+    const items = e.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.startsWith("image/")) {
+        const file = items[i].getAsFile();
+        if (file) {
+          uploadImageFile(file);
+        }
+        break;
+      }
     }
   };
 
@@ -191,9 +209,10 @@ export default function AdminProducts() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" className="min-h-[80px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
               </div>
-              <div className="grid gap-2">
+              <div className="grid gap-2" onPaste={handleImagePaste}>
                 <Label htmlFor="imageUpload">Product Photo</Label>
                 <Input id="imageUpload" type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
+                <p className="text-xs text-muted-foreground">Tip: you can also just paste (Ctrl+V) a copied image here.</p>
                 {isUploading && <p className="text-sm text-muted-foreground">Uploading photo...</p>}
                 {formData.imageUrl && !isUploading && (
                   <img src={formData.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded border" />
