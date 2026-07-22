@@ -163,7 +163,7 @@ export default function AdminProducts() {
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="description">Description</Label>
-                <Textarea id="description" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
+                <Textarea id="description" className="min-h-[80px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="imageUrl">Image URL</Label>
