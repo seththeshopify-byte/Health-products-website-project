@@ -209,10 +209,16 @@ export default function AdminProducts() {
                 <Label htmlFor="description">Description</Label>
                 <Textarea id="description" className="min-h-[80px]" value={formData.description} onChange={e => setFormData({...formData, description: e.target.value})} required />
               </div>
-              <div className="grid gap-2" onPaste={handleImagePaste}>
+              <div className="grid gap-2">
                 <Label htmlFor="imageUpload">Product Photo</Label>
                 <Input id="imageUpload" type="file" accept="image/*" onChange={handleImageUpload} disabled={isUploading} />
-                <p className="text-xs text-muted-foreground">Tip: you can also just paste (Ctrl+V) a copied image here.</p>
+                <div
+                  tabIndex={0}
+                  onPaste={handleImagePaste}
+                  className="border-2 border-dashed rounded p-4 text-center text-sm text-muted-foreground cursor-text focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  Click here, then press Ctrl+V (or Cmd+V) to paste a copied image
+                </div>
                 {isUploading && <p className="text-sm text-muted-foreground">Uploading photo...</p>}
                 {formData.imageUrl && !isUploading && (
                   <img src={formData.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded border" />
