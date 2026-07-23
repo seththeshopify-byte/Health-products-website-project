@@ -1,19 +1,40 @@
 import { useState } from "react";
-import { useListTestimonials, getListTestimonialsQueryKey, useListEvents, getListEventsQueryKey } from "@workspace/api-client-react";
+import {
+  useListTestimonials,
+  getListTestimonialsQueryKey,
+  useListEvents,
+  getListEventsQueryKey,
+} from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Calendar, MapPin } from "lucide-react";
+import { Star, Calendar, MapPin, Users, Heart, BriefcaseBusiness, ArrowUpRight } from "lucide-react";
 
-type TabKey = "productWins" | "businessWins" | "upcomingEvents" | "pastEvents";
+type TabKey = "productUsers" | "businessSuccess" | "companyEvents";
+type EventTab = "upcoming" | "past";
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "productWins", label: "Products Results" },
-  { key: "businessWins", label: "Business Success Stories" },
-  { key: "upcomingEvents", label: "Upcoming Events" },
-  { key: "pastEvents", label: "Past Events" },
+const TABS: { key: TabKey; label: string; description: string; icon: typeof Heart }[] = [
+  {
+    key: "productUsers",
+    label: "Product Users",
+    description: "Real wellness journeys from customers who chose Ruth Health.",
+    icon: Heart,
+  },
+  {
+    key: "businessSuccess",
+    label: "Business Success Stories",
+    description: "See how members are building confidence, community, and opportunity.",
+    icon: BriefcaseBusiness,
+  },
+  {
+    key: "companyEvents",
+    label: "Company Events",
+    description: "Stay connected to the gatherings, trainings, and moments that move us forward.",
+    icon: Users,
+  },
 ];
 
 export default function Testimonials() {
-  const [activeTab, setActiveTab] = useState<TabKey>("productWins");
+  const [activeTab, setActiveTab] = useState<TabKey>("productUsers");
+  const [eventTab, setEventTab] = useState<EventTab>("upcoming");
 
   const { data: productTestimonials, isLoading: loadingProduct } = useListTestimonials("product", {
     query: { queryKey: getListTestimonialsQueryKey("product") },
@@ -27,60 +48,108 @@ export default function Testimonials() {
 
   const now = new Date();
   const upcoming = (events || [])
-    .filter(e => new Date(e.eventDate) >= now)
+    .filter((event) => new Date(event.eventDate) >= now)
     .sort((a, b) => new Date(a.eventDate).getTime() - new Date(b.eventDate).getTime());
   const past = (events || [])
-    .filter(e => new Date(e.eventDate) < now)
+    .filter((event) => new Date(event.eventDate) < now)
     .sort((a, b) => new Date(b.eventDate).getTime() - new Date(a.eventDate).getTime());
 
+  const currentTab = TABS.find((tab) => tab.key === activeTab) || TABS[0];
   const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" });
+    new Date(iso).toLocaleDateString("en-NG", {
+      day: "numeric",
+      month: "long",
+      year: "numeric",
+    });
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-24">
-      <div className="mb-12 text-center max-w-3xl mx-auto">
-        <h1 className="text-4xl md:text-5xl font-serif mb-6">Testimonials & Events</h1>
-        <p className="text-xl text-muted-foreground">
-          Real stories from our community, and the events bringing us together.
+      <div className="relative mx-auto mb-12 max-w-4xl overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-6 py-12 text-center md:px-12">
+        <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-secondary/20 blur-3xl" />
+        <div className="absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
+        <p className="relative mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-primary">
+          The Ruth Health Community
+        </p>
+        <h1 className="relative mb-5 font-serif text-4xl md:text-6xl">Testimonials & Events</h1>
+        <p className="relative mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+          Discover the people, progress, and shared experiences behind the Ruth Health journey.
         </p>
       </div>
 
-      {/* Tabs */}
-      <div className="flex flex-wrap justify-center gap-3 mb-16">
-        {TABS.map(tab => (
-          <button
-            key={tab.key}
-            onClick={() => setActiveTab(tab.key)}
-            className={`px-5 py-2.5 rounded-full text-sm font-medium transition-colors border ${
-              activeTab === tab.key
-                ? "bg-primary text-primary-foreground border-primary"
-                : "bg-background text-muted-foreground border-border hover:bg-accent/50"
-            }`}
-          >
-            {tab.label}
-          </button>
-        ))}
+      <div className="mx-auto mb-10 grid max-w-5xl grid-cols-1 gap-3 md:grid-cols-3">
+        {TABS.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.key;
+          return (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`group rounded-2xl border p-5 text-left transition-all ${
+                isActive
+                  ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/15"
+                  : "border-border bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/30"
+              }`}
+            >
+              <div className="mb-4 flex items-center justify-between">
+                <span className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                  isActive ? "bg-primary-foreground/15" : "bg-primary/10"
+                }`}>
+                  <Icon size={19} />
+                </span>
+                <ArrowUpRight size={18} className={isActive ? "opacity-80" : "text-muted-foreground"} />
+              </div>
+              <div className="font-serif text-xl">{tab.label}</div>
+              <p className={`mt-2 text-sm leading-relaxed ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
+                {tab.description}
+              </p>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Products Results */}
-      {activeTab === "productWins" && (
-        <TestimonialGrid testimonials={productTestimonials} isLoading={loadingProduct} />
-      )}
+      <div className="mx-auto max-w-6xl">
+        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Explore the stories</p>
+            <h2 className="mt-2 font-serif text-3xl md:text-4xl">{currentTab.label}</h2>
+          </div>
+          <p className="max-w-md text-sm leading-relaxed text-muted-foreground md:text-right">
+            {currentTab.description}
+          </p>
+        </div>
 
-      {/* Business Success Stories */}
-      {activeTab === "businessWins" && (
-        <TestimonialGrid testimonials={businessTestimonials} isLoading={loadingBusiness} />
-      )}
+        {activeTab === "productUsers" && (
+          <TestimonialGrid testimonials={productTestimonials} isLoading={loadingProduct} />
+        )}
 
-      {/* Upcoming Events */}
-      {activeTab === "upcomingEvents" && (
-        <EventGrid events={upcoming} isLoading={loadingEvents} formatDate={formatDate} emptyMessage="No upcoming events yet. Check back soon." />
-      )}
+        {activeTab === "businessSuccess" && (
+          <TestimonialGrid testimonials={businessTestimonials} isLoading={loadingBusiness} />
+        )}
 
-      {/* Past Events */}
-      {activeTab === "pastEvents" && (
-        <EventGrid events={past} isLoading={loadingEvents} formatDate={formatDate} emptyMessage="No past events to show yet." />
-      )}
+        {activeTab === "companyEvents" && (
+          <>
+            <div className="mb-8 flex w-fit rounded-full border bg-card p-1">
+              {(["upcoming", "past"] as EventTab[]).map((tab) => (
+                <button
+                  key={tab}
+                  onClick={() => setEventTab(tab)}
+                  className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+                    eventTab === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {tab === "upcoming" ? "Upcoming Events" : "Past Events"}
+                </button>
+              ))}
+            </div>
+            <EventGrid
+              events={eventTab === "upcoming" ? upcoming : past}
+              isLoading={loadingEvents}
+              formatDate={formatDate}
+              emptyMessage={eventTab === "upcoming" ? "No upcoming events yet. Check back soon." : "No past events to show yet."}
+            />
+          </>
+        )}
+      </div>
     </div>
   );
 }
@@ -88,43 +157,44 @@ export default function Testimonials() {
 function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | undefined; isLoading: boolean }) {
   if (isLoading) {
     return (
-      <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
-        {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="animate-pulse bg-muted rounded-2xl h-[250px] w-full" />
+      <div className="columns-1 gap-6 space-y-6 md:columns-2 lg:columns-3">
+        {[1, 2, 3, 4, 5, 6].map((item) => (
+          <div key={item} className="h-[250px] w-full animate-pulse rounded-2xl bg-muted" />
         ))}
       </div>
     );
   }
 
   if (!testimonials || testimonials.length === 0) {
-    return <p className="text-center text-muted-foreground py-12">No testimonials yet. Check back soon.</p>;
+    return <p className="py-12 text-center text-muted-foreground">No stories yet. Check back soon.</p>;
   }
 
   return (
-    <div className="columns-1 md:columns-2 lg:columns-3 gap-8 space-y-8 pb-12">
-      {testimonials.map(testimonial => (
+    <div className="columns-1 gap-8 space-y-8 pb-12 md:columns-2 lg:columns-3">
+      {testimonials.map((testimonial) => (
         <div key={testimonial.id} className="break-inside-avoid">
-          <Card className="border-border/50 bg-card/50 hover:bg-card transition-colors shadow-sm">
+          <Card className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:bg-card hover:shadow-lg">
             <CardContent className="p-8">
-              <div className="flex text-amber-400 mb-6">
-                <Star size={16} fill="currentColor" />
-                <Star size={16} fill="currentColor" />
-                <Star size={16} fill="currentColor" />
-                <Star size={16} fill="currentColor" />
-                <Star size={16} fill="currentColor" />
+              <div className="mb-6 flex text-amber-400">
+                {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} fill="currentColor" />)}
               </div>
-              <p className="text-foreground italic mb-8 leading-relaxed text-lg">"{testimonial.text}"</p>
+              <p className="mb-8 text-lg leading-relaxed text-foreground italic">“{testimonial.text}”</p>
+              {testimonial.videoUrl && (
+                <div className="mb-7 aspect-video overflow-hidden rounded-xl bg-black">
+                  <video src={testimonial.videoUrl} controls preload="metadata" className="h-full w-full object-contain" />
+                </div>
+              )}
               <div className="flex items-center gap-4">
-                <div className="w-12 h-12 rounded-full bg-accent flex items-center justify-center overflow-hidden shrink-0 shadow-sm border border-border">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-accent shadow-sm">
                   {testimonial.photoUrl ? (
-                    <img src={testimonial.photoUrl} alt={testimonial.name} className="w-full h-full object-cover" />
+                    <img src={testimonial.photoUrl} alt={testimonial.name} className="h-full w-full object-cover" />
                   ) : (
                     <span className="font-serif text-lg text-muted-foreground">{testimonial.name.charAt(0)}</span>
                   )}
                 </div>
                 <div>
-                  <div className="font-medium text-base">{testimonial.name}</div>
-                  <div className="text-sm font-medium text-secondary">Verified Member</div>
+                  <div className="text-base font-medium">{testimonial.name}</div>
+                  <div className="text-sm font-medium text-secondary">Verified Ruth Health Member</div>
                 </div>
               </div>
             </CardContent>
@@ -148,46 +218,38 @@ function EventGrid({
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        {[1, 2, 3].map(i => (
-          <div key={i} className="animate-pulse bg-muted rounded-2xl h-[350px] w-full" />
-        ))}
+      <div className="grid grid-cols-1 gap-8 pb-12 md:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((item) => <div key={item} className="h-[350px] w-full animate-pulse rounded-2xl bg-muted" />)}
       </div>
     );
   }
 
   if (!events || events.length === 0) {
-    return <p className="text-center text-muted-foreground py-12">{emptyMessage}</p>;
+    return <p className="py-12 text-center text-muted-foreground">{emptyMessage}</p>;
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
-      {events.map(event => (
-        <Card key={event.id} className="border-border/50 bg-card/50 hover:bg-card transition-colors shadow-sm overflow-hidden">
-          <div className="aspect-video bg-muted overflow-hidden">
+    <div className="grid grid-cols-1 gap-8 pb-12 md:grid-cols-2 lg:grid-cols-3">
+      {events.map((event) => (
+        <Card key={event.id} className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
+          <div className="aspect-video overflow-hidden bg-muted">
             {event.imageUrl ? (
-              <img src={event.imageUrl} alt={event.title} className="w-full h-full object-cover" />
+              <img src={event.imageUrl} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
             ) : (
-              <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                <Calendar size={40} />
-              </div>
+              <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Calendar size={40} /></div>
             )}
           </div>
           <CardContent className="p-6">
-            <h3 className="text-xl font-serif mb-3">{event.title}</h3>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2">
-              <Calendar size={16} className="text-primary" />
-              <span>{formatDate(event.eventDate)}</span>
+            <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
+            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
             </div>
             {event.location && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-                <MapPin size={16} className="text-primary" />
-                <span>{event.location}</span>
+              <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <MapPin size={16} className="text-primary" /><span>{event.location}</span>
               </div>
             )}
-            {event.description && (
-              <p className="text-sm text-muted-foreground leading-relaxed">{event.description}</p>
-            )}
+            {event.description && <p className="text-sm leading-relaxed text-muted-foreground">{event.description}</p>}
           </CardContent>
         </Card>
       ))}
