@@ -11,9 +11,8 @@ import commissionRouter from "./commission.js";
 import usersRouter from "./users.js";
 import dashboardRouter from "./dashboard.js";
 import shippingZonesRouter from "./shippingZones.js";
-
+import eventsRouter from "./events.js";
 const router: IRouter = Router();
-
 router.use(healthRouter);
 router.use(authRouter);
 router.use(productsRouter);
@@ -26,5 +25,5 @@ router.use(commissionRouter);
 router.use(usersRouter);
 router.use(dashboardRouter);
 router.use(shippingZonesRouter);
-
+router.use(eventsRouter);
 export default router;
