@@ -33,6 +33,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { label: "Services", path: "/admin/services", icon: Stethoscope },
     { label: "Courses", path: "/admin/courses", icon: GraduationCap },
     { label: "Testimonials & Events", path: "/admin/testimonials", icon: MessageSquareQuote },
+    { label: "Company Events", path: "/admin/events", icon: CalendarDays },
     { label: "Members", path: "/admin/users", icon: Users },
     { label: "Bookings", path: "/admin/bookings", icon: CalendarDays },
     { label: "Commissions", path: "/admin/commission", icon: Coins },
