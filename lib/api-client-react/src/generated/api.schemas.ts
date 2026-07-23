@@ -192,6 +192,8 @@ export interface Testimonial {
   name: string;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
   text: string;
   category: TestimonialCategory;
   createdAt: string;
@@ -201,6 +203,8 @@ export interface TestimonialInput {
   name: string;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
   text: string;
   category?: TestimonialCategory;
 }
@@ -209,6 +213,8 @@ export interface TestimonialUpdate {
   name?: string;
   /** @nullable */
   photoUrl?: string | null;
+  /** @nullable */
+  videoUrl?: string | null;
   text?: string;
   category?: TestimonialCategory;
 }
