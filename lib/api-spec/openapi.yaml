@@ -34,6 +34,8 @@ tags:
     description: Dashboard summaries
   - name: shipping-zones
     description: Shipping zone configuration
+  - name: events
+    description: Company events
 
 paths:
   /healthz:
@@ -414,6 +416,13 @@ paths:
       operationId: listTestimonials
       tags: [testimonials]
       summary: List all testimonials
+      parameters:
+        - name: category
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [product, business]
       responses:
         "200":
           description: List of testimonials
@@ -469,6 +478,81 @@ paths:
       operationId: deleteTestimonial
       tags: [testimonials]
       summary: Delete a testimonial (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # EVENTS
+  /events:
+    get:
+      operationId: listEvents
+      tags: [events]
+      summary: List all company events
+      responses:
+        "200":
+          description: List of company events
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Event"
+    post:
+      operationId: createEvent
+      tags: [events]
+      summary: Create a company event (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+
+  /events/{id}:
+    patch:
+      operationId: updateEvent
+      tags: [events]
+      summary: Update a company event (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EventUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Event"
+    delete:
+      operationId: deleteEvent
+      tags: [events]
+      summary: Delete a company event (admin)
       parameters:
         - name: id
           in: path
@@ -1168,7 +1252,7 @@ components:
     # TESTIMONIALS
     Testimonial:
       type: object
-      required: [id, name, text, createdAt]
+      required: [id, name, text, category, createdAt]
       properties:
         id:
           type: integer
@@ -1176,8 +1260,21 @@ components:
           type: string
         photoUrl:
           type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        photoUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
         text:
           type: string
+        category:
+          type: string
+          enum: [product, business]
         createdAt:
           type: string
           format: date-time
@@ -1190,8 +1287,21 @@ components:
           type: string
         photoUrl:
           type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        photoUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
         text:
           type: string
+        category:
+          type: string
+          enum: [product, business]
 
     TestimonialUpdate:
       type: object
@@ -1200,8 +1310,97 @@ components:
           type: string
         photoUrl:
           type: ["string", "null"]
+        videoUrl:
+          type: ["string", "null"]
+        photoUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
         text:
           type: string
+        category:
+          type: string
+          enum: [product, business]
+
+    Event:
+      type: object
+      required: [id, title, eventDate, createdAt]
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
+        location:
+          type: ["string", "null"]
+        eventDate:
+          type: string
+          format: date-time
+        createdAt:
+          type: string
+          format: date-time
+
+    EventInput:
+      type: object
+      required: [title, eventDate]
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
+        location:
+          type: ["string", "null"]
+        eventDate:
+          type: string
+          format: date-time
+
+    EventUpdate:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: ["string", "null"]
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
+        location:
+          type: ["string", "null"]
+        eventDate:
+          type: string
+          format: date-time
 
     # ORDERS
     OrderInput:
