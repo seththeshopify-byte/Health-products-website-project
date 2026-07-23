@@ -1,13 +1,13 @@
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useQueryClient } from "@tanstack/react-query";
 
 export function Navbar() {
-  const { user, isLoggedIn, isAdmin } = useAuth();
+  const { isLoggedIn, isAdmin } = useAuth();
   const [location, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const queryClient = useQueryClient();
@@ -22,7 +22,7 @@ export function Navbar() {
     { label: "Products", path: "/products" },
     { label: "Services", path: "/services" },
     { label: "Courses", path: "/courses" },
-    { label: "Testimonials", path: "/testimonials" },
+    { label: "Testimonials & Events", path: "/testimonials" },
   ];
 
   return (
@@ -34,12 +34,12 @@ export function Navbar() {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             {navItems.map((item) => (
-              <Link 
-                key={item.path} 
+              <Link
+                key={item.path}
                 href={item.path}
                 className={cn(
                   "hover:text-primary transition-colors",
-                  location.startsWith(item.path) && "text-primary"
+                  location.startsWith(item.path) && "text-primary",
                 )}
               >
                 {item.label}
@@ -52,7 +52,7 @@ export function Navbar() {
           <Link href="/book-a-call" className={buttonVariants({ variant: "outline", size: "sm" })}>
             Book Consultation
           </Link>
-          
+
           {isLoggedIn ? (
             <>
               {isAdmin && (
@@ -68,28 +68,26 @@ export function Navbar() {
               </Button>
             </>
           ) : (
-            <>
-              <Link href="/login" className="text-sm font-medium hover:text-primary">
-                Sign In
-              </Link>
-            </>
+            <Link href="/login" className="text-sm font-medium hover:text-primary">
+              Sign In
+            </Link>
           )}
         </div>
 
-        <button 
+        <button
           className="md:hidden text-primary"
           onClick={() => setIsOpen(!isOpen)}
+          aria-label={isOpen ? "Close menu" : "Open menu"}
         >
           {isOpen ? <X size={24} /> : <Menu size={24} />}
         </button>
       </div>
 
-      {/* Mobile Menu */}
       {isOpen && (
         <div className="md:hidden border-t bg-background p-4 flex flex-col gap-4 animate-in slide-in-from-top-4">
           {navItems.map((item) => (
-            <Link 
-              key={item.path} 
+            <Link
+              key={item.path}
               href={item.path}
               className="text-lg font-medium"
               onClick={() => setIsOpen(false)}
@@ -98,8 +96,8 @@ export function Navbar() {
             </Link>
           ))}
           <div className="h-px bg-border my-2" />
-          <Link 
-            href="/book-a-call" 
+          <Link
+            href="/book-a-call"
             className={buttonVariants({ variant: "outline", className: "w-full justify-start" })}
             onClick={() => setIsOpen(false)}
           >
@@ -115,7 +113,7 @@ export function Navbar() {
                   Admin
                 </Link>
               )}
-              <button 
+              <button
                 className="text-lg font-medium text-left text-destructive"
                 onClick={() => {
                   handleLogout();
@@ -126,17 +124,12 @@ export function Navbar() {
               </button>
             </>
           ) : (
-            <>
-              <Link href="/login" className="text-lg font-medium" onClick={() => setIsOpen(false)}>
-                Sign In
-              </Link>
-            </>
+            <Link href="/login" className="text-lg font-medium" onClick={() => setIsOpen(false)}>
+              Sign In
+            </Link>
           )}
         </div>
       )}
     </header>
   );
 }
-
-// Temporary import until we move it properly or we can just import from ui/button
-import { buttonVariants } from "@/components/ui/button";
