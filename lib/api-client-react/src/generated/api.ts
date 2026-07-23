@@ -33,6 +33,9 @@ import type {
   CreateUserInput,
   DashboardSummary,
   ErrorResponse,
+  Event,
+  EventInput,
+  EventUpdate,
   HealthStatus,
   LoginInput,
   MemberDashboard,
@@ -223,7 +226,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useLogin = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof login>>, TError,{data: BodyType<LoginInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof login>>,
         TError,
         {data: BodyType<LoginInput>},
@@ -447,7 +450,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createProduct>>, TError,{data: BodyType<ProductInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createProduct>>,
         TError,
         {data: BodyType<ProductInput>},
@@ -595,7 +598,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateProduct>>, TError,{id: number;data: BodyType<ProductUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateProduct>>,
         TError,
         {id: number;data: BodyType<ProductUpdate>},
@@ -665,7 +668,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useDeleteProduct = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteProduct>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof deleteProduct>>,
         TError,
         {id: number},
@@ -812,7 +815,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateService = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createService>>, TError,{data: BodyType<ServiceInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createService>>,
         TError,
         {data: BodyType<ServiceInput>},
@@ -960,7 +963,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateService = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateService>>, TError,{id: number;data: BodyType<ServiceUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateService>>,
         TError,
         {id: number;data: BodyType<ServiceUpdate>},
@@ -1030,7 +1033,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useDeleteService = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteService>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof deleteService>>,
         TError,
         {id: number},
@@ -1177,7 +1180,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateCourse = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createCourse>>, TError,{data: BodyType<CourseInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createCourse>>,
         TError,
         {data: BodyType<CourseInput>},
@@ -1325,7 +1328,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateCourse = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateCourse>>, TError,{id: number;data: BodyType<CourseUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateCourse>>,
         TError,
         {id: number;data: BodyType<CourseUpdate>},
@@ -1395,7 +1398,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useDeleteCourse = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteCourse>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof deleteCourse>>,
         TError,
         {id: number},
@@ -1465,7 +1468,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useEnrollCourse = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof enrollCourse>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof enrollCourse>>,
         TError,
         {id: number},
@@ -1474,20 +1477,25 @@ export const useEnrollCourse = <TError = ErrorType<unknown>,
       return useMutation(getEnrollCourseMutationOptions(options));
     }
 
-export const getListTestimonialsUrl = () => {
+export const getListTestimonialsUrl = (category?: string) => {
 
+    const normalizedParams = new URLSearchParams();
 
+    if (category !== undefined) {
+      normalizedParams.append('category', category === null ? 'null' : category.toString())
+    }
 
+  const stringifiedParams = normalizedParams.toString();
 
-  return `/api/testimonials`
+  return stringifiedParams.length > 0 ? `/api/testimonials?${stringifiedParams}` : `/api/testimonials`
 }
 
 /**
  * @summary List all testimonials
  */
-export const listTestimonials = async ( options?: RequestInit): Promise<Testimonial[]> => {
+export const listTestimonials = async (category?: string, options?: RequestInit): Promise<Testimonial[]> => {
 
-  return customFetch<Testimonial[]>(getListTestimonialsUrl(),
+  return customFetch<Testimonial[]>(getListTestimonialsUrl(category),
   {
     ...options,
     method: 'GET'
@@ -1500,23 +1508,23 @@ export const listTestimonials = async ( options?: RequestInit): Promise<Testimon
 
 
 
-export const getListTestimonialsQueryKey = () => {
+export const getListTestimonialsQueryKey = (category?: string) => {
     return [
-    `/api/testimonials`
+    `/api/testimonials`, ...(category !== undefined ? [category] : [])
     ] as const;
     }
 
 
-export const getListTestimonialsQueryOptions = <TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+export const getListTestimonialsQueryOptions = <TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>(category?: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 ) => {
 
 const {query: queryOptions, request: requestOptions} = options ?? {};
 
-  const queryKey =  queryOptions?.queryKey ?? getListTestimonialsQueryKey();
+  const queryKey =  queryOptions?.queryKey ?? getListTestimonialsQueryKey(category);
 
 
 
-    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTestimonials>>> = ({ signal }) => listTestimonials({ signal, ...requestOptions });
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listTestimonials>>> = ({ signal }) => listTestimonials(category, { signal, ...requestOptions });
 
 
 
@@ -1534,11 +1542,11 @@ export type ListTestimonialsQueryError = ErrorType<unknown>
  */
 
 export function useListTestimonials<TData = Awaited<ReturnType<typeof listTestimonials>>, TError = ErrorType<unknown>>(
-  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+ category?: string, options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listTestimonials>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
 
  ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
 
-  const queryOptions = getListTestimonialsQueryOptions(options)
+  const queryOptions = getListTestimonialsQueryOptions(category,options)
 
   const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
 
@@ -1612,7 +1620,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateTestimonial = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createTestimonial>>, TError,{data: BodyType<TestimonialInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createTestimonial>>,
         TError,
         {data: BodyType<TestimonialInput>},
@@ -1683,7 +1691,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateTestimonial = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateTestimonial>>, TError,{id: number;data: BodyType<TestimonialUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateTestimonial>>,
         TError,
         {id: number;data: BodyType<TestimonialUpdate>},
@@ -1753,13 +1761,301 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useDeleteTestimonial = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteTestimonial>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof deleteTestimonial>>,
         TError,
         {id: number},
         TContext
       > => {
       return useMutation(getDeleteTestimonialMutationOptions(options));
+    }
+
+export const getListEventsUrl = () => {
+
+
+
+
+  return `/api/events`
+}
+
+/**
+ * @summary List all events
+ */
+export const listEvents = async ( options?: RequestInit): Promise<Event[]> => {
+
+  return customFetch<Event[]>(getListEventsUrl(),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+
+
+export const getListEventsQueryKey = () => {
+    return [
+    `/api/events`
+    ] as const;
+    }
+
+
+export const getListEventsQueryOptions = <TData = Awaited<ReturnType<typeof listEvents>>, TError = ErrorType<unknown>>( options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+) => {
+
+const {query: queryOptions, request: requestOptions} = options ?? {};
+
+  const queryKey =  queryOptions?.queryKey ?? getListEventsQueryKey();
+
+
+
+    const queryFn: QueryFunction<Awaited<ReturnType<typeof listEvents>>> = ({ signal }) => listEvents({ signal, ...requestOptions });
+
+
+
+
+
+   return  { queryKey, queryFn, ...queryOptions} as UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData> & { queryKey: QueryKey }
+}
+
+export type ListEventsQueryResult = NonNullable<Awaited<ReturnType<typeof listEvents>>>
+export type ListEventsQueryError = ErrorType<unknown>
+
+
+/**
+ * @summary List all events
+ */
+
+export function useListEvents<TData = Awaited<ReturnType<typeof listEvents>>, TError = ErrorType<unknown>>(
+  options?: { query?:UseQueryOptions<Awaited<ReturnType<typeof listEvents>>, TError, TData>, request?: SecondParameter<typeof customFetch>}
+
+ ):  UseQueryResult<TData, TError> & { queryKey: QueryKey } {
+
+  const queryOptions = getListEventsQueryOptions(options)
+
+  const query = useQuery(queryOptions) as  UseQueryResult<TData, TError> & { queryKey: QueryKey };
+
+  return withQueryKey(query, queryOptions.queryKey);
+}
+
+
+
+
+
+
+
+export const getCreateEventUrl = () => {
+
+
+
+
+  return `/api/events`
+}
+
+/**
+ * @summary Create an event (admin)
+ */
+export const createEvent = async (eventInput: EventInput, options?: RequestInit): Promise<Event> => {
+
+  return customFetch<Event>(getCreateEventUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(eventInput)
+  }
+);}
+
+
+
+
+export const getCreateEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEvent>>, TError,{data: BodyType<EventInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof createEvent>>, TError,{data: BodyType<EventInput>}, TContext> => {
+
+const mutationKey = ['createEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof createEvent>>, {data: BodyType<EventInput>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  createEvent(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type CreateEventMutationResult = NonNullable<Awaited<ReturnType<typeof createEvent>>>
+    export type CreateEventMutationBody = BodyType<EventInput>
+    export type CreateEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Create an event (admin)
+ */
+export const useCreateEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createEvent>>, TError,{data: BodyType<EventInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult
+        Awaited<ReturnType<typeof createEvent>>,
+        TError,
+        {data: BodyType<EventInput>},
+        TContext
+      > => {
+      return useMutation(getCreateEventMutationOptions(options));
+    }
+
+export const getUpdateEventUrl = (id: number,) => {
+
+
+
+
+  return `/api/events/${id}`
+}
+
+/**
+ * @summary Update an event (admin)
+ */
+export const updateEvent = async (id: number,
+    eventUpdate: EventUpdate, options?: RequestInit): Promise<Event> => {
+
+  return customFetch<Event>(getUpdateEventUrl(id),
+  {
+    ...options,
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(eventUpdate)
+  }
+);}
+
+
+
+
+export const getUpdateEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEvent>>, TError,{id: number;data: BodyType<EventUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof updateEvent>>, TError,{id: number;data: BodyType<EventUpdate>}, TContext> => {
+
+const mutationKey = ['updateEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof updateEvent>>, {id: number;data: BodyType<EventUpdate>}> = (props) => {
+          const {id,data} = props ?? {};
+
+          return  updateEvent(id,data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type UpdateEventMutationResult = NonNullable<Awaited<ReturnType<typeof updateEvent>>>
+    export type UpdateEventMutationBody = BodyType<EventUpdate>
+    export type UpdateEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Update an event (admin)
+ */
+export const useUpdateEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateEvent>>, TError,{id: number;data: BodyType<EventUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult
+        Awaited<ReturnType<typeof updateEvent>>,
+        TError,
+        {id: number;data: BodyType<EventUpdate>},
+        TContext
+      > => {
+      return useMutation(getUpdateEventMutationOptions(options));
+    }
+
+export const getDeleteEventUrl = (id: number,) => {
+
+
+
+
+  return `/api/events/${id}`
+}
+
+/**
+ * @summary Delete an event (admin)
+ */
+export const deleteEvent = async (id: number, options?: RequestInit): Promise<SuccessResponse> => {
+
+  return customFetch<SuccessResponse>(getDeleteEventUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteEventMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEvent>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteEvent>>, TError,{id: number}, TContext> => {
+
+const mutationKey = ['deleteEvent'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteEvent>>, {id: number}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteEvent(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteEventMutationResult = NonNullable<Awaited<ReturnType<typeof deleteEvent>>>
+
+    export type DeleteEventMutationError = ErrorType<unknown>
+
+    /**
+ * @summary Delete an event (admin)
+ */
+export const useDeleteEvent = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteEvent>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult
+        Awaited<ReturnType<typeof deleteEvent>>,
+        TError,
+        {id: number},
+        TContext
+      > => {
+      return useMutation(getDeleteEventMutationOptions(options));
     }
 
 export const getListOrdersUrl = () => {
@@ -1900,7 +2196,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateOrder = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createOrder>>, TError,{data: BodyType<OrderInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createOrder>>,
         TError,
         {data: BodyType<OrderInput>},
@@ -2047,7 +2343,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useStripeWebhook = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof stripeWebhook>>, TError,void, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof stripeWebhook>>,
         TError,
         void,
@@ -2194,7 +2490,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateBookingSlot = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBookingSlot>>, TError,{data: BodyType<BookingSlotInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createBookingSlot>>,
         TError,
         {data: BodyType<BookingSlotInput>},
@@ -2264,7 +2560,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useDeleteBookingSlot = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteBookingSlot>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof deleteBookingSlot>>,
         TError,
         {id: number},
@@ -2411,7 +2707,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateBooking = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createBooking>>, TError,{data: BodyType<BookingInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createBooking>>,
         TError,
         {data: BodyType<BookingInput>},
@@ -2481,7 +2777,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCancelBooking = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof cancelBooking>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof cancelBooking>>,
         TError,
         {id: number},
@@ -2628,7 +2924,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useMarkCommissionPaid = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof markCommissionPaid>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof markCommissionPaid>>,
         TError,
         {id: number},
@@ -2775,7 +3071,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateUser = <TError = ErrorType<ErrorResponse>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createUser>>, TError,{data: BodyType<CreateUserInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createUser>>,
         TError,
         {data: BodyType<CreateUserInput>},
@@ -2923,7 +3219,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateUser = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateUser>>, TError,{id: number;data: BodyType<UserUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateUser>>,
         TError,
         {id: number;data: BodyType<UserUpdate>},
@@ -3224,7 +3520,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useCreateShippingZone = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof createShippingZone>>, TError,{data: BodyType<ShippingZoneInput>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof createShippingZone>>,
         TError,
         {data: BodyType<ShippingZoneInput>},
@@ -3295,7 +3591,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateShippingZone = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateShippingZone>>, TError,{id: number;data: BodyType<ShippingZoneUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateShippingZone>>,
         TError,
         {id: number;data: BodyType<ShippingZoneUpdate>},
@@ -3365,7 +3661,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useDeleteShippingZone = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteShippingZone>>, TError,{id: number}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof deleteShippingZone>>,
         TError,
         {id: number},
@@ -3512,7 +3808,7 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
  */
 export const useUpdateZoomLink = <TError = ErrorType<unknown>,
     TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof updateZoomLink>>, TError,{data: BodyType<ZoomSettingsUpdate>}, TContext>, request?: SecondParameter<typeof customFetch>}
- ): UseMutationResult<
+ ): UseMutationResult
         Awaited<ReturnType<typeof updateZoomLink>>,
         TError,
         {data: BodyType<ZoomSettingsUpdate>},
@@ -3520,4 +3816,3 @@ export const useUpdateZoomLink = <TError = ErrorType<unknown>,
       > => {
       return useMutation(getUpdateZoomLinkMutationOptions(options));
     }
-
