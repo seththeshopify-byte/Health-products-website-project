@@ -1,5 +1,11 @@
 import { useState } from "react";
-import { useListTestimonials, getListTestimonialsQueryKey, useCreateTestimonial, useUpdateTestimonial, useDeleteTestimonial } from "@workspace/api-client-react";
+import {
+  useListTestimonials,
+  getListTestimonialsQueryKey,
+  useCreateTestimonial,
+  useUpdateTestimonial,
+  useDeleteTestimonial,
+} from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
@@ -8,165 +14,129 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2, User } from "lucide-react";
+import { Plus, Edit2, Trash2, User, Video } from "lucide-react";
+import { MediaUploader } from "@/components/MediaUploader";
+
+const emptyForm = {
+  name: "",
+  text: "",
+  category: "product" as "product" | "business",
+  photoUrls: [] as string[],
+  videoUrls: [] as string[],
+};
 
 export default function AdminTestimonials() {
-  const { data: testimonials, isLoading } = useListTestimonials({ query: { queryKey: getListTestimonialsQueryKey() } });
+  const { data: testimonials, isLoading } = useListTestimonials(undefined, {
+    query: { queryKey: getListTestimonialsQueryKey() },
+  });
   const createMutation = useCreateTestimonial();
   const updateMutation = useUpdateTestimonial();
   const deleteMutation = useDeleteTestimonial();
   const queryClient = useQueryClient();
   const { toast } = useToast();
-
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  
-  const [formData, setFormData] = useState({
-    name: "",
-    text: "",
-    photoUrl: "",
-  });
+  const [formData, setFormData] = useState(emptyForm);
 
-  const handleOpenCreate = () => {
+  const openCreate = () => {
     setEditingId(null);
-    setFormData({ name: "", text: "", photoUrl: "" });
+    setFormData({ ...emptyForm, photoUrls: [], videoUrls: [] });
     setIsModalOpen(true);
   };
 
-  const handleOpenEdit = (testimonial: any) => {
+  const openEdit = (testimonial: any) => {
     setEditingId(testimonial.id);
     setFormData({
       name: testimonial.name,
       text: testimonial.text,
-      photoUrl: testimonial.photoUrl || "",
+      category: testimonial.category === "business" ? "business" : "product",
+      photoUrls: testimonial.photoUrls?.length ? testimonial.photoUrls : testimonial.photoUrl ? [testimonial.photoUrl] : [],
+      videoUrls: testimonial.videoUrls?.length ? testimonial.videoUrls : testimonial.videoUrl ? [testimonial.videoUrl] : [],
     });
     setIsModalOpen(true);
   };
 
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: getListTestimonialsQueryKey() });
+
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
+    const data = {
+      name: formData.name,
+      text: formData.text,
+      category: formData.category,
+      photoUrls: formData.photoUrls,
+      videoUrls: formData.videoUrls,
+      photoUrl: formData.photoUrls[0] ?? null,
+      videoUrl: formData.videoUrls[0] ?? null,
+    };
+    const onSuccess = () => {
+      void invalidate();
+      setIsModalOpen(false);
+      toast({ title: editingId ? "Story updated" : "Story created" });
+    };
+    if (editingId) updateMutation.mutate({ id: editingId, data }, { onSuccess });
+    else createMutation.mutate({ data }, { onSuccess });
+  };
+
   const handleDelete = (id: number) => {
-    if (!confirm("Are you sure you want to delete this testimonial?")) return;
+    if (!confirm("Delete this story?")) return;
     deleteMutation.mutate({ id }, {
       onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: getListTestimonialsQueryKey() });
-        toast({ title: "Testimonial deleted" });
-      }
+        void invalidate();
+        toast({ title: "Story deleted" });
+      },
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const dataToSubmit = {
-      ...formData,
-      photoUrl: formData.photoUrl || null,
-    };
-
-    if (editingId) {
-      updateMutation.mutate({ id: editingId, data: dataToSubmit }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListTestimonialsQueryKey() });
-          setIsModalOpen(false);
-          toast({ title: "Testimonial updated" });
-        }
-      });
-    } else {
-      createMutation.mutate({ data: dataToSubmit }, {
-        onSuccess: () => {
-          queryClient.invalidateQueries({ queryKey: getListTestimonialsQueryKey() });
-          setIsModalOpen(false);
-          toast({ title: "Testimonial created" });
-        }
-      });
-    }
-  };
+  const isSaving = createMutation.isPending || updateMutation.isPending;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-serif mb-1">Testimonials</h1>
-          <p className="text-muted-foreground">Manage patient stories and reviews.</p>
+          <h1 className="mb-1 text-3xl font-serif">Testimonials & Events</h1>
+          <p className="text-muted-foreground">Manage Product Users and Business Success Stories.</p>
         </div>
-        <Button onClick={handleOpenCreate} className="gap-2">
-          <Plus size={16} /> Add Testimonial
-        </Button>
+        <Button onClick={openCreate} className="gap-2"><Plus size={16} /> Add Story</Button>
       </div>
 
-      <div className="bg-card border rounded-lg overflow-hidden">
+      <div className="overflow-hidden rounded-lg border bg-card">
         <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead className="w-16">Photo</TableHead>
-              <TableHead className="w-48">Name</TableHead>
-              <TableHead>Testimonial</TableHead>
-              <TableHead className="w-24"></TableHead>
-            </TableRow>
-          </TableHeader>
+          <TableHeader><TableRow><TableHead>Photo</TableHead><TableHead>Name</TableHead><TableHead>Category</TableHead><TableHead>Media</TableHead><TableHead /></TableRow></TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8">Loading...</TableCell></TableRow>
-            ) : testimonials?.length === 0 ? (
-              <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">No testimonials found</TableCell></TableRow>
-            ) : (
-              testimonials?.map(testimonial => (
-                <TableRow key={testimonial.id}>
-                  <TableCell>
-                    {testimonial.photoUrl ? (
-                      <div className="w-10 h-10 rounded-full bg-muted overflow-hidden border">
-                        <img src={testimonial.photoUrl} alt={testimonial.name} className="w-full h-full object-cover" />
-                      </div>
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground border">
-                        <User size={16} />
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell className="font-medium">{testimonial.name}</TableCell>
-                  <TableCell>
-                    <p className="text-sm text-muted-foreground line-clamp-2 italic">"{testimonial.text}"</p>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(testimonial)}>
-                        <Edit2 size={16} />
-                      </Button>
-                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(testimonial.id)}>
-                        <Trash2 size={16} />
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
+              <TableRow><TableCell colSpan={5} className="py-8 text-center">Loading...</TableCell></TableRow>
+            ) : !testimonials?.length ? (
+              <TableRow><TableCell colSpan={5} className="py-8 text-center text-muted-foreground">No stories found</TableCell></TableRow>
+            ) : testimonials.map((testimonial) => (
+              <TableRow key={testimonial.id}>
+                <TableCell>
+                  {testimonial.photoUrl ? <img src={testimonial.photoUrl} alt={testimonial.name} className="h-10 w-10 rounded-full object-cover" /> : <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted"><User size={16} /></div>}
+                </TableCell>
+                <TableCell className="font-medium">{testimonial.name}</TableCell>
+                <TableCell>{testimonial.category === "business" ? "Business Success" : "Product User"}</TableCell>
+                <TableCell className="text-sm text-muted-foreground">
+                  {(testimonial.photoUrls?.length || (testimonial.photoUrl ? 1 : 0))} photo(s),{" "}
+                  {(testimonial.videoUrls?.length || (testimonial.videoUrl ? 1 : 0))} video(s)
+                </TableCell>
+                <TableCell><div className="flex justify-end gap-2"><Button variant="ghost" size="icon" onClick={() => openEdit(testimonial)}><Edit2 size={16} /></Button><Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(testimonial.id)}><Trash2 size={16} /></Button></div></TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[620px]">
           <form onSubmit={handleSubmit}>
-            <DialogHeader>
-              <DialogTitle>{editingId ? "Edit Testimonial" : "Add Testimonial"}</DialogTitle>
-            </DialogHeader>
+            <DialogHeader><DialogTitle>{editingId ? "Edit Story" : "Add Story"}</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="name">Patient Name</Label>
-                <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="text">Testimonial Text</Label>
-                <Textarea id="text" value={formData.text} onChange={e => setFormData({...formData, text: e.target.value})} required className="min-h-[100px]" />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="photoUrl">Photo URL (Optional)</Label>
-                <Input id="photoUrl" value={formData.photoUrl} onChange={e => setFormData({...formData, photoUrl: e.target.value})} placeholder="https://..." />
-              </div>
+              <div className="grid gap-2"><Label htmlFor="story-name">Name</Label><Input id="story-name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div>
+              <div className="grid gap-2"><Label htmlFor="story-text">Story</Label><Textarea id="story-text" value={formData.text} onChange={(e) => setFormData({ ...formData, text: e.target.value })} required className="min-h-[120px]" /></div>
+              <div className="grid gap-2"><Label htmlFor="story-category">Category</Label><select id="story-category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value as "product" | "business" })} className="h-10 rounded-md border bg-background px-3 text-sm"><option value="product">Product User</option><option value="business">Business Success Story</option></select></div>
+              <div className="grid gap-2"><Label><Video size={15} className="mr-1 inline" /> Photos and videos</Label><MediaUploader imageUrls={formData.photoUrls} videoUrls={formData.videoUrls} onImagesChange={(photoUrls) => setFormData({ ...formData, photoUrls })} onVideosChange={(videoUrls) => setFormData({ ...formData, videoUrls })} /></div>
             </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-              <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending}>
-                {createMutation.isPending || updateMutation.isPending ? "Saving..." : "Save"}
-              </Button>
-            </DialogFooter>
+            <DialogFooter><Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button><Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Save Story"}</Button></DialogFooter>
           </form>
         </DialogContent>
       </Dialog>
