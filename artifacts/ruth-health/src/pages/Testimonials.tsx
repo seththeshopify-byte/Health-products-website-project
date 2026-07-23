@@ -36,11 +36,11 @@ export default function Testimonials() {
   const [activeTab, setActiveTab] = useState<TabKey>("productUsers");
   const [eventTab, setEventTab] = useState<EventTab>("upcoming");
 
-  const { data: productTestimonials, isLoading: loadingProduct } = useListTestimonials("product", {
-    query: { queryKey: getListTestimonialsQueryKey("product") },
+  const { data: productTestimonials, isLoading: loadingProduct } = useListTestimonials({ category: "product" }, {
+    query: { queryKey: getListTestimonialsQueryKey({ category: "product" }) },
   });
-  const { data: businessTestimonials, isLoading: loadingBusiness } = useListTestimonials("business", {
-    query: { queryKey: getListTestimonialsQueryKey("business") },
+  const { data: businessTestimonials, isLoading: loadingBusiness } = useListTestimonials({ category: "business" }, {
+    query: { queryKey: getListTestimonialsQueryKey({ category: "business" }) },
   });
   const { data: events, isLoading: loadingEvents } = useListEvents({
     query: { queryKey: getListEventsQueryKey() },
@@ -179,11 +179,11 @@ function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | un
                 {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} fill="currentColor" />)}
               </div>
               <p className="mb-8 text-lg leading-relaxed text-foreground italic">“{testimonial.text}”</p>
-              {testimonial.videoUrl && (
-                <div className="mb-7 aspect-video overflow-hidden rounded-xl bg-black">
-                  <video src={testimonial.videoUrl} controls preload="metadata" className="h-full w-full object-contain" />
-                </div>
-              )}
+              <MediaGallery
+                imageUrls={(testimonial.photoUrls?.length ? testimonial.photoUrls : testimonial.photoUrl ? [testimonial.photoUrl] : []).slice(1)}
+                videoUrls={testimonial.videoUrls?.length ? testimonial.videoUrls : testimonial.videoUrl ? [testimonial.videoUrl] : []}
+                alt={testimonial.name}
+              />
               <div className="flex items-center gap-4">
                 <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-accent shadow-sm">
                   {testimonial.photoUrl ? (
@@ -233,8 +233,8 @@ function EventGrid({
       {events.map((event) => (
         <Card key={event.id} className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
           <div className="aspect-video overflow-hidden bg-muted">
-            {event.imageUrl ? (
-              <img src={event.imageUrl} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+            {(event.imageUrls?.[0] || event.imageUrl) ? (
+              <img src={event.imageUrls?.[0] || event.imageUrl} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Calendar size={40} /></div>
             )}
@@ -250,8 +250,49 @@ function EventGrid({
               </div>
             )}
             {event.description && <p className="text-sm leading-relaxed text-muted-foreground">{event.description}</p>}
+            <MediaGallery
+              imageUrls={(event.imageUrls?.length ? event.imageUrls : event.imageUrl ? [event.imageUrl] : []).slice(1)}
+              videoUrls={event.videoUrls || []}
+              alt={event.title}
+              compact
+            />
           </CardContent>
         </Card>
+      ))}
+    </div>
+  );
+}
+
+function MediaGallery({
+  imageUrls,
+  videoUrls,
+  alt,
+  compact = false,
+}: {
+  imageUrls: string[];
+  videoUrls: string[];
+  alt: string;
+  compact?: boolean;
+}) {
+  if (!imageUrls.length && !videoUrls.length) return null;
+  return (
+    <div className={`grid gap-3 ${compact ? "mt-5 grid-cols-2" : "mb-7 grid-cols-2"}`}>
+      {imageUrls.map((url, index) => (
+        <img
+          key={`image-${url}-${index}`}
+          src={url}
+          alt={`${alt} photo ${index + 1}`}
+          className="aspect-square w-full rounded-xl border object-cover"
+        />
+      ))}
+      {videoUrls.map((url, index) => (
+        <video
+          key={`video-${url}-${index}`}
+          src={url}
+          controls
+          preload="metadata"
+          className="aspect-video w-full rounded-xl bg-black object-contain"
+        />
       ))}
     </div>
   );
