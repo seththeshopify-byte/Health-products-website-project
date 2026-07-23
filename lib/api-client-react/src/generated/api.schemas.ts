@@ -179,12 +179,21 @@ export interface CourseUpdate {
   contentBody?: string | null;
 }
 
+export type TestimonialCategory = typeof TestimonialCategory[keyof typeof TestimonialCategory];
+
+
+export const TestimonialCategory = {
+  product: 'product',
+  business: 'business',
+} as const;
+
 export interface Testimonial {
   id: number;
   name: string;
   /** @nullable */
   photoUrl?: string | null;
   text: string;
+  category: TestimonialCategory;
   createdAt: string;
 }
 
@@ -193,6 +202,7 @@ export interface TestimonialInput {
   /** @nullable */
   photoUrl?: string | null;
   text: string;
+  category?: TestimonialCategory;
 }
 
 export interface TestimonialUpdate {
@@ -200,6 +210,42 @@ export interface TestimonialUpdate {
   /** @nullable */
   photoUrl?: string | null;
   text?: string;
+  category?: TestimonialCategory;
+}
+
+export interface Event {
+  id: number;
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  location?: string | null;
+  eventDate: string;
+  createdAt: string;
+}
+
+export interface EventInput {
+  title: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  location?: string | null;
+  eventDate: string;
+}
+
+export interface EventUpdate {
+  title?: string;
+  /** @nullable */
+  description?: string | null;
+  /** @nullable */
+  imageUrl?: string | null;
+  /** @nullable */
+  location?: string | null;
+  eventDate?: string;
 }
 
 export type OrderInputItemType = typeof OrderInputItemType[keyof typeof OrderInputItemType];
@@ -405,4 +451,3 @@ export interface ZoomSettings {
 export interface ZoomSettingsUpdate {
   zoomLink: string;
 }
-
