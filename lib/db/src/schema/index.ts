@@ -8,3 +8,4 @@ export * from "./shippingZones";
 export * from "./commissionEvents";
 export * from "./bookings";
 export * from "./settings";
+export * from "./events";
