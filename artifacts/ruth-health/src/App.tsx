@@ -1,7 +1,7 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { Route, Switch, Router as WouterRouter } from 'wouter';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "@/components/ui/toaster";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { Route, Switch, Router as WouterRouter } from "wouter";
 import { PageShell } from "@/components/layout/PageShell";
 import { AdminLayout } from "@/components/layout/AdminLayout";
 import Home from "@/pages/Home";
@@ -18,19 +18,17 @@ import Login from "@/pages/Login";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import CheckoutCancel from "@/pages/CheckoutCancel";
 import Privacy from "@/pages/Privacy";
-
-// Admin
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminServices from "@/pages/admin/AdminServices";
 import AdminCourses from "@/pages/admin/AdminCourses";
 import AdminTestimonials from "@/pages/admin/AdminTestimonials";
+import AdminEvents from "@/pages/admin/AdminEvents";
 import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminCommissions from "@/pages/admin/AdminCommissions";
 import AdminShipping from "@/pages/admin/AdminShipping";
-
-import NotFound from '@/pages/not-found';
+import NotFound from "@/pages/not-found";
 
 function AdminRoutes() {
   return (
@@ -41,6 +39,7 @@ function AdminRoutes() {
         <Route path="/admin/services" component={AdminServices} />
         <Route path="/admin/courses" component={AdminCourses} />
         <Route path="/admin/testimonials" component={AdminTestimonials} />
+        <Route path="/admin/events" component={AdminEvents} />
         <Route path="/admin/users" component={AdminUsers} />
         <Route path="/admin/bookings" component={AdminBookings} />
         <Route path="/admin/commission" component={AdminCommissions} />
@@ -56,7 +55,6 @@ function Router() {
     <Switch>
       <Route path="/admin/*" component={AdminRoutes} />
       <Route path="/admin" component={AdminRoutes} />
-      
       <Route>
         <PageShell>
           <Switch>
@@ -88,7 +86,7 @@ export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, "")}>
           <Router />
         </WouterRouter>
         <Toaster />
