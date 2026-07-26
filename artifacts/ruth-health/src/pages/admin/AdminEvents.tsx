@@ -1,17 +1,101 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useListEvents, getListEventsQueryKey, useCreateEvent, useUpdateEvent, useDeleteEvent } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { CalendarPlus, Edit2, Trash2, Video } from "lucide-react";
 import { MediaUploader } from "@/components/MediaUploader";
 
 const emptyForm = { title: "", description: "", location: "", eventDate: "", imageUrls: [] as string[], videoUrls: [] as string[] };
+
+// Removes potentially dangerous markup (scripts, event handlers, javascript: links)
+// while keeping normal formatting tags like <b>, <i>, <span style="...">, <font>, etc.
+function sanitizeHtml(html: string): string {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  const stripDangerous = (node: Element) => {
+    Array.from(node.children).forEach((child) => stripDangerous(child));
+    if (["SCRIPT", "IFRAME", "OBJECT", "EMBED", "STYLE"].includes(node.tagName)) {
+      node.remove();
+      return;
+    }
+    Array.from(node.attributes).forEach((attr) => {
+      const name = attr.name.toLowerCase();
+      const value = attr.value.toLowerCase();
+      if (name.startsWith("on") || (name === "href" && value.startsWith("javascript:"))) {
+        node.removeAttribute(attr.name);
+      }
+    });
+  };
+
+  Array.from(container.children).forEach((child) => stripDangerous(child));
+  return container.innerHTML;
+}
+
+// A contentEditable field that preserves formatting (bold, italic, color, etc.)
+// when the admin pastes ready-made text from Word, Google Docs, AI tools, etc.
+function RichTextField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (!initialized.current && ref.current) {
+      ref.current.innerHTML = value;
+      initialized.current = true;
+    }
+  }, [value]);
+
+  return (
+    <div
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      onPaste={() => {
+        setTimeout(() => {
+          if (ref.current) {
+            const clean = sanitizeHtml(ref.current.innerHTML);
+            if (clean !== ref.current.innerHTML) ref.current.innerHTML = clean;
+            onChange(ref.current.innerHTML);
+          }
+        }, 0);
+      }}
+      onInput={() => {
+        if (ref.current) onChange(ref.current.innerHTML);
+      }}
+      className="min-h-[100px] w-full rounded-md border bg-background px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  );
+}
+
+// A plain code box for pasting raw HTML source (e.g. <h2>, <ul><li>, style="color:...").
+function HtmlSourceField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      spellCheck={false}
+      className="min-h-[140px] w-full rounded-md border bg-background px-3 py-2 font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
+      placeholder="<h2>Heading</h2>&#10;<p>Paragraph text...</p>"
+    />
+  );
+}
 
 export default function AdminEvents() {
   const { data: events, isLoading } = useListEvents({ query: { queryKey: getListEventsQueryKey() } });
@@ -23,8 +107,16 @@ export default function AdminEvents() {
   const [open, setOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [formKey, setFormKey] = useState(0);
+  const [textMode, setTextMode] = useState<"paste" | "html">("paste");
 
-  const openCreate = () => { setEditingId(null); setFormData({ ...emptyForm, imageUrls: [], videoUrls: [] }); setOpen(true); };
+  const openCreate = () => {
+    setEditingId(null);
+    setFormData({ ...emptyForm, imageUrls: [], videoUrls: [] });
+    setFormKey((key) => key + 1);
+    setTextMode("paste");
+    setOpen(true);
+  };
   const openEdit = (event: any) => {
     setEditingId(event.id);
     setFormData({
@@ -35,12 +127,14 @@ export default function AdminEvents() {
       imageUrls: event.imageUrls?.length ? event.imageUrls : event.imageUrl ? [event.imageUrl] : [],
       videoUrls: event.videoUrls || [],
     });
+    setFormKey((key) => key + 1);
+    setTextMode("paste");
     setOpen(true);
   };
   const invalidate = () => queryClient.invalidateQueries({ queryKey: getListEventsQueryKey() });
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
-    const data = { title: formData.title, description: formData.description || null, location: formData.location || null, eventDate: new Date(formData.eventDate).toISOString(), imageUrls: formData.imageUrls, videoUrls: formData.videoUrls, imageUrl: formData.imageUrls[0] ?? null };
+    const data = { title: formData.title, description: formData.description ? sanitizeHtml(formData.description) : null, location: formData.location || null, eventDate: new Date(formData.eventDate).toISOString(), imageUrls: formData.imageUrls, videoUrls: formData.videoUrls, imageUrl: formData.imageUrls[0] ?? null };
     const onSuccess = () => { void invalidate(); setOpen(false); toast({ title: editingId ? "Event updated" : "Event created" }); };
     if (editingId) updateMutation.mutate({ id: editingId, data }, { onSuccess });
     else createMutation.mutate({ data }, { onSuccess });
@@ -61,7 +155,34 @@ export default function AdminEvents() {
         <div className="grid gap-2"><Label htmlFor="event-title">Title</Label><Input id="event-title" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} required /></div>
         <div className="grid gap-2"><Label htmlFor="event-date">Date and time</Label><Input id="event-date" type="datetime-local" value={formData.eventDate} onChange={(e) => setFormData({ ...formData, eventDate: e.target.value })} required /></div>
         <div className="grid gap-2"><Label htmlFor="event-location">Location</Label><Input id="event-location" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} /></div>
-        <div className="grid gap-2"><Label htmlFor="event-description">Description</Label><Textarea id="event-description" value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} className="min-h-[100px]" /></div>
+        <div className="grid gap-2">
+          <div className="flex items-center justify-between">
+            <Label htmlFor="event-description">Description</Label>
+            <div className="flex rounded-full border bg-muted p-0.5 text-xs">
+              <button type="button" onClick={() => setTextMode("paste")} className={`rounded-full px-3 py-1 font-medium transition-colors ${textMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}>Paste formatted text</button>
+              <button type="button" onClick={() => setTextMode("html")} className={`rounded-full px-3 py-1 font-medium transition-colors ${textMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}>Paste HTML code</button>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {textMode === "paste"
+              ? "Paste ready-made text from Word, Google Docs, or AI tools — formatting like bold, italic, and color will be kept."
+              : "Paste raw HTML code (e.g. <h2>, <ul><li>, style=\"color:...\") and it will render as real headings, lists, and colors."}
+          </p>
+          {textMode === "paste" ? (
+            <RichTextField key={`rich-${formKey}`} value={formData.description} onChange={(html) => setFormData((prev) => ({ ...prev, description: html }))} />
+          ) : (
+            <>
+              <HtmlSourceField key={`html-${formKey}`} value={formData.description} onChange={(html) => setFormData((prev) => ({ ...prev, description: html }))} />
+              <div className="grid gap-1.5">
+                <span className="text-xs font-medium text-muted-foreground">Live preview</span>
+                <div
+                  className="min-h-[80px] rounded-md border bg-card p-4 text-sm leading-relaxed [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: sanitizeHtml(formData.description) || "<span class=\"text-muted-foreground\">Nothing to preview yet…</span>" }}
+                />
+              </div>
+            </>
+          )}
+        </div>
         <div className="grid gap-2"><Label><Video size={15} className="mr-1 inline" /> Event photos and videos</Label><MediaUploader imageUrls={formData.imageUrls} videoUrls={formData.videoUrls} onImagesChange={(imageUrls) => setFormData({ ...formData, imageUrls })} onVideosChange={(videoUrls) => setFormData({ ...formData, videoUrls })} /></div>
       </div><DialogFooter><Button type="button" variant="outline" onClick={() => setOpen(false)}>Cancel</Button><Button type="submit" disabled={isSaving}>{isSaving ? "Saving..." : "Save Event"}</Button></DialogFooter></form></DialogContent></Dialog>
     </div>
