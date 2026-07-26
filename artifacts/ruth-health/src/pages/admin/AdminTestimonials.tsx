@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   useListTestimonials,
   getListTestimonialsQueryKey,
@@ -11,7 +11,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Edit2, Trash2, User, Video } from "lucide-react";
@@ -25,6 +24,74 @@ const emptyForm = {
   videoUrls: [] as string[],
 };
 
+// Removes potentially dangerous markup (scripts, event handlers, javascript: links)
+// while keeping normal formatting tags like <b>, <i>, <span style="...">, <font>, etc.
+function sanitizeHtml(html: string): string {
+  const container = document.createElement("div");
+  container.innerHTML = html;
+
+  const stripDangerous = (node: Element) => {
+    Array.from(node.children).forEach((child) => stripDangerous(child));
+    if (["SCRIPT", "IFRAME", "OBJECT", "EMBED", "STYLE"].includes(node.tagName)) {
+      node.remove();
+      return;
+    }
+    Array.from(node.attributes).forEach((attr) => {
+      const name = attr.name.toLowerCase();
+      const value = attr.value.toLowerCase();
+      if (name.startsWith("on") || (name === "href" && value.startsWith("javascript:"))) {
+        node.removeAttribute(attr.name);
+      }
+    });
+  };
+
+  Array.from(container.children).forEach((child) => stripDangerous(child));
+  return container.innerHTML;
+}
+
+// A contentEditable field that preserves formatting (bold, italic, color, etc.)
+// when the admin pastes ready-made text from Word, Google Docs, AI tools, etc.
+function RichTextField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const initialized = useRef(false);
+
+  useEffect(() => {
+    if (!initialized.current && ref.current) {
+      ref.current.innerHTML = value;
+      initialized.current = true;
+    }
+  }, [value]);
+
+  return (
+    <div
+      ref={ref}
+      contentEditable
+      suppressContentEditableWarning
+      onPaste={(event) => {
+        // Let the browser handle the rich paste naturally (keeps formatting),
+        // we just sanitize it right after.
+        setTimeout(() => {
+          if (ref.current) {
+            const clean = sanitizeHtml(ref.current.innerHTML);
+            if (clean !== ref.current.innerHTML) ref.current.innerHTML = clean;
+            onChange(ref.current.innerHTML);
+          }
+        }, 0);
+      }}
+      onInput={() => {
+        if (ref.current) onChange(ref.current.innerHTML);
+      }}
+      className="min-h-[120px] w-full rounded-md border bg-background px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
+    />
+  );
+}
+
 export default function AdminTestimonials() {
   const { data: testimonials, isLoading } = useListTestimonials(undefined, {
     query: { queryKey: getListTestimonialsQueryKey() },
@@ -37,10 +104,12 @@ export default function AdminTestimonials() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState(emptyForm);
+  const [formKey, setFormKey] = useState(0);
 
   const openCreate = () => {
     setEditingId(null);
     setFormData({ ...emptyForm, photoUrls: [], videoUrls: [] });
+    setFormKey((key) => key + 1);
     setIsModalOpen(true);
   };
 
@@ -53,6 +122,7 @@ export default function AdminTestimonials() {
       photoUrls: testimonial.photoUrls?.length ? testimonial.photoUrls : testimonial.photoUrl ? [testimonial.photoUrl] : [],
       videoUrls: testimonial.videoUrls?.length ? testimonial.videoUrls : testimonial.videoUrl ? [testimonial.videoUrl] : [],
     });
+    setFormKey((key) => key + 1);
     setIsModalOpen(true);
   };
 
@@ -132,7 +202,11 @@ export default function AdminTestimonials() {
             <DialogHeader><DialogTitle>{editingId ? "Edit Story" : "Add Story"}</DialogTitle></DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2"><Label htmlFor="story-name">Name</Label><Input id="story-name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div>
-              <div className="grid gap-2"><Label htmlFor="story-text">Story</Label><Textarea id="story-text" value={formData.text} onChange={(e) => setFormData({ ...formData, text: e.target.value })} required className="min-h-[120px]" /></div>
+              <div className="grid gap-2">
+                <Label htmlFor="story-text">Story</Label>
+                <p className="text-xs text-muted-foreground">Paste ready-made text from Word, Google Docs, or AI tools — formatting like bold, italic, and color will be kept.</p>
+                <RichTextField key={formKey} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
+              </div>
               <div className="grid gap-2"><Label htmlFor="story-category">Category</Label><select id="story-category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value as "product" | "business" })} className="h-10 rounded-md border bg-background px-3 text-sm"><option value="product">Product User</option><option value="business">Business Success Story</option></select></div>
               <div className="grid gap-2"><Label><Video size={15} className="mr-1 inline" /> Photos and videos</Label><MediaUploader imageUrls={formData.photoUrls} videoUrls={formData.videoUrls} onImagesChange={(photoUrls) => setFormData({ ...formData, photoUrls })} onVideosChange={(videoUrls) => setFormData({ ...formData, videoUrls })} /></div>
             </div>
