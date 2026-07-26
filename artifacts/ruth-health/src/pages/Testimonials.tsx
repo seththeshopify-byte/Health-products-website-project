@@ -252,7 +252,12 @@ function EventGrid({
                 <MapPin size={16} className="text-primary" /><span>{event.location}</span>
               </div>
             )}
-            {event.description && <p className="text-sm leading-relaxed text-muted-foreground">{event.description}</p>}
+            {event.description && (
+              <div
+                className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                dangerouslySetInnerHTML={{ __html: event.description }}
+              />
+            )}
             <MediaGallery
               imageUrls={(event.imageUrls?.length ? event.imageUrls : event.imageUrl ? [event.imageUrl] : []).slice(1)}
               videoUrls={event.videoUrls || []}
