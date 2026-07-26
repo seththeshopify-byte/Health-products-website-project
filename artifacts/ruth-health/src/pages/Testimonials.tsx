@@ -276,15 +276,7 @@ function MediaGallery({
 }) {
   if (!imageUrls.length && !videoUrls.length) return null;
   return (
-    <div className={`grid gap-3 ${compact ? "mt-5 grid-cols-2" : "mb-7 grid-cols-2"}`}>
-      {imageUrls.map((url, index) => (
-        <img
-          key={`image-${url}-${index}`}
-          src={url}
-          alt={`${alt} photo ${index + 1}`}
-          className="aspect-square w-full rounded-xl border object-cover"
-        />
-      ))}
+    <div className={`space-y-3 ${compact ? "mt-5" : "mb-7"}`}>
       {videoUrls.map((url, index) => (
         <video
           key={`video-${url}-${index}`}
@@ -294,6 +286,18 @@ function MediaGallery({
           className="aspect-video w-full rounded-xl bg-black object-contain"
         />
       ))}
+      {imageUrls.length > 0 && (
+        <div className="grid grid-cols-2 gap-3">
+          {imageUrls.map((url, index) => (
+            <img
+              key={`image-${url}-${index}`}
+              src={url}
+              alt={`${alt} photo ${index + 1}`}
+              className="aspect-square w-full rounded-xl border object-cover"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
