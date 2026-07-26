@@ -106,28 +106,10 @@ export default function ProductDetail() {
               )}
             </div>
             
-            <div className="prose prose-sm md:prose-base prose-neutral max-w-none text-muted-foreground mb-8">
-              {(() => {
-                const lines = (product.description || "")
-                  .split("\n")
-                  .map(l => l.trim())
-                  .filter(Boolean);
-                const bullets = lines.filter(l => l.startsWith("•"));
-                const intro = lines.filter(l => !l.startsWith("•"));
-                return (
-                  <>
-                    {intro.map((line, i) => <p key={`intro-${i}`}>{line}</p>)}
-                    {bullets.length > 0 && (
-                      <ul>
-                        {bullets.map((line, i) => (
-                          <li key={`bullet-${i}`}>{line.replace(/^•\s*/, "")}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </>
-                );
-              })()}
-            </div>
+            <div
+              className="prose prose-sm md:prose-base prose-neutral max-w-none text-muted-foreground mb-8 [&_h2]:font-serif [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+              dangerouslySetInnerHTML={{ __html: product.description || "" }}
+            />
 
             <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
               <DialogTrigger asChild>
