@@ -92,6 +92,27 @@ function RichTextField({
   );
 }
 
+// A plain code box for pasting raw HTML source (e.g. <h2>, <ul><li>, style="color:...").
+// Unlike RichTextField, this treats the pasted text as literal HTML code rather than
+// as already-formatted content, so tags in the pasted text become real elements.
+function HtmlSourceField({
+  value,
+  onChange,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+}) {
+  return (
+    <textarea
+      value={value}
+      onChange={(event) => onChange(event.target.value)}
+      spellCheck={false}
+      className="min-h-[160px] w-full rounded-md border bg-background px-3 py-2 font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
+      placeholder="<h2>Heading</h2>&#10;<p>Paragraph text...</p>"
+    />
+  );
+}
+
 export default function AdminTestimonials() {
   const { data: testimonials, isLoading } = useListTestimonials(undefined, {
     query: { queryKey: getListTestimonialsQueryKey() },
@@ -105,11 +126,13 @@ export default function AdminTestimonials() {
   const [editingId, setEditingId] = useState<number | null>(null);
   const [formData, setFormData] = useState(emptyForm);
   const [formKey, setFormKey] = useState(0);
+  const [textMode, setTextMode] = useState<"paste" | "html">("paste");
 
   const openCreate = () => {
     setEditingId(null);
     setFormData({ ...emptyForm, photoUrls: [], videoUrls: [] });
     setFormKey((key) => key + 1);
+    setTextMode("paste");
     setIsModalOpen(true);
   };
 
@@ -123,6 +146,7 @@ export default function AdminTestimonials() {
       videoUrls: testimonial.videoUrls?.length ? testimonial.videoUrls : testimonial.videoUrl ? [testimonial.videoUrl] : [],
     });
     setFormKey((key) => key + 1);
+    setTextMode("paste");
     setIsModalOpen(true);
   };
 
@@ -132,7 +156,7 @@ export default function AdminTestimonials() {
     event.preventDefault();
     const data = {
       name: formData.name,
-      text: formData.text,
+      text: sanitizeHtml(formData.text),
       category: formData.category,
       photoUrls: formData.photoUrls,
       videoUrls: formData.videoUrls,
@@ -203,9 +227,35 @@ export default function AdminTestimonials() {
             <div className="grid gap-4 py-4">
               <div className="grid gap-2"><Label htmlFor="story-name">Name</Label><Input id="story-name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required /></div>
               <div className="grid gap-2">
-                <Label htmlFor="story-text">Story</Label>
-                <p className="text-xs text-muted-foreground">Paste ready-made text from Word, Google Docs, or AI tools — formatting like bold, italic, and color will be kept.</p>
-                <RichTextField key={formKey} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="story-text">Story</Label>
+                  <div className="flex rounded-full border bg-muted p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setTextMode("paste")}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${textMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+                    >
+                      Paste formatted text
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setTextMode("html")}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${textMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+                    >
+                      Paste HTML code
+                    </button>
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  {textMode === "paste"
+                    ? "Paste ready-made text from Word, Google Docs, or AI tools — formatting like bold, italic, and color will be kept."
+                    : "Paste raw HTML code (e.g. <h2>, <ul><li>, style=\"color:...\") and it will render as real headings, lists, and colors."}
+                </p>
+                {textMode === "paste" ? (
+                  <RichTextField key={`rich-${formKey}`} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
+                ) : (
+                  <HtmlSourceField key={`html-${formKey}`} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
+                )}
               </div>
               <div className="grid gap-2"><Label htmlFor="story-category">Category</Label><select id="story-category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value as "product" | "business" })} className="h-10 rounded-md border bg-background px-3 text-sm"><option value="product">Product User</option><option value="business">Business Success Story</option></select></div>
               <div className="grid gap-2"><Label><Video size={15} className="mr-1 inline" /> Photos and videos</Label><MediaUploader imageUrls={formData.photoUrls} videoUrls={formData.videoUrls} onImagesChange={(photoUrls) => setFormData({ ...formData, photoUrls })} onVideosChange={(videoUrls) => setFormData({ ...formData, videoUrls })} /></div>
