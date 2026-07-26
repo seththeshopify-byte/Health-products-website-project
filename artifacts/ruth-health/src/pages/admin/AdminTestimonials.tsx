@@ -254,7 +254,16 @@ export default function AdminTestimonials() {
                 {textMode === "paste" ? (
                   <RichTextField key={`rich-${formKey}`} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
                 ) : (
-                  <HtmlSourceField key={`html-${formKey}`} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
+                  <>
+                    <HtmlSourceField key={`html-${formKey}`} value={formData.text} onChange={(html) => setFormData((prev) => ({ ...prev, text: html }))} />
+                    <div className="grid gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">Live preview</span>
+                      <div
+                        className="min-h-[80px] rounded-md border bg-card p-4 text-sm leading-relaxed [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formData.text) || "<span class=\"text-muted-foreground\">Nothing to preview yet…</span>" }}
+                      />
+                    </div>
+                  </>
                 )}
               </div>
               <div className="grid gap-2"><Label htmlFor="story-category">Category</Label><select id="story-category" value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value as "product" | "business" })} className="h-10 rounded-md border bg-background px-3 text-sm"><option value="product">Product User</option><option value="business">Business Success Story</option></select></div>
