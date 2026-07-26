@@ -246,47 +246,57 @@ function EventGrid({
             className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
           >
             <CardContent className="p-8">
-              {/* Image floats left; text wraps around it AND continues filling the space below it */}
-              {allImages.length > 0 ? (
-                allImages.length === 1 ? (
-                  <img
-                    src={allImages[0]}
-                    alt={`${event.title} photo`}
-                    className="float-left mb-4 mr-6 w-full max-w-full rounded-xl object-contain sm:w-2/5 md:w-1/3"
-                  />
-                ) : (
-                  <div className="float-left mb-4 mr-6 flex w-full flex-wrap gap-2 sm:w-2/5 md:w-1/3">
-                    {allImages.map((url, index) => (
-                      <img
-                        key={`event-image-${url}-${index}`}
-                        src={url}
-                        alt={`${event.title} photo ${index + 1}`}
-                        className="h-40 w-[calc(50%-4px)] rounded-lg border border-border/50 bg-background object-contain sm:h-44"
-                      />
-                    ))}
-                  </div>
-                )
-              ) : null}
-
+              {/* Title / date / location stay full-width at the top, aligned consistently */}
               <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
               <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
                 <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
               </div>
               {event.location && (
-                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin size={16} className="text-primary" /><span>{event.location}</span>
                 </div>
               )}
-              {event.description && (
-                <div
-                  className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                  dangerouslySetInnerHTML={{ __html: event.description }}
-                />
-              )}
 
-              {/* clear the float so anything after (e.g. video) starts on its own line */}
-              <div className="clear-both" />
-              <VideoGallery videoUrls={event.videoUrls || []} />
+              {/*
+                True newspaper-style columns: the image and every content block flow down
+                the left column first, then continue automatically into the right column.
+                Nothing floats, so both columns stay perfectly aligned with no leftover gaps.
+              */}
+              <div className="columns-1 gap-8 sm:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
+                {allImages.length === 1 && (
+                  <img
+                    src={allImages[0]}
+                    alt={`${event.title} photo`}
+                    className="w-full rounded-xl border border-border/50 bg-muted object-contain"
+                  />
+                )}
+                {allImages.length > 1 &&
+                  allImages.map((url, index) => (
+                    <img
+                      key={`event-image-${url}-${index}`}
+                      src={url}
+                      alt={`${event.title} photo ${index + 1}`}
+                      className="w-full rounded-xl border border-border/50 bg-muted object-contain"
+                    />
+                  ))}
+
+                {(event.videoUrls || []).map((url: string, index: number) => (
+                  <video
+                    key={`event-video-${url}-${index}`}
+                    src={url}
+                    controls
+                    preload="metadata"
+                    className="aspect-video w-full rounded-xl bg-black object-contain"
+                  />
+                ))}
+
+                {event.description && (
+                  <div
+                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                    dangerouslySetInnerHTML={{ __html: event.description }}
+                  />
+                )}
+              </div>
             </CardContent>
           </Card>
         );
