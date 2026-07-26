@@ -275,56 +275,68 @@ function EventGrid({
 
               {(() => {
                 const descBlocks = event.description ? splitHtmlIntoBlocks(event.description) : [];
+                let blockCursor = 0;
+                const takeNextBlock = () => (blockCursor < descBlocks.length ? descBlocks[blockCursor++] : null);
+                const renderBlock = (html: string, key: string) => (
+                  <div
+                    key={key}
+                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                    dangerouslySetInnerHTML={{ __html: html }}
+                  />
+                );
+
                 const gridItems: { key: string; node: React.ReactNode }[] = [];
 
-                descBlocks.forEach((block, index) => {
-                  gridItems.push({
-                    key: `desc-${index}`,
-                    node: (
-                      <div
-                        className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                        dangerouslySetInnerHTML={{ __html: block }}
-                      />
-                    ),
-                  });
-                });
-
+                // Each image/video is bundled with the text block that comes right after it,
+                // so that trailing text fills the space below the media instead of leaving it blank.
                 allImages.forEach((url, index) => {
+                  const extra = takeNextBlock();
                   gridItems.push({
                     key: `img-${index}`,
                     node: (
-                      <img
-                        src={url}
-                        alt={`${event.title} photo ${index + 1}`}
-                        className="h-full w-full rounded-xl border border-border/50 bg-muted object-contain"
-                      />
+                      <div className="flex h-full flex-col gap-4">
+                        <img
+                          src={url}
+                          alt={`${event.title} photo ${index + 1}`}
+                          className="w-full rounded-xl border border-border/50 bg-muted object-contain"
+                        />
+                        {extra && renderBlock(extra, `img-${index}-extra`)}
+                      </div>
                     ),
                   });
                 });
 
                 (event.videoUrls || []).forEach((url: string, index: number) => {
+                  const extra = takeNextBlock();
                   gridItems.push({
                     key: `vid-${index}`,
                     node: (
-                      <video
-                        src={url}
-                        controls
-                        preload="metadata"
-                        className="h-full w-full rounded-xl bg-black object-contain"
-                      />
+                      <div className="flex h-full flex-col gap-4">
+                        <video src={url} controls preload="metadata" className="w-full rounded-xl bg-black object-contain" />
+                        {extra && renderBlock(extra, `vid-${index}-extra`)}
+                      </div>
                     ),
                   });
                 });
+
+                // Any remaining, unattached text blocks continue as their own standalone cells.
+                while (blockCursor < descBlocks.length) {
+                  const html = descBlocks[blockCursor];
+                  gridItems.push({ key: `desc-${blockCursor}`, node: renderBlock(html, `desc-${blockCursor}`) });
+                  blockCursor++;
+                }
 
                 return (
                   /*
                     Real grid, not free-flowing columns: each row's left and right items
                     stretch to match the taller one, so every row's top edges and bottom
-                    edges line up horizontally — including the very last row.
+                    edges line up horizontally — including the very last row. Media cells
+                    carry their own trailing text so the space below a shorter image/video
+                    is put to use instead of sitting empty.
                   */
                   <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
                     {gridItems.map((item) => (
-                      <div key={item.key} className="flex h-full items-center">
+                      <div key={item.key} className="flex h-full">
                         {item.node}
                       </div>
                     ))}
