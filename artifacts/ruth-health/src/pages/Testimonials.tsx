@@ -252,9 +252,14 @@ function EventGrid({
                 <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
               </div>
               {event.location && (
-                <div className="mb-6 flex items-center gap-2 text-sm text-muted-foreground">
+                <a
+                  href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(event.location)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mb-6 flex items-center gap-2 text-sm text-muted-foreground underline decoration-dotted underline-offset-4 transition-colors hover:text-primary"
+                >
                   <MapPin size={16} className="text-primary" /><span>{event.location}</span>
-                </div>
+                </a>
               )}
 
               {/*
@@ -263,6 +268,13 @@ function EventGrid({
                 Nothing floats, so both columns stay perfectly aligned with no leftover gaps.
               */}
               <div className="columns-1 gap-8 sm:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
+                {event.description && (
+                  <div
+                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                    dangerouslySetInnerHTML={{ __html: event.description }}
+                  />
+                )}
+
                 {allImages.length === 1 && (
                   <img
                     src={allImages[0]}
@@ -289,13 +301,6 @@ function EventGrid({
                     className="aspect-video w-full rounded-xl bg-black object-contain"
                   />
                 ))}
-
-                {event.description && (
-                  <div
-                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                    dangerouslySetInnerHTML={{ __html: event.description }}
-                  />
-                )}
               </div>
             </CardContent>
           </Card>
