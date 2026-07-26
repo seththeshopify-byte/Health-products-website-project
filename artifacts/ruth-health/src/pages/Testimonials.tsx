@@ -6,7 +6,7 @@ import {
   getListEventsQueryKey,
 } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
-import { Star, Calendar, MapPin, Users, Heart, BriefcaseBusiness, ArrowUpRight } from "lucide-react";
+import { Star, Calendar, MapPin, Users, Heart, BriefcaseBusiness, ArrowUpRight, X } from "lucide-react";
 
 type TabKey = "productUsers" | "businessSuccess" | "companyEvents";
 type EventTab = "upcoming" | "past";
@@ -277,7 +277,13 @@ function MediaGallery({
   alt: string;
   compact?: boolean;
 }) {
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
   if (!imageUrls.length && !videoUrls.length) return null;
+
+  const singlePhoto = imageUrls.length === 1;
+  const photoHeightClass = singlePhoto ? "h-64 sm:h-80" : compact ? "h-28" : "h-40";
+
   return (
     <div className={`space-y-3 ${compact ? "mt-5" : "mb-7"}`}>
       {videoUrls.map((url, index) => (
@@ -296,9 +302,32 @@ function MediaGallery({
               key={`image-${url}-${index}`}
               src={url}
               alt={`${alt} photo ${index + 1}`}
-              className={`w-auto rounded-xl border bg-muted object-contain ${compact ? "h-28" : "h-40"}`}
+              onClick={() => setLightboxUrl(url)}
+              className={`w-auto cursor-pointer rounded-xl border bg-muted object-contain transition-opacity hover:opacity-90 ${photoHeightClass} ${singlePhoto ? "max-w-full" : ""}`}
             />
           ))}
+        </div>
+      )}
+
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt={alt}
+            onClick={(event) => event.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
+          />
         </div>
       )}
     </div>
