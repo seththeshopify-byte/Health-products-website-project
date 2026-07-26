@@ -245,51 +245,49 @@ function EventGrid({
             key={event.id}
             className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
           >
-            <div className="flex flex-col md:flex-row">
-              {/* Media column: left side on desktop, top on mobile */}
-              <div className="shrink-0 border-b border-border/50 bg-muted/40 p-3 md:w-[38%] md:border-b-0 md:border-r lg:w-[34%]">
-                {allImages.length > 0 ? (
-                  <div className={allImages.length > 1 ? "flex flex-wrap gap-2" : ""}>
+            <CardContent className="p-8">
+              {/* Image floats left; text wraps around it AND continues filling the space below it */}
+              {allImages.length > 0 ? (
+                allImages.length === 1 ? (
+                  <img
+                    src={allImages[0]}
+                    alt={`${event.title} photo`}
+                    className="float-left mb-4 mr-6 w-full max-w-full rounded-xl object-contain sm:w-2/5 md:w-1/3"
+                  />
+                ) : (
+                  <div className="float-left mb-4 mr-6 flex w-full flex-wrap gap-2 sm:w-2/5 md:w-1/3">
                     {allImages.map((url, index) => (
                       <img
                         key={`event-image-${url}-${index}`}
                         src={url}
                         alt={`${event.title} photo ${index + 1}`}
-                        className={
-                          allImages.length === 1
-                            ? "w-full h-auto max-h-[480px] rounded-xl object-contain"
-                            : "h-40 w-[calc(50%-4px)] rounded-lg border border-border/50 bg-background object-contain sm:h-48"
-                        }
+                        className="h-40 w-[calc(50%-4px)] rounded-lg border border-border/50 bg-background object-contain sm:h-44"
                       />
                     ))}
                   </div>
-                ) : (
-                  <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
-                    <Calendar size={40} />
-                  </div>
-                )}
-              </div>
+                )
+              ) : null}
 
-              {/* Text column */}
-              <CardContent className="flex-1 p-8">
-                <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
-                <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
+              <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
+              <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
+              </div>
+              {event.location && (
+                <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                  <MapPin size={16} className="text-primary" /><span>{event.location}</span>
                 </div>
-                {event.location && (
-                  <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                    <MapPin size={16} className="text-primary" /><span>{event.location}</span>
-                  </div>
-                )}
-                {event.description && (
-                  <div
-                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                    dangerouslySetInnerHTML={{ __html: event.description }}
-                  />
-                )}
-                <VideoGallery videoUrls={event.videoUrls || []} />
-              </CardContent>
-            </div>
+              )}
+              {event.description && (
+                <div
+                  className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: event.description }}
+                />
+              )}
+
+              {/* clear the float so anything after (e.g. video) starts on its own line */}
+              <div className="clear-both" />
+              <VideoGallery videoUrls={event.videoUrls || []} />
+            </CardContent>
           </Card>
         );
       })}
