@@ -178,9 +178,9 @@ function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | un
               <div className="mb-6 flex text-amber-400">
                 {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} fill="currentColor" />)}
               </div>
-              <p
-                className="mb-8 text-lg leading-relaxed text-foreground italic"
-                dangerouslySetInnerHTML={{ __html: `&ldquo;${testimonial.text}&rdquo;` }}
+              <div
+                className="prose prose-sm mb-8 max-w-none text-foreground [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                dangerouslySetInnerHTML={{ __html: testimonial.text }}
               />
               <MediaGallery
                 imageUrls={(testimonial.photoUrls?.length ? testimonial.photoUrls : testimonial.photoUrl ? [testimonial.photoUrl] : []).slice(1)}
