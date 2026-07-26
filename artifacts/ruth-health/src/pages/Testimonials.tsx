@@ -170,9 +170,9 @@ function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | un
   }
 
   return (
-    <div className="columns-1 gap-8 space-y-8 pb-12 md:columns-2 lg:columns-3">
+    <div className="space-y-8 pb-12">
       {testimonials.map((testimonial) => (
-        <div key={testimonial.id} className="break-inside-avoid">
+        <div key={testimonial.id}>
           <Card className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:bg-card hover:shadow-lg">
             <CardContent className="p-8">
               <div className="mb-6 flex text-amber-400">
@@ -287,7 +287,7 @@ function MediaGallery({
         />
       ))}
       {imageUrls.length > 0 && (
-        <div className="grid grid-cols-2 gap-3">
+        <div className={`grid gap-3 ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"}`}>
           {imageUrls.map((url, index) => (
             <img
               key={`image-${url}-${index}`}
