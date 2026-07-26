@@ -233,39 +233,82 @@ function EventGrid({
 
   return (
     <div className="space-y-8 pb-12">
-      {events.map((event) => (
-        <Card key={event.id} className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
-          <div className="aspect-[21/9] overflow-hidden bg-muted">
-            {(event.imageUrls?.[0] || event.imageUrl) ? (
-              <img src={event.imageUrls?.[0] || event.imageUrl} alt={event.title} className="h-full w-full object-contain" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Calendar size={40} /></div>
-            )}
-          </div>
-          <CardContent className="p-8">
-            <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
-            <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
-              <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
-            </div>
-            {event.location && (
-              <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
-                <MapPin size={16} className="text-primary" /><span>{event.location}</span>
+      {events.map((event) => {
+        const allImages: string[] = event.imageUrls?.length
+          ? event.imageUrls
+          : event.imageUrl
+          ? [event.imageUrl]
+          : [];
+
+        return (
+          <Card
+            key={event.id}
+            className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg"
+          >
+            <div className="flex flex-col md:flex-row">
+              {/* Media column: left side on desktop, top on mobile */}
+              <div className="shrink-0 border-b border-border/50 bg-muted/40 p-3 md:w-[38%] md:border-b-0 md:border-r lg:w-[34%]">
+                {allImages.length > 0 ? (
+                  <div className={allImages.length > 1 ? "flex flex-wrap gap-2" : ""}>
+                    {allImages.map((url, index) => (
+                      <img
+                        key={`event-image-${url}-${index}`}
+                        src={url}
+                        alt={`${event.title} photo ${index + 1}`}
+                        className={
+                          allImages.length === 1
+                            ? "w-full h-auto max-h-[480px] rounded-xl object-contain"
+                            : "h-40 w-[calc(50%-4px)] rounded-lg border border-border/50 bg-background object-contain sm:h-48"
+                        }
+                      />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex h-48 w-full items-center justify-center text-muted-foreground">
+                    <Calendar size={40} />
+                  </div>
+                )}
               </div>
-            )}
-            {event.description && (
-              <div
-                className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                dangerouslySetInnerHTML={{ __html: event.description }}
-              />
-            )}
-            <MediaGallery
-              imageUrls={(event.imageUrls?.length ? event.imageUrls : event.imageUrl ? [event.imageUrl] : []).slice(1)}
-              videoUrls={event.videoUrls || []}
-              alt={event.title}
-              compact
-            />
-          </CardContent>
-        </Card>
+
+              {/* Text column */}
+              <CardContent className="flex-1 p-8">
+                <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
+                <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+                  <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
+                </div>
+                {event.location && (
+                  <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground">
+                    <MapPin size={16} className="text-primary" /><span>{event.location}</span>
+                  </div>
+                )}
+                {event.description && (
+                  <div
+                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                    dangerouslySetInnerHTML={{ __html: event.description }}
+                  />
+                )}
+                <VideoGallery videoUrls={event.videoUrls || []} />
+              </CardContent>
+            </div>
+          </Card>
+        );
+      })}
+    </div>
+  );
+}
+
+function VideoGallery({ videoUrls }: { videoUrls: string[] }) {
+  if (!videoUrls.length) return null;
+  return (
+    <div className="mt-5 space-y-3">
+      {videoUrls.map((url, index) => (
+        <video
+          key={`video-${url}-${index}`}
+          src={url}
+          controls
+          preload="metadata"
+          className="aspect-video w-full rounded-xl bg-black object-contain"
+        />
       ))}
     </div>
   );
