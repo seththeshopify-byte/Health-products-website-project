@@ -234,7 +234,7 @@ function EventGrid({
         <Card key={event.id} className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
           <div className="aspect-[21/9] overflow-hidden bg-muted">
             {(event.imageUrls?.[0] || event.imageUrl) ? (
-              <img src={event.imageUrls?.[0] || event.imageUrl} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
+              <img src={event.imageUrls?.[0] || event.imageUrl} alt={event.title} className="h-full w-full object-contain" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Calendar size={40} /></div>
             )}
@@ -293,7 +293,7 @@ function MediaGallery({
               key={`image-${url}-${index}`}
               src={url}
               alt={`${alt} photo ${index + 1}`}
-              className="aspect-square w-full rounded-xl border object-cover"
+              className="aspect-square w-full rounded-xl border bg-muted object-contain"
             />
           ))}
         </div>
