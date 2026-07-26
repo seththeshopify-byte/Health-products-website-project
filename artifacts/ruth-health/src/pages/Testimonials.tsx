@@ -218,7 +218,7 @@ function EventGrid({
 }) {
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 gap-8 pb-12 md:grid-cols-2 lg:grid-cols-3">
+      <div className="space-y-8 pb-12">
         {[1, 2, 3].map((item) => <div key={item} className="h-[350px] w-full animate-pulse rounded-2xl bg-muted" />)}
       </div>
     );
@@ -229,17 +229,17 @@ function EventGrid({
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 pb-12 md:grid-cols-2 lg:grid-cols-3">
+    <div className="space-y-8 pb-12">
       {events.map((event) => (
         <Card key={event.id} className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:shadow-lg">
-          <div className="aspect-video overflow-hidden bg-muted">
+          <div className="aspect-[21/9] overflow-hidden bg-muted">
             {(event.imageUrls?.[0] || event.imageUrl) ? (
               <img src={event.imageUrls?.[0] || event.imageUrl} alt={event.title} className="h-full w-full object-cover transition-transform duration-500 hover:scale-105" />
             ) : (
               <div className="flex h-full w-full items-center justify-center text-muted-foreground"><Calendar size={40} /></div>
             )}
           </div>
-          <CardContent className="p-6">
+          <CardContent className="p-8">
             <h3 className="mb-3 font-serif text-xl">{event.title}</h3>
             <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
               <Calendar size={16} className="text-primary" /><span>{formatDate(event.eventDate)}</span>
