@@ -208,6 +208,17 @@ function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | un
   );
 }
 
+// Splits a chunk of rich HTML (e.g. the "Event Highlights", "Featured Speakers", "Why
+// You Should Attend" boxes) into its separate top-level blocks, so a two-column layout
+// can distribute each box evenly instead of treating the whole description as one piece.
+function splitHtmlIntoBlocks(html: string): string[] {
+  if (typeof document === "undefined" || !html) return html ? [html] : [];
+  const container = document.createElement("div");
+  container.innerHTML = html;
+  const blocks = Array.from(container.children).map((child) => child.outerHTML);
+  return blocks.length > 0 ? blocks : [html];
+}
+
 function EventGrid({
   events,
   isLoading,
@@ -262,46 +273,64 @@ function EventGrid({
                 </a>
               )}
 
-              {/*
-                True newspaper-style columns: the image and every content block flow down
-                the left column first, then continue automatically into the right column.
-                Nothing floats, so both columns stay perfectly aligned with no leftover gaps.
-              */}
-              <div className="columns-1 gap-8 sm:columns-2 [&>*]:mb-6 [&>*]:break-inside-avoid">
-                {event.description && (
-                  <div
-                    className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                    dangerouslySetInnerHTML={{ __html: event.description }}
-                  />
-                )}
+              {(() => {
+                const descBlocks = event.description ? splitHtmlIntoBlocks(event.description) : [];
+                const gridItems: { key: string; node: React.ReactNode }[] = [];
 
-                {allImages.length === 1 && (
-                  <img
-                    src={allImages[0]}
-                    alt={`${event.title} photo`}
-                    className="w-full rounded-xl border border-border/50 bg-muted object-contain"
-                  />
-                )}
-                {allImages.length > 1 &&
-                  allImages.map((url, index) => (
-                    <img
-                      key={`event-image-${url}-${index}`}
-                      src={url}
-                      alt={`${event.title} photo ${index + 1}`}
-                      className="w-full rounded-xl border border-border/50 bg-muted object-contain"
-                    />
-                  ))}
+                descBlocks.forEach((block, index) => {
+                  gridItems.push({
+                    key: `desc-${index}`,
+                    node: (
+                      <div
+                        className="text-sm leading-relaxed text-muted-foreground [&_h2]:font-serif [&_h2]:text-lg [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-base [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                        dangerouslySetInnerHTML={{ __html: block }}
+                      />
+                    ),
+                  });
+                });
 
-                {(event.videoUrls || []).map((url: string, index: number) => (
-                  <video
-                    key={`event-video-${url}-${index}`}
-                    src={url}
-                    controls
-                    preload="metadata"
-                    className="aspect-video w-full rounded-xl bg-black object-contain"
-                  />
-                ))}
-              </div>
+                allImages.forEach((url, index) => {
+                  gridItems.push({
+                    key: `img-${index}`,
+                    node: (
+                      <img
+                        src={url}
+                        alt={`${event.title} photo ${index + 1}`}
+                        className="h-full w-full rounded-xl border border-border/50 bg-muted object-contain"
+                      />
+                    ),
+                  });
+                });
+
+                (event.videoUrls || []).forEach((url: string, index: number) => {
+                  gridItems.push({
+                    key: `vid-${index}`,
+                    node: (
+                      <video
+                        src={url}
+                        controls
+                        preload="metadata"
+                        className="h-full w-full rounded-xl bg-black object-contain"
+                      />
+                    ),
+                  });
+                });
+
+                return (
+                  /*
+                    Real grid, not free-flowing columns: each row's left and right items
+                    stretch to match the taller one, so every row's top edges and bottom
+                    edges line up horizontally — including the very last row.
+                  */
+                  <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    {gridItems.map((item) => (
+                      <div key={item.key} className="flex h-full items-center">
+                        {item.node}
+                      </div>
+                    ))}
+                  </div>
+                );
+              })()}
             </CardContent>
           </Card>
         );
