@@ -178,7 +178,10 @@ function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | un
               <div className="mb-6 flex text-amber-400">
                 {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} fill="currentColor" />)}
               </div>
-              <p className="mb-8 text-lg leading-relaxed text-foreground italic">“{testimonial.text}”</p>
+              <p
+                className="mb-8 text-lg leading-relaxed text-foreground italic"
+                dangerouslySetInnerHTML={{ __html: `&ldquo;${testimonial.text}&rdquo;` }}
+              />
               <MediaGallery
                 imageUrls={(testimonial.photoUrls?.length ? testimonial.photoUrls : testimonial.photoUrl ? [testimonial.photoUrl] : []).slice(1)}
                 videoUrls={testimonial.videoUrls?.length ? testimonial.videoUrls : testimonial.videoUrl ? [testimonial.videoUrl] : []}
@@ -287,13 +290,13 @@ function MediaGallery({
         />
       ))}
       {imageUrls.length > 0 && (
-        <div className={`grid gap-3 ${compact ? "grid-cols-2" : "grid-cols-2 sm:grid-cols-3 md:grid-cols-4"}`}>
+        <div className="flex flex-wrap gap-3">
           {imageUrls.map((url, index) => (
             <img
               key={`image-${url}-${index}`}
               src={url}
               alt={`${alt} photo ${index + 1}`}
-              className="aspect-square w-full rounded-xl border bg-muted object-contain"
+              className={`w-auto rounded-xl border bg-muted object-contain ${compact ? "h-28" : "h-40"}`}
             />
           ))}
         </div>
