@@ -28,7 +28,7 @@ export default function CourseDetail() {
       return;
     }
 
-    enrollMutation.mutate({ data: { courseId: id } }, {
+    enrollMutation.mutate({ id }, {
       onSuccess: () => {
         toast({ title: "Successfully enrolled", description: "You now have access to this course material." });
         queryClient.invalidateQueries({ queryKey: getGetCourseQueryKey(id) });
