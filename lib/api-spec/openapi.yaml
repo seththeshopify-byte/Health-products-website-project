@@ -410,6 +410,167 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  /courses/{id}/quiz:
+    get:
+      operationId: getCourseQuiz
+      tags: [courses]
+      summary: Get quiz questions for a course (no correct answers revealed)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz questions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuizQuestionPublic"
+
+  /courses/{id}/quiz/submit:
+    post:
+      operationId: submitCourseQuiz
+      tags: [courses]
+      summary: Submit quiz answers and get score
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizSubmission"
+      responses:
+        "200":
+          description: Quiz result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResult"
+
+  /courses/{id}/quiz/result:
+    get:
+      operationId: getCourseQuizResult
+      tags: [courses]
+      summary: Get the user's best quiz result for a course
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Best quiz result or null if never attempted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizResult"
+
+  /courses/{id}/quiz/questions:
+    get:
+      operationId: listCourseQuizQuestions
+      tags: [courses]
+      summary: List quiz questions with correct answers (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Quiz questions with correct answers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/QuizQuestion"
+    post:
+      operationId: createCourseQuizQuestion
+      tags: [courses]
+      summary: Add a quiz question to a course (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizQuestionInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizQuestion"
+
+  /courses/{id}/quiz/questions/{questionId}:
+    patch:
+      operationId: updateCourseQuizQuestion
+      tags: [courses]
+      summary: Update a quiz question (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QuizQuestionInput"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QuizQuestion"
+    delete:
+      operationId: deleteCourseQuizQuestion
+      tags: [courses]
+      summary: Delete a quiz question (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: questionId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   # TESTIMONIALS
   /testimonials:
     get:
@@ -1248,6 +1409,95 @@ components:
           type: ["string", "null"]
         contentBody:
           type: ["string", "null"]
+
+    # QUIZ
+    QuizOption:
+      type: object
+      required: [text, isCorrect]
+      properties:
+        text:
+          type: string
+        isCorrect:
+          type: boolean
+
+    QuizOptionPublic:
+      type: object
+      required: [text]
+      properties:
+        text:
+          type: string
+
+    QuizQuestion:
+      type: object
+      required: [id, courseId, questionHtml, options, orderIndex]
+      properties:
+        id:
+          type: integer
+        courseId:
+          type: integer
+        questionHtml:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizOption"
+        orderIndex:
+          type: integer
+
+    QuizQuestionPublic:
+      type: object
+      required: [id, questionHtml, options, orderIndex]
+      properties:
+        id:
+          type: integer
+        questionHtml:
+          type: string
+        options:
+          type: array
+          items:
+            $ref: "#/components/schemas/QuizOptionPublic"
+        orderIndex:
+          type: integer
+
+    QuizQuestionInput:
+      type: object
+      required: [questionHtml, options]
+      properties:
+        questionHtml:
+          type: string
+        options:
+          type: array
+          minItems: 2
+          items:
+            $ref: "#/components/schemas/QuizOption"
+        orderIndex:
+          type: integer
+
+    QuizSubmission:
+      type: object
+      required: [answers]
+      properties:
+        answers:
+          type: array
+          items:
+            type: object
+            required: [questionId, selectedOptionIndex]
+            properties:
+              questionId:
+                type: integer
+              selectedOptionIndex:
+                type: integer
+
+    QuizResult:
+      type: object
+      required: [score, total, passed]
+      properties:
+        score:
+          type: integer
+        total:
+          type: integer
+        passed:
+          type: boolean
 
     # TESTIMONIALS
     Testimonial:
