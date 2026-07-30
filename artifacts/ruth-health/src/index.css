@@ -167,82 +167,156 @@
 @media (max-width: 768px) {
 
   /* --- Base font size ---
-     Reducing html font-size scales ALL rem-based sizes proportionally.
-     14px instead of the browser default 16px = ~12.5% smaller overall. */
+     13px base shrinks ALL rem-based sizes proportionally across every page. */
   html {
-    font-size: 14px;
+    font-size: 13px;
   }
 
-  /* --- Body text --- */
   body {
-    font-size: 0.875rem;
-    line-height: 1.5;
+    font-size: 0.85rem;
+    line-height: 1.45;
   }
 
   /* --- Headings --- */
-  h1 { font-size: 1.6rem;  line-height: 1.2; }
-  h2 { font-size: 1.35rem; line-height: 1.25; }
-  h3 { font-size: 1.15rem; line-height: 1.3; }
-  h4 { font-size: 1rem;    line-height: 1.35; }
-  h5 { font-size: 0.9rem;  line-height: 1.4; }
-  h6 { font-size: 0.85rem; line-height: 1.4; }
+  h1 { font-size: 1.4rem;  line-height: 1.2; }
+  h2 { font-size: 1.2rem;  line-height: 1.25; }
+  h3 { font-size: 1.05rem; line-height: 1.3; }
+  h4 { font-size: 0.95rem; line-height: 1.35; }
+  h5 { font-size: 0.88rem; line-height: 1.4; }
+  h6 { font-size: 0.82rem; line-height: 1.4; }
 
-  /* --- Paragraphs & general text --- */
-  p, li, span, a, label, td, th, input, textarea, select, button {
-    font-size: 0.85rem;
+  /* --- Body text, links, labels, buttons --- */
+  p, li, span, a, label, td, th,
+  input, textarea, select, button {
+    font-size: 0.82rem;
   }
 
   /* --- Images ---
-     Forces all images to fit inside their container and never overflow. */
+     Full-width, never overflow, scale naturally. */
   img {
     max-width: 100%;
     height: auto;
     display: block;
   }
 
-  /* --- Tables ---
-     Makes tables scrollable horizontally on small screens
-     so they never break the page layout. */
-  table {
-    width: 100%;
-    font-size: 0.78rem;
-    border-collapse: collapse;
+  /* -------------------------------------------------------
+     SIDE SPACES FIX
+     Override Tailwind's large padding/margin utilities
+     so containers hug the screen edges on mobile.
+  ------------------------------------------------------- */
+
+  /* Remove or minimise outer horizontal padding on wrappers */
+  .container,
+  [class*="px-4"],
+  [class*="px-5"],
+  [class*="px-6"],
+  [class*="px-8"],
+  [class*="px-10"],
+  [class*="px-12"],
+  [class*="px-16"] {
+    padding-left: 0.6rem !important;
+    padding-right: 0.6rem !important;
   }
 
-  /* Allow tables to scroll sideways if needed */
-  .overflow-x-auto,
+  /* Same for margin-based centering */
+  [class*="mx-4"],
+  [class*="mx-5"],
+  [class*="mx-6"],
+  [class*="mx-8"],
+  [class*="mx-10"],
+  [class*="mx-12"],
+  [class*="mx-16"] {
+    margin-left: 0.4rem !important;
+    margin-right: 0.4rem !important;
+  }
+
+  /* Max-width containers — let them fill the full screen width */
+  .max-w-sm,
+  .max-w-md,
+  .max-w-lg,
+  .max-w-xl,
+  .max-w-2xl,
+  .max-w-3xl,
+  .max-w-4xl,
+  .max-w-5xl,
+  .max-w-6xl,
+  .max-w-7xl,
+  .max-w-screen-sm,
+  .max-w-screen-md,
+  .max-w-screen-lg,
+  .max-w-screen-xl {
+    max-width: 100% !important;
+    width: 100% !important;
+  }
+
+  /* Section / main / article outer spacing */
+  section, main, article, header, footer {
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
+  }
+
+  /* Cards — reduce inner padding so they don't feel bloated */
+  .card,
+  [class*="rounded-"],
+  [class*="p-4"],
+  [class*="p-5"],
+  [class*="p-6"],
+  [class*="p-8"] {
+    padding: 0.6rem !important;
+  }
+
+  /* --- Tables --- */
   table {
+    width: 100%;
+    font-size: 0.75rem;
+    border-collapse: collapse;
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
 
   th, td {
-    padding: 0.4rem 0.5rem;
-    font-size: 0.78rem;
+    padding: 0.35rem 0.45rem;
+    font-size: 0.75rem;
     white-space: nowrap;
-  }
-
-  /* --- Cards & containers ---
-     Tighten inner padding on small screens. */
-  .card, [class*="card"] {
-    padding: 0.75rem;
   }
 
   /* --- Buttons --- */
   button, [role="button"], .btn {
-    font-size: 0.82rem;
-    padding: 0.45rem 0.9rem;
+    font-size: 0.8rem;
+    padding: 0.4rem 0.75rem;
   }
 
-  /* --- Navigation --- */
+  /* --- Navigation bar --- */
   nav, header {
-    font-size: 0.85rem;
+    font-size: 0.82rem;
+    padding-left: 0.6rem;
+    padding-right: 0.6rem;
   }
 
-  /* --- Section / page padding --- */
-  section, main, article {
-    padding-left: 1rem;
-    padding-right: 1rem;
+  /* --- Gap between stacked sections --- */
+  [class*="gap-6"],
+  [class*="gap-8"],
+  [class*="gap-10"],
+  [class*="gap-12"] {
+    gap: 0.75rem !important;
+  }
+
+  /* --- Vertical spacing between elements --- */
+  [class*="py-6"],
+  [class*="py-8"],
+  [class*="py-10"],
+  [class*="py-12"],
+  [class*="py-16"] {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  [class*="my-6"],
+  [class*="my-8"],
+  [class*="my-10"],
+  [class*="my-12"] {
+    margin-top: 0.75rem !important;
+    margin-bottom: 0.75rem !important;
   }
 }
