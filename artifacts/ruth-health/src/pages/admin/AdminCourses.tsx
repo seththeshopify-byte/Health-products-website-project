@@ -5,6 +5,11 @@ import {
   useCreateCourse,
   useUpdateCourse,
   useDeleteCourse,
+  useListCourseQuizQuestions,
+  getListCourseQuizQuestionsQueryKey,
+  useCreateCourseQuizQuestion,
+  useUpdateCourseQuizQuestion,
+  useDeleteCourseQuizQuestion,
 } from "@workspace/api-client-react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -13,11 +18,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Edit2, Trash2, Image as ImageIcon, Video } from "lucide-react";
+import { Plus, Edit2, Trash2, Image as ImageIcon, Video, BookOpen, ChevronLeft } from "lucide-react";
 import { MediaUploader } from "@/components/MediaUploader";
 
 // ---------------------------------------------------------------------------
-// Helpers — identical to the pattern used in AdminTestimonials
+// Helpers
 // ---------------------------------------------------------------------------
 
 function sanitizeHtml(html: string): string {
@@ -63,7 +68,7 @@ function RichTextField({
       ref={ref}
       contentEditable
       suppressContentEditableWarning
-      onPaste={(e) => {
+      onPaste={() => {
         setTimeout(() => {
           if (ref.current) {
             const clean = sanitizeHtml(ref.current.innerHTML);
@@ -99,7 +104,7 @@ function HtmlSourceField({
 }
 
 // ---------------------------------------------------------------------------
-// Form state
+// Course form state
 // ---------------------------------------------------------------------------
 
 const emptyForm = {
@@ -112,7 +117,291 @@ const emptyForm = {
 };
 
 // ---------------------------------------------------------------------------
-// Component
+// Quiz question form state
+// ---------------------------------------------------------------------------
+
+const emptyQuestionForm = {
+  questionHtml: "",
+  options: [
+    { text: "", isCorrect: false },
+    { text: "", isCorrect: false },
+    { text: "", isCorrect: false },
+    { text: "", isCorrect: false },
+  ],
+};
+
+// ---------------------------------------------------------------------------
+// Quiz Manager sub-component
+// ---------------------------------------------------------------------------
+
+function QuizManager({ courseId, courseName }: { courseId: number; courseName: string }) {
+  const { data: questions, isLoading } = useListCourseQuizQuestions(courseId, {
+    query: { queryKey: getListCourseQuizQuestionsQueryKey(courseId) },
+  });
+  const createMutation = useCreateCourseQuizQuestion();
+  const updateMutation = useUpdateCourseQuizQuestion();
+  const deleteMutation = useDeleteCourseQuizQuestion();
+  const queryClient = useQueryClient();
+  const { toast } = useToast();
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingQuestionId, setEditingQuestionId] = useState<number | null>(null);
+  const [questionForm, setQuestionForm] = useState(emptyQuestionForm);
+  const [questionMode, setQuestionMode] = useState<"paste" | "html">("paste");
+  const [formKey, setFormKey] = useState(0);
+
+  const invalidate = () =>
+    queryClient.invalidateQueries({ queryKey: getListCourseQuizQuestionsQueryKey(courseId) });
+
+  const openCreate = () => {
+    setEditingQuestionId(null);
+    setQuestionForm(emptyQuestionForm);
+    setFormKey((k) => k + 1);
+    setQuestionMode("paste");
+    setIsModalOpen(true);
+  };
+
+  const openEdit = (q: any) => {
+    setEditingQuestionId(q.id);
+    setQuestionForm({
+      questionHtml: q.questionHtml,
+      options: q.options.length >= 4
+        ? q.options
+        : [
+            ...q.options,
+            ...Array(4 - q.options.length).fill({ text: "", isCorrect: false }),
+          ],
+    });
+    setFormKey((k) => k + 1);
+    setQuestionMode("paste");
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = (id: number) => {
+    if (!confirm("Delete this question?")) return;
+    deleteMutation.mutate(
+      { id: courseId, questionId: id },
+      {
+        onSuccess: () => {
+          void invalidate();
+          toast({ title: "Question deleted" });
+        },
+      }
+    );
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const correctCount = questionForm.options.filter((o) => o.isCorrect).length;
+    if (correctCount !== 1) {
+      toast({ title: "Validation error", description: "Exactly one option must be marked as correct.", variant: "destructive" });
+      return;
+    }
+    const filledOptions = questionForm.options.filter((o) => o.text.trim());
+    if (filledOptions.length < 2) {
+      toast({ title: "Validation error", description: "At least 2 answer options are required.", variant: "destructive" });
+      return;
+    }
+    const payload = {
+      questionHtml: sanitizeHtml(questionForm.questionHtml),
+      options: filledOptions,
+      orderIndex: editingQuestionId ? undefined : (questions?.length ?? 0),
+    };
+    const onSuccess = () => {
+      void invalidate();
+      setIsModalOpen(false);
+      toast({ title: editingQuestionId ? "Question updated" : "Question added" });
+    };
+    if (editingQuestionId) {
+      updateMutation.mutate({ id: courseId, questionId: editingQuestionId, data: payload }, { onSuccess });
+    } else {
+      createMutation.mutate({ id: courseId, data: payload }, { onSuccess });
+    }
+  };
+
+  const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  const setOptionText = (index: number, text: string) => {
+    setQuestionForm((prev) => {
+      const options = [...prev.options];
+      options[index] = { ...options[index], text };
+      return { ...prev, options };
+    });
+  };
+
+  const setCorrectOption = (index: number) => {
+    setQuestionForm((prev) => ({
+      ...prev,
+      options: prev.options.map((o, i) => ({ ...o, isCorrect: i === index })),
+    }));
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl font-serif">Quiz — {courseName}</h2>
+          <p className="text-sm text-muted-foreground mt-1">
+            {questions?.length ?? 0} question(s) · Pass mark: 70% (7 out of 10)
+          </p>
+        </div>
+        <Button onClick={openCreate} className="gap-2" disabled={(questions?.length ?? 0) >= 10}>
+          <Plus size={16} /> Add Question
+        </Button>
+      </div>
+
+      {(questions?.length ?? 0) >= 10 && (
+        <p className="text-sm text-muted-foreground italic">Maximum of 10 questions reached.</p>
+      )}
+
+      <div className="overflow-hidden rounded-lg border bg-card">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-10">#</TableHead>
+              <TableHead>Question</TableHead>
+              <TableHead>Options</TableHead>
+              <TableHead className="w-24" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="py-8 text-center">Loading...</TableCell>
+              </TableRow>
+            ) : !questions?.length ? (
+              <TableRow>
+                <TableCell colSpan={4} className="py-8 text-center text-muted-foreground">
+                  No questions yet. Add your first question to enable the quiz.
+                </TableCell>
+              </TableRow>
+            ) : (
+              questions.map((q, idx) => (
+                <TableRow key={q.id}>
+                  <TableCell className="text-muted-foreground">{idx + 1}</TableCell>
+                  <TableCell>
+                    <div
+                      className="line-clamp-2 text-sm [&_*]:inline"
+                      dangerouslySetInnerHTML={{ __html: q.questionHtml }}
+                    />
+                  </TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {(q.options as any[]).length} options ·{" "}
+                    <span className="text-green-600 font-medium">
+                      ✓ {(q.options as any[]).find((o: any) => o.isCorrect)?.text?.slice(0, 20) ?? "?"}
+                    </span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex justify-end gap-2">
+                      <Button variant="ghost" size="icon" onClick={() => openEdit(q)}>
+                        <Edit2 size={16} />
+                      </Button>
+                      <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(q.id)}>
+                        <Trash2 size={16} />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[640px]">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>{editingQuestionId ? "Edit Question" : "Add Question"}</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-5 py-4">
+              {/* Question text */}
+              <div className="grid gap-2">
+                <div className="flex items-center justify-between">
+                  <Label>Question Text</Label>
+                  <div className="flex rounded-full border bg-muted p-0.5 text-xs">
+                    <button
+                      type="button"
+                      onClick={() => setQuestionMode("paste")}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${questionMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+                    >
+                      Paste formatted
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setQuestionMode("html")}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${questionMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
+                    >
+                      Paste HTML
+                    </button>
+                  </div>
+                </div>
+                {questionMode === "paste" ? (
+                  <RichTextField
+                    key={`q-rich-${formKey}`}
+                    value={questionForm.questionHtml}
+                    onChange={(html) => setQuestionForm((prev) => ({ ...prev, questionHtml: html }))}
+                  />
+                ) : (
+                  <>
+                    <HtmlSourceField
+                      key={`q-html-${formKey}`}
+                      value={questionForm.questionHtml}
+                      onChange={(html) => setQuestionForm((prev) => ({ ...prev, questionHtml: html }))}
+                    />
+                    <div className="grid gap-1.5">
+                      <span className="text-xs font-medium text-muted-foreground">Preview</span>
+                      <div
+                        className="min-h-[60px] rounded-md border bg-card p-3 text-sm"
+                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(questionForm.questionHtml) || '<span class="text-muted-foreground">Nothing yet…</span>' }}
+                      />
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Answer options */}
+              <div className="grid gap-3">
+                <Label>Answer Options <span className="text-muted-foreground font-normal">(tick the correct one)</span></Label>
+                {questionForm.options.map((option, idx) => (
+                  <div key={idx} className="flex items-center gap-3">
+                    <input
+                      type="radio"
+                      name="correctOption"
+                      checked={option.isCorrect}
+                      onChange={() => setCorrectOption(idx)}
+                      className="h-4 w-4 accent-primary flex-shrink-0"
+                      title="Mark as correct answer"
+                    />
+                    <Input
+                      value={option.text}
+                      onChange={(e) => setOptionText(idx, e.target.value)}
+                      placeholder={`Option ${String.fromCharCode(65 + idx)}`}
+                      className="flex-1"
+                    />
+                    {option.isCorrect && (
+                      <span className="text-xs text-green-600 font-medium flex-shrink-0">Correct</span>
+                    )}
+                  </div>
+                ))}
+                <p className="text-xs text-muted-foreground">Click the radio button on the left to mark an option as the correct answer.</p>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
+              <Button type="submit" disabled={isSaving}>
+                {isSaving ? "Saving..." : "Save Question"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Main component
 // ---------------------------------------------------------------------------
 
 export default function AdminCourses() {
@@ -131,6 +420,7 @@ export default function AdminCourses() {
   const [formKey, setFormKey] = useState(0);
   const [descMode, setDescMode] = useState<"paste" | "html">("paste");
   const [bodyMode, setBodyMode] = useState<"paste" | "html">("paste");
+  const [quizCourse, setQuizCourse] = useState<{ id: number; name: string } | null>(null);
 
   const openCreate = () => {
     setEditingId(null);
@@ -148,11 +438,7 @@ export default function AdminCourses() {
       description: course.description,
       contentUrl: course.contentUrl || "",
       contentBody: course.contentBody || "",
-      photoUrls: course.photoUrls?.length
-        ? course.photoUrls
-        : course.imageUrl
-        ? [course.imageUrl]
-        : [],
+      photoUrls: course.photoUrls?.length ? course.photoUrls : course.imageUrl ? [course.imageUrl] : [],
       videoUrls: course.videoUrls?.length ? course.videoUrls : [],
     });
     setFormKey((k) => k + 1);
@@ -181,8 +467,6 @@ export default function AdminCourses() {
       description: sanitizeHtml(formData.description),
       contentUrl: formData.contentUrl || null,
       contentBody: formData.contentBody || null,
-      photoUrls: formData.photoUrls,
-      videoUrls: formData.videoUrls,
       imageUrl: formData.photoUrls[0] ?? null,
     };
     const onSuccess = () => {
@@ -195,6 +479,21 @@ export default function AdminCourses() {
   };
 
   const isSaving = createMutation.isPending || updateMutation.isPending;
+
+  // Show quiz manager when a course is selected
+  if (quizCourse) {
+    return (
+      <div className="space-y-4">
+        <button
+          onClick={() => setQuizCourse(null)}
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary transition-colors"
+        >
+          <ChevronLeft size={16} /> Back to Courses
+        </button>
+        <QuizManager courseId={quizCourse.id} courseName={quizCourse.name} />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -215,8 +514,8 @@ export default function AdminCourses() {
               <TableHead className="w-16">Image</TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Resource URL</TableHead>
-              <TableHead>Media</TableHead>
-              <TableHead className="w-24" />
+              <TableHead>Quiz</TableHead>
+              <TableHead className="w-32" />
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -244,16 +543,21 @@ export default function AdminCourses() {
                   </TableCell>
                   <TableCell>
                     <div className="font-medium">{course.name}</div>
-                    <div className="line-clamp-1 text-sm text-muted-foreground">{course.description}</div>
                   </TableCell>
                   <TableCell>
                     <div className="max-w-[200px] truncate text-sm text-muted-foreground">
                       {course.contentUrl || "-"}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {course.photoUrls?.length || (course.imageUrl ? 1 : 0)} photo(s),{" "}
-                    {course.videoUrls?.length || 0} video(s)
+                  <TableCell>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => setQuizCourse({ id: course.id, name: course.name })}
+                    >
+                      <BookOpen size={14} /> Manage Quiz
+                    </Button>
                   </TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
@@ -291,7 +595,7 @@ export default function AdminCourses() {
                 />
               </div>
 
-              {/* Short description — rich text */}
+              {/* Short description */}
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <Label>Short Description</Label>
@@ -299,18 +603,14 @@ export default function AdminCourses() {
                     <button
                       type="button"
                       onClick={() => setDescMode("paste")}
-                      className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                        descMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"
-                      }`}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${descMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
                     >
                       Paste formatted text
                     </button>
                     <button
                       type="button"
                       onClick={() => setDescMode("html")}
-                      className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                        descMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"
-                      }`}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${descMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
                     >
                       Paste HTML code
                     </button>
@@ -339,9 +639,7 @@ export default function AdminCourses() {
                       <div
                         className="min-h-[80px] rounded-md border bg-card p-4 text-sm leading-relaxed [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
                         dangerouslySetInnerHTML={{
-                          __html:
-                            sanitizeHtml(formData.description) ||
-                            '<span class="text-muted-foreground">Nothing to preview yet…</span>',
+                          __html: sanitizeHtml(formData.description) || '<span class="text-muted-foreground">Nothing to preview yet…</span>',
                         }}
                       />
                     </div>
@@ -360,7 +658,7 @@ export default function AdminCourses() {
                 />
               </div>
 
-              {/* Detailed content — rich text */}
+              {/* Detailed content */}
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
                   <Label>Detailed Content</Label>
@@ -368,18 +666,14 @@ export default function AdminCourses() {
                     <button
                       type="button"
                       onClick={() => setBodyMode("paste")}
-                      className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                        bodyMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"
-                      }`}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${bodyMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
                     >
                       Paste formatted text
                     </button>
                     <button
                       type="button"
                       onClick={() => setBodyMode("html")}
-                      className={`rounded-full px-3 py-1 font-medium transition-colors ${
-                        bodyMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"
-                      }`}
+                      className={`rounded-full px-3 py-1 font-medium transition-colors ${bodyMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}
                     >
                       Paste HTML code
                     </button>
@@ -408,9 +702,7 @@ export default function AdminCourses() {
                       <div
                         className="min-h-[80px] rounded-md border bg-card p-4 text-sm leading-relaxed [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
                         dangerouslySetInnerHTML={{
-                          __html:
-                            sanitizeHtml(formData.contentBody) ||
-                            '<span class="text-muted-foreground">Nothing to preview yet…</span>',
+                          __html: sanitizeHtml(formData.contentBody) || '<span class="text-muted-foreground">Nothing to preview yet…</span>',
                         }}
                       />
                     </div>
@@ -434,9 +726,7 @@ export default function AdminCourses() {
             </div>
 
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
-                Cancel
-              </Button>
+              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>Cancel</Button>
               <Button type="submit" disabled={isSaving}>
                 {isSaving ? "Saving..." : "Save Course"}
               </Button>
