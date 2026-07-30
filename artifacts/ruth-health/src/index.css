@@ -166,8 +166,7 @@
    ============================================================ */
 @media (max-width: 768px) {
 
-  /* --- Base font size ---
-     13px base shrinks ALL rem-based sizes proportionally across every page. */
+  /* --- Base font --- */
   html {
     font-size: 13px;
   }
@@ -185,14 +184,12 @@
   h5 { font-size: 0.88rem; line-height: 1.4; }
   h6 { font-size: 0.82rem; line-height: 1.4; }
 
-  /* --- Body text, links, labels, buttons --- */
   p, li, span, a, label, td, th,
   input, textarea, select, button {
     font-size: 0.82rem;
   }
 
-  /* --- Images ---
-     Full-width, never overflow, scale naturally. */
+  /* --- Images --- */
   img {
     max-width: 100%;
     height: auto;
@@ -200,12 +197,8 @@
   }
 
   /* -------------------------------------------------------
-     SIDE SPACES FIX
-     Override Tailwind's large padding/margin utilities
-     so containers hug the screen edges on mobile.
+     KILL ALL LARGE SIDE PADDING / MARGINS
   ------------------------------------------------------- */
-
-  /* Remove or minimise outer horizontal padding on wrappers */
   .container,
   [class*="px-4"],
   [class*="px-5"],
@@ -214,58 +207,136 @@
   [class*="px-10"],
   [class*="px-12"],
   [class*="px-16"] {
-    padding-left: 0.6rem !important;
-    padding-right: 0.6rem !important;
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
   }
 
-  /* Same for margin-based centering */
   [class*="mx-4"],
   [class*="mx-5"],
   [class*="mx-6"],
   [class*="mx-8"],
   [class*="mx-10"],
   [class*="mx-12"],
-  [class*="mx-16"] {
-    margin-left: 0.4rem !important;
-    margin-right: 0.4rem !important;
+  [class*="mx-16"],
+  [class*="mx-auto"] {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
-  /* Max-width containers — let them fill the full screen width */
-  .max-w-sm,
-  .max-w-md,
-  .max-w-lg,
-  .max-w-xl,
-  .max-w-2xl,
-  .max-w-3xl,
-  .max-w-4xl,
-  .max-w-5xl,
-  .max-w-6xl,
-  .max-w-7xl,
-  .max-w-screen-sm,
-  .max-w-screen-md,
-  .max-w-screen-lg,
-  .max-w-screen-xl {
+  .max-w-sm, .max-w-md, .max-w-lg, .max-w-xl,
+  .max-w-2xl, .max-w-3xl, .max-w-4xl, .max-w-5xl,
+  .max-w-6xl, .max-w-7xl,
+  .max-w-screen-sm, .max-w-screen-md,
+  .max-w-screen-lg, .max-w-screen-xl {
     max-width: 100% !important;
     width: 100% !important;
   }
 
-  /* Section / main / article outer spacing */
-  section, main, article, header, footer {
-    padding-left: 0.6rem;
-    padding-right: 0.6rem;
-  }
+  /* -------------------------------------------------------
+     KILL ALL LARGE VERTICAL SPACING
+     Every py-*, my-*, gap-*, space-y-* becomes tiny.
+  ------------------------------------------------------- */
 
-  /* Cards — reduce inner padding so they don't feel bloated */
-  .card,
-  [class*="rounded-"],
+  /* Vertical padding — all sizes crushed to tiny values */
+  [class*="py-1"]  { padding-top: 0.15rem !important; padding-bottom: 0.15rem !important; }
+  [class*="py-2"]  { padding-top: 0.2rem  !important; padding-bottom: 0.2rem  !important; }
+  [class*="py-3"]  { padding-top: 0.3rem  !important; padding-bottom: 0.3rem  !important; }
+  [class*="py-4"]  { padding-top: 0.35rem !important; padding-bottom: 0.35rem !important; }
+  [class*="py-5"]  { padding-top: 0.4rem  !important; padding-bottom: 0.4rem  !important; }
+  [class*="py-6"]  { padding-top: 0.5rem  !important; padding-bottom: 0.5rem  !important; }
+  [class*="py-8"]  { padding-top: 0.6rem  !important; padding-bottom: 0.6rem  !important; }
+  [class*="py-10"] { padding-top: 0.7rem  !important; padding-bottom: 0.7rem  !important; }
+  [class*="py-12"] { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+  [class*="py-16"] { padding-top: 0.8rem  !important; padding-bottom: 0.8rem  !important; }
+  [class*="py-20"] { padding-top: 0.85rem !important; padding-bottom: 0.85rem !important; }
+  [class*="py-24"] { padding-top: 0.9rem  !important; padding-bottom: 0.9rem  !important; }
+
+  /* Vertical margin */
+  [class*="my-1"]  { margin-top: 0.1rem  !important; margin-bottom: 0.1rem  !important; }
+  [class*="my-2"]  { margin-top: 0.15rem !important; margin-bottom: 0.15rem !important; }
+  [class*="my-3"]  { margin-top: 0.2rem  !important; margin-bottom: 0.2rem  !important; }
+  [class*="my-4"]  { margin-top: 0.25rem !important; margin-bottom: 0.25rem !important; }
+  [class*="my-5"]  { margin-top: 0.3rem  !important; margin-bottom: 0.3rem  !important; }
+  [class*="my-6"]  { margin-top: 0.35rem !important; margin-bottom: 0.35rem !important; }
+  [class*="my-8"]  { margin-top: 0.4rem  !important; margin-bottom: 0.4rem  !important; }
+  [class*="my-10"] { margin-top: 0.45rem !important; margin-bottom: 0.45rem !important; }
+  [class*="my-12"] { margin-top: 0.5rem  !important; margin-bottom: 0.5rem  !important; }
+  [class*="my-16"] { margin-top: 0.6rem  !important; margin-bottom: 0.6rem  !important; }
+
+  /* Top / bottom margin individually */
+  [class*="mt-4"]  { margin-top: 0.25rem !important; }
+  [class*="mt-5"]  { margin-top: 0.3rem  !important; }
+  [class*="mt-6"]  { margin-top: 0.35rem !important; }
+  [class*="mt-8"]  { margin-top: 0.4rem  !important; }
+  [class*="mt-10"] { margin-top: 0.45rem !important; }
+  [class*="mt-12"] { margin-top: 0.5rem  !important; }
+  [class*="mt-16"] { margin-top: 0.55rem !important; }
+
+  [class*="mb-4"]  { margin-bottom: 0.25rem !important; }
+  [class*="mb-5"]  { margin-bottom: 0.3rem  !important; }
+  [class*="mb-6"]  { margin-bottom: 0.35rem !important; }
+  [class*="mb-8"]  { margin-bottom: 0.4rem  !important; }
+  [class*="mb-10"] { margin-bottom: 0.45rem !important; }
+  [class*="mb-12"] { margin-bottom: 0.5rem  !important; }
+  [class*="mb-16"] { margin-bottom: 0.55rem !important; }
+
+  /* Top / bottom padding individually */
+  [class*="pt-4"]  { padding-top: 0.25rem !important; }
+  [class*="pt-5"]  { padding-top: 0.3rem  !important; }
+  [class*="pt-6"]  { padding-top: 0.35rem !important; }
+  [class*="pt-8"]  { padding-top: 0.4rem  !important; }
+  [class*="pt-10"] { padding-top: 0.45rem !important; }
+  [class*="pt-12"] { padding-top: 0.5rem  !important; }
+  [class*="pt-16"] { padding-top: 0.55rem !important; }
+
+  [class*="pb-4"]  { padding-bottom: 0.25rem !important; }
+  [class*="pb-5"]  { padding-bottom: 0.3rem  !important; }
+  [class*="pb-6"]  { padding-bottom: 0.35rem !important; }
+  [class*="pb-8"]  { padding-bottom: 0.4rem  !important; }
+  [class*="pb-10"] { padding-bottom: 0.45rem !important; }
+  [class*="pb-12"] { padding-bottom: 0.5rem  !important; }
+  [class*="pb-16"] { padding-bottom: 0.55rem !important; }
+
+  /* Gap between grid/flex children */
+  [class*="gap-1"]  { gap: 0.15rem !important; }
+  [class*="gap-2"]  { gap: 0.2rem  !important; }
+  [class*="gap-3"]  { gap: 0.25rem !important; }
+  [class*="gap-4"]  { gap: 0.3rem  !important; }
+  [class*="gap-5"]  { gap: 0.35rem !important; }
+  [class*="gap-6"]  { gap: 0.4rem  !important; }
+  [class*="gap-8"]  { gap: 0.45rem !important; }
+  [class*="gap-10"] { gap: 0.5rem  !important; }
+  [class*="gap-12"] { gap: 0.55rem !important; }
+
+  /* Space-y between stacked children */
+  [class*="space-y-2"] > * + * { margin-top: 0.2rem  !important; }
+  [class*="space-y-3"] > * + * { margin-top: 0.25rem !important; }
+  [class*="space-y-4"] > * + * { margin-top: 0.3rem  !important; }
+  [class*="space-y-5"] > * + * { margin-top: 0.35rem !important; }
+  [class*="space-y-6"] > * + * { margin-top: 0.4rem  !important; }
+  [class*="space-y-8"] > * + * { margin-top: 0.45rem !important; }
+
+  /* -------------------------------------------------------
+     CARDS & ALL-PADDING CLASSES
+  ------------------------------------------------------- */
+  [class*="p-3"],
   [class*="p-4"],
   [class*="p-5"],
   [class*="p-6"],
   [class*="p-8"] {
-    padding: 0.6rem !important;
+    padding: 0.45rem !important;
   }
 
-  /* --- Tables --- */
+  section, main, article {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+    padding-top: 0.4rem;
+    padding-bottom: 0.4rem;
+  }
+
+  /* -------------------------------------------------------
+     TABLES
+  ------------------------------------------------------- */
   table {
     width: 100%;
     font-size: 0.75rem;
@@ -276,47 +347,22 @@
   }
 
   th, td {
-    padding: 0.35rem 0.45rem;
+    padding: 0.3rem 0.4rem;
     font-size: 0.75rem;
     white-space: nowrap;
   }
 
-  /* --- Buttons --- */
+  /* -------------------------------------------------------
+     BUTTONS & NAV
+  ------------------------------------------------------- */
   button, [role="button"], .btn {
     font-size: 0.8rem;
-    padding: 0.4rem 0.75rem;
+    padding: 0.35rem 0.7rem;
   }
 
-  /* --- Navigation bar --- */
   nav, header {
     font-size: 0.82rem;
-    padding-left: 0.6rem;
-    padding-right: 0.6rem;
-  }
-
-  /* --- Gap between stacked sections --- */
-  [class*="gap-6"],
-  [class*="gap-8"],
-  [class*="gap-10"],
-  [class*="gap-12"] {
-    gap: 0.75rem !important;
-  }
-
-  /* --- Vertical spacing between elements --- */
-  [class*="py-6"],
-  [class*="py-8"],
-  [class*="py-10"],
-  [class*="py-12"],
-  [class*="py-16"] {
-    padding-top: 1rem !important;
-    padding-bottom: 1rem !important;
-  }
-
-  [class*="my-6"],
-  [class*="my-8"],
-  [class*="my-10"],
-  [class*="my-12"] {
-    margin-top: 0.75rem !important;
-    margin-bottom: 0.75rem !important;
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
   }
 }
