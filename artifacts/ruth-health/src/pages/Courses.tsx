@@ -5,6 +5,12 @@ import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { PlayCircle, Lock } from "lucide-react";
 
+function stripHtml(html: string): string {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
 export default function Courses() {
   const { data: courses, isLoading } = useListCourses({ query: { queryKey: getListCoursesQueryKey() } });
 
@@ -49,7 +55,7 @@ export default function Courses() {
                 </div>
                 <CardContent className="p-6">
                   <h3 className="font-serif text-xl mb-3 group-hover:text-primary transition-colors">{course.name}</h3>
-                  <p className="text-sm text-muted-foreground line-clamp-2">{course.description}</p>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{stripHtml(course.description)}</p>
                 </CardContent>
               </Card>
             </Link>
