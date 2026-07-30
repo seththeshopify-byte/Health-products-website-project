@@ -54,9 +54,10 @@ export default function CourseDetail() {
             Educational Resource
           </div>
           <h1 className="text-4xl md:text-5xl font-serif mb-6 text-foreground">{course.name}</h1>
-          <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-            {course.description}
-          </p>
+          <div
+            className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto prose prose-neutral [&_h2]:font-serif [&_h2]:text-2xl [&_h3]:font-serif [&_h3]:text-xl [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+            dangerouslySetInnerHTML={{ __html: course.description }}
+          />
         </div>
 
         {!course.isEnrolled ? (
@@ -94,7 +95,6 @@ export default function CourseDetail() {
           <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {course.contentUrl && (
               <div className="aspect-video bg-black rounded-2xl overflow-hidden shadow-lg border border-border">
-                {/* Simulated video player wrapper if it's a URL, or an iframe if it's a youtube embed */}
                 {course.contentUrl.includes('youtube') || course.contentUrl.includes('vimeo') ? (
                   <iframe 
                     src={course.contentUrl} 
