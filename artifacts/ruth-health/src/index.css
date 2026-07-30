@@ -159,3 +159,90 @@
     @apply font-serif;
   }
 }
+
+/* ============================================================
+   MOBILE OVERRIDES — applies only on screens 768px and smaller
+   Desktop is completely untouched.
+   ============================================================ */
+@media (max-width: 768px) {
+
+  /* --- Base font size ---
+     Reducing html font-size scales ALL rem-based sizes proportionally.
+     14px instead of the browser default 16px = ~12.5% smaller overall. */
+  html {
+    font-size: 14px;
+  }
+
+  /* --- Body text --- */
+  body {
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+
+  /* --- Headings --- */
+  h1 { font-size: 1.6rem;  line-height: 1.2; }
+  h2 { font-size: 1.35rem; line-height: 1.25; }
+  h3 { font-size: 1.15rem; line-height: 1.3; }
+  h4 { font-size: 1rem;    line-height: 1.35; }
+  h5 { font-size: 0.9rem;  line-height: 1.4; }
+  h6 { font-size: 0.85rem; line-height: 1.4; }
+
+  /* --- Paragraphs & general text --- */
+  p, li, span, a, label, td, th, input, textarea, select, button {
+    font-size: 0.85rem;
+  }
+
+  /* --- Images ---
+     Forces all images to fit inside their container and never overflow. */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+  }
+
+  /* --- Tables ---
+     Makes tables scrollable horizontally on small screens
+     so they never break the page layout. */
+  table {
+    width: 100%;
+    font-size: 0.78rem;
+    border-collapse: collapse;
+  }
+
+  /* Allow tables to scroll sideways if needed */
+  .overflow-x-auto,
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  th, td {
+    padding: 0.4rem 0.5rem;
+    font-size: 0.78rem;
+    white-space: nowrap;
+  }
+
+  /* --- Cards & containers ---
+     Tighten inner padding on small screens. */
+  .card, [class*="card"] {
+    padding: 0.75rem;
+  }
+
+  /* --- Buttons --- */
+  button, [role="button"], .btn {
+    font-size: 0.82rem;
+    padding: 0.45rem 0.9rem;
+  }
+
+  /* --- Navigation --- */
+  nav, header {
+    font-size: 0.85rem;
+  }
+
+  /* --- Section / page padding --- */
+  section, main, article {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
