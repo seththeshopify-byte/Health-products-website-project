@@ -38,6 +38,18 @@ function isFullHtmlDocument(html: string): boolean {
   return trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
 }
 
+/** Strip internal side padding from a full HTML doc so it fills the iframe edge-to-edge. */
+function injectIframeStyles(html: string): string {
+  const css = `<style>
+    body { padding-left: 0 !important; padding-right: 0 !important; margin-left: 0 !important; margin-right: 0 !important; }
+    .container, [class*="container"] { max-width: 100% !important; padding-left: 12px !important; padding-right: 12px !important; }
+    section, .section { padding-left: 12px !important; padding-right: 12px !important; }
+  </style>`;
+  return html.includes("</head>")
+    ? html.replace("</head>", `${css}</head>`)
+    : css + html;
+}
+
 // ---------------------------------------------------------------------------
 // Quiz component
 // ---------------------------------------------------------------------------
@@ -390,25 +402,18 @@ export default function CourseDetail() {
             {/* Course content body */}
             {course.contentBody && (
               contentIsFullHtml ? (
-                /*
-                  Full HTML document (has <!DOCTYPE> or <html>) — render in an
-                  isolated iframe so its own scripts, styles, charts, modals,
-                  and interactive elements all work perfectly without any
-                  interference from the site's CSS or React.
-                */
-                <div className="rounded-2xl overflow-hidden shadow-sm border border-border">
+                <div className="-mx-4 sm:-mx-6 md:-mx-8 lg:-mx-16 xl:-mx-24 rounded-2xl overflow-hidden shadow-sm border border-border">
                   <div className="flex items-center gap-2 px-6 py-4 border-b bg-card">
                     <CheckCircle2 size={20} className="text-primary" />
                     <span className="font-medium text-sm">You are enrolled in this course</span>
                   </div>
                   <iframe
-                    srcDoc={course.contentBody}
+                    srcDoc={injectIframeStyles(course.contentBody)}
                     title={course.name}
                     className="w-full border-0 block"
                     style={{ minHeight: "90vh" }}
                     sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
                     onLoad={(e) => {
-                      // Auto-resize iframe to fit its full content height
                       try {
                         const iframe = e.currentTarget;
                         const doc = iframe.contentDocument || iframe.contentWindow?.document;
@@ -423,9 +428,6 @@ export default function CourseDetail() {
                   />
                 </div>
               ) : (
-                /*
-                  Regular HTML fragment — render inline as before.
-                */
                 <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
                   <div className="flex items-center gap-2 mb-8 pb-8 border-b">
                     <CheckCircle2 size={24} className="text-primary" />
