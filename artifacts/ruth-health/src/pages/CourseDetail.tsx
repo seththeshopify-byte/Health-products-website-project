@@ -30,6 +30,15 @@ import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 // ---------------------------------------------------------------------------
+// Detect full HTML documents (so we render them in an iframe, not a div)
+// ---------------------------------------------------------------------------
+
+function isFullHtmlDocument(html: string): boolean {
+  const trimmed = html.trimStart().toLowerCase();
+  return trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
+}
+
+// ---------------------------------------------------------------------------
 // Quiz component
 // ---------------------------------------------------------------------------
 
@@ -53,7 +62,6 @@ function CourseQuiz({
   const queryClient = useQueryClient();
   const { toast } = useToast();
 
-  // selectedAnswers: map of questionId -> selected option index
   const [selectedAnswers, setSelectedAnswers] = useState<Record<number, number>>({});
   const [result, setResult] = useState<{ score: number; total: number; passed: boolean } | null>(
     existingResult?.passed ? existingResult : null
@@ -103,9 +111,7 @@ function CourseQuiz({
   };
 
   if (isLoading) {
-    return (
-      <div className="py-12 text-center text-muted-foreground">Loading quiz...</div>
-    );
+    return <div className="py-12 text-center text-muted-foreground">Loading quiz...</div>;
   }
 
   if (!questions?.length) {
@@ -116,7 +122,6 @@ function CourseQuiz({
     );
   }
 
-  // Results screen
   if (submitted && result) {
     const percentage = Math.round((result.score / result.total) * 100);
     return (
@@ -132,12 +137,8 @@ function CourseQuiz({
           <h3 className="text-2xl font-serif mb-2">
             {result.passed ? "Congratulations! You passed!" : "Not quite — try again"}
           </h3>
-          <p className="text-4xl font-bold mb-1">
-            {result.score}/{result.total}
-          </p>
-          <p className="text-muted-foreground mb-6">
-            {percentage}% — pass mark is 70%
-          </p>
+          <p className="text-4xl font-bold mb-1">{result.score}/{result.total}</p>
+          <p className="text-muted-foreground mb-6">{percentage}% — pass mark is 70%</p>
           {!result.passed && (
             <Button onClick={handleRetry} variant="outline" className="gap-2">
               <RotateCcw size={16} /> Try Again
@@ -145,7 +146,6 @@ function CourseQuiz({
           )}
         </div>
 
-        {/* Show questions with correct/incorrect indicators after submission */}
         <div className="space-y-4">
           {questions.map((q, qIdx) => {
             const selected = selectedAnswers[q.id];
@@ -188,7 +188,6 @@ function CourseQuiz({
     );
   }
 
-  // Quiz taking screen
   const answeredCount = Object.keys(selectedAnswers).length;
 
   return (
@@ -289,7 +288,6 @@ export default function CourseDetail() {
 
   const hasPassed = quizPassed || (quizResult?.passed ?? false);
 
-  // Find next course by ID
   const nextCourse = allCourses
     ?.filter((c) => c.id > id)
     .sort((a, b) => a.id - b.id)[0] ?? null;
@@ -316,6 +314,8 @@ export default function CourseDetail() {
 
   if (isLoading) return <div className="min-h-[50vh] flex items-center justify-center">Loading...</div>;
   if (!course) return <div className="min-h-[50vh] flex items-center justify-center">Course not found</div>;
+
+  const contentIsFullHtml = !!course.contentBody && isFullHtmlDocument(course.contentBody);
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-24">
@@ -388,19 +388,65 @@ export default function CourseDetail() {
             )}
 
             {/* Course content body */}
-            <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
-              <div className="flex items-center gap-2 mb-8 pb-8 border-b">
-                <CheckCircle2 size={24} className="text-primary" />
-                <span className="font-medium">You are enrolled in this course</span>
+            {course.contentBody && (
+              contentIsFullHtml ? (
+                /*
+                  Full HTML document (has <!DOCTYPE> or <html>) — render in an
+                  isolated iframe so its own scripts, styles, charts, modals,
+                  and interactive elements all work perfectly without any
+                  interference from the site's CSS or React.
+                */
+                <div className="rounded-2xl overflow-hidden shadow-sm border border-border">
+                  <div className="flex items-center gap-2 px-6 py-4 border-b bg-card">
+                    <CheckCircle2 size={20} className="text-primary" />
+                    <span className="font-medium text-sm">You are enrolled in this course</span>
+                  </div>
+                  <iframe
+                    srcDoc={course.contentBody}
+                    title={course.name}
+                    className="w-full border-0 block"
+                    style={{ minHeight: "90vh" }}
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+                    onLoad={(e) => {
+                      // Auto-resize iframe to fit its full content height
+                      try {
+                        const iframe = e.currentTarget;
+                        const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                        if (doc) {
+                          const height = doc.documentElement.scrollHeight;
+                          if (height > 0) iframe.style.height = height + "px";
+                        }
+                      } catch {
+                        // cross-origin fallback — min-height keeps it usable
+                      }
+                    }}
+                  />
+                </div>
+              ) : (
+                /*
+                  Regular HTML fragment — render inline as before.
+                */
+                <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
+                  <div className="flex items-center gap-2 mb-8 pb-8 border-b">
+                    <CheckCircle2 size={24} className="text-primary" />
+                    <span className="font-medium">You are enrolled in this course</span>
+                  </div>
+                  <div className="prose prose-lg prose-neutral max-w-none">
+                    <div dangerouslySetInnerHTML={{ __html: course.contentBody }} />
+                  </div>
+                </div>
+              )
+            )}
+
+            {!course.contentBody && (
+              <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
+                <div className="flex items-center gap-2 mb-8 pb-8 border-b">
+                  <CheckCircle2 size={24} className="text-primary" />
+                  <span className="font-medium">You are enrolled in this course</span>
+                </div>
+                <p className="text-muted-foreground italic">No additional reading material provided for this course.</p>
               </div>
-              <div className="prose prose-lg prose-neutral max-w-none">
-                {course.contentBody ? (
-                  <div dangerouslySetInnerHTML={{ __html: course.contentBody }} />
-                ) : (
-                  <p className="text-muted-foreground italic">No additional reading material provided for this course.</p>
-                )}
-              </div>
-            </div>
+            )}
 
             {/* Quiz section */}
             <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
@@ -432,7 +478,7 @@ export default function CourseDetail() {
               )}
             </div>
 
-            {/* Next Course button — visible after passing */}
+            {/* Next Course button */}
             {hasPassed && nextCourse && (
               <div className="bg-gradient-to-r from-primary/10 to-primary/5 border border-primary/20 rounded-2xl p-8 flex flex-col sm:flex-row items-center justify-between gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
                 <div>
