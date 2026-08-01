@@ -67,64 +67,15 @@ function isFullHtmlDocument(html: string): boolean {
   return trimmed.startsWith("<!doctype") || trimmed.startsWith("<html");
 }
 
-/** Strip internal side padding/gaps from a full HTML doc so it fills the iframe edge-to-edge. */
+/**
+ * For complete HTML pages we only inject minimal safety styles.
+ * We do NOT override widths, padding, or margins — complete pages
+ * like your Healthcode academy already have their own responsive CSS.
+ */
 function injectIframeStyles(html: string): string {
   const css = `<style>
-    /* Strip outer walls */
-    html, body {
-      padding-left: 0 !important;
-      padding-right: 0 !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-      overflow-x: hidden !important;
-    }
-
-    /* Collapse any fixed-width or padded wrappers */
-    body > *,
-    .container, .wrapper, .content, .inner, .layout,
-    [class*="container"], [class*="wrapper"], [class*="layout"],
-    main, article, #root, #app {
-      max-width: 100% !important;
-      width: 100% !important;
-      padding-left: 16px !important;
-      padding-right: 16px !important;
-      margin-left: 0 !important;
-      margin-right: 0 !important;
-      box-sizing: border-box !important;
-    }
-
-    /* Tighten vertical section gaps — reduce by ~75% */
-    section, .section, [class*="section"],
-    .block, [class*="block"],
-    .row, [class*="row"] {
-      padding-top: 20px !important;
-      padding-bottom: 20px !important;
-      margin-top: 0 !important;
-      margin-bottom: 0 !important;
-    }
-
-    /* Tighten card / item gaps */
-    .card, [class*="card"],
-    .item, [class*="item"],
-    .phase, [class*="phase"],
-    .module, [class*="module"] {
-      margin-bottom: 12px !important;
-      margin-top: 0 !important;
-    }
-
-    /* Tighten flex/grid gaps */
-    [style*="gap"] { gap: 12px !important; }
-    .gap-8, .gap-10, .gap-12, .gap-16 { gap: 12px !important; }
-    .space-y-8 > * + *, .space-y-10 > * + *, .space-y-12 > * + * {
-      margin-top: 12px !important;
-    }
-
-    /* Tighten paragraph/heading spacing */
-    p { margin-bottom: 6px !important; }
-    h1, h2, h3, h4 {
-      margin-top: 12px !important;
-      margin-bottom: 6px !important;
-    }
+    html, body { overflow-x: hidden; }
+    body { margin: 0; }
   </style>`;
   return html.includes("</head>")
     ? html.replace("</head>", `${css}</head>`)
