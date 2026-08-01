@@ -91,7 +91,6 @@ async function apiFetch(url: string, opts?: RequestInit) {
   const token = localStorage.getItem("ruth_health_token");
   const res = await fetch(`${baseUrl}/api${url}`, {
     ...opts,
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
