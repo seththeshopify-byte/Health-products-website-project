@@ -691,6 +691,14 @@ export default function AdminCourses() {
   };
 
   const handleSaveCourse = async () => {
+    if (!name.trim()) {
+      toast({ title: "Course Name is required", description: "Please enter a name before saving.", variant: "destructive" });
+      return;
+    }
+    if (!description.trim()) {
+      toast({ title: "Description is required", description: "Please enter a description before saving.", variant: "destructive" });
+      return;
+    }
     try {
       const payload = { name, description, imageUrl, contentUrl, contentBody };
       if (selectedCourse) {
@@ -784,11 +792,11 @@ export default function AdminCourses() {
 
             <TabsContent value="details" className="space-y-4 mt-4">
               <div className="space-y-2">
-                <Label>Course Name</Label>
+                <Label>Course Name <span className="text-destructive">*</span></Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="e.g. Introduction to Healthcode" />
               </div>
               <div className="space-y-2">
-                <Label>Description</Label>
+                <Label>Description <span className="text-destructive">*</span></Label>
                 <textarea
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
