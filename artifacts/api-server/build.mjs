@@ -27,6 +27,11 @@ async function buildAll() {
     // Examples of unbundleable packages:
     // - uses native modules and loads them dynamically (e.g. sharp)
     // - use path traversal to read files (e.g. @google-cloud/secret-manager loads sibling .proto files)
+    //
+    // NOTE: nodemailer was intentionally removed from this list. It is a pure-JS CJS module and
+    // must be bundled so esbuild can wrap it with __toESM(), ensuring its default export resolves
+    // correctly inside an ESM bundle. When marked external, Node.js raw ESM-CJS interop leaves
+    // the default export undefined at runtime, causing "TypeError: (void 0) is not a function".
     external: [
       "*.node",
       "sharp",
@@ -49,7 +54,6 @@ async function buildAll() {
       "pg-native",
       "oracledb",
       "mongodb-client-encryption",
-      "nodemailer",
       "handlebars",
       "knex",
       "typeorm",
