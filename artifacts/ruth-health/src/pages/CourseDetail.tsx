@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRoute, useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,35 @@ import {
 } from "@workspace/api-client-react";
 import { useToast } from "@/hooks/use-toast";
 import { useQueryClient } from "@tanstack/react-query";
+
+// ---------------------------------------------------------------------------
+// Subpage types
+// ---------------------------------------------------------------------------
+
+interface SubPage {
+  id: string;
+  title: string;
+  slug: string;
+  contentBody: string;
+}
+
+interface SubPageData {
+  __subpages__: true;
+  pages: SubPage[];
+}
+
+function parseSubPages(contentBody: string | null | undefined): SubPageData | null {
+  if (!contentBody) return null;
+  try {
+    const parsed = JSON.parse(contentBody);
+    if (parsed?.__subpages__ === true && Array.isArray(parsed.pages)) {
+      return parsed as SubPageData;
+    }
+  } catch {
+    // not JSON — fall through
+  }
+  return null;
+}
 
 // ---------------------------------------------------------------------------
 // Detect full HTML documents (so we render them in an iframe, not a div)
@@ -100,6 +129,46 @@ function injectIframeStyles(html: string): string {
   return html.includes("</head>")
     ? html.replace("</head>", `${css}</head>`)
     : css + html;
+}
+
+// ---------------------------------------------------------------------------
+// Content renderer — handles both plain HTML and full HTML documents
+// ---------------------------------------------------------------------------
+
+function ContentRenderer({ html, title }: { html: string; title: string }) {
+  if (!html) return null;
+  if (isFullHtmlDocument(html)) {
+    return (
+      <div className="-mx-4 sm:-mx-6 md:-mx-8 lg:-mx-16 xl:-mx-24 rounded-2xl overflow-hidden shadow-sm border border-border">
+        <iframe
+          srcDoc={injectIframeStyles(html)}
+          title={title}
+          className="w-full border-0 block"
+          style={{ minHeight: "90vh" }}
+          sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+          onLoad={(e) => {
+            try {
+              const iframe = e.currentTarget;
+              const doc = iframe.contentDocument || iframe.contentWindow?.document;
+              if (doc) {
+                const height = doc.documentElement.scrollHeight;
+                if (height > 0) iframe.style.height = height + "px";
+              }
+            } catch {
+              // cross-origin fallback — min-height keeps it usable
+            }
+          }}
+        />
+      </div>
+    );
+  }
+  return (
+    <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
+      <div className="prose prose-lg prose-neutral max-w-none">
+        <div dangerouslySetInnerHTML={{ __html: html }} />
+      </div>
+    </div>
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -350,6 +419,22 @@ export default function CourseDetail() {
   const [quizPassed, setQuizPassed] = useState(false);
   const [showQuiz, setShowQuiz] = useState(false);
 
+  // Subpage state from URL hash
+  const [activeSlug, setActiveSlug] = useState(() => {
+    if (typeof window !== "undefined") {
+      return window.location.hash.replace("#", "") || "";
+    }
+    return "";
+  });
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      setActiveSlug(window.location.hash.replace("#", "") || "");
+    };
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, []);
+
   const hasPassed = quizPassed || (quizResult?.passed ?? false);
 
   const nextCourse = allCourses
@@ -378,6 +463,15 @@ export default function CourseDetail() {
 
   if (isLoading) return <div className="min-h-[50vh] flex items-center justify-center">Loading...</div>;
   if (!course) return <div className="min-h-[50vh] flex items-center justify-center">Course not found</div>;
+
+  const subpageData = parseSubPages(course.contentBody);
+  const activeSubpage = subpageData?.pages.find((p) => p.slug === activeSlug) || subpageData?.pages[0];
+
+  const handleSubpageClick = (slug: string) => {
+    window.location.hash = slug;
+    setActiveSlug(slug);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const contentIsFullHtml = !!course.contentBody && isFullHtmlDocument(course.contentBody);
 
@@ -452,54 +546,106 @@ export default function CourseDetail() {
             )}
 
             {/* Course content body */}
-            {course.contentBody && (
-              contentIsFullHtml ? (
-                <div className="-mx-4 sm:-mx-6 md:-mx-8 lg:-mx-16 xl:-mx-24 rounded-2xl overflow-hidden shadow-sm border border-border">
-                  <div className="flex items-center gap-2 px-6 py-4 border-b bg-card">
+            {subpageData ? (
+              /* ── SUBPAGES VIEW ── */
+              <div className="grid lg:grid-cols-[240px_1fr] gap-8 items-start">
+                {/* Sidebar navigation */}
+                <div className="lg:sticky lg:top-24 space-y-2">
+                  <div className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-muted-foreground">
+                    <BookOpen size={16} />
+                    Course Contents
+                  </div>
+                  <div className="flex lg:flex-col gap-2 overflow-x-auto pb-2 lg:pb-0">
+                    {subpageData.pages.map((page, idx) => {
+                      const isActive = page.slug === (activeSlug || subpageData.pages[0]?.slug);
+                      return (
+                        <button
+                          key={page.id}
+                          type="button"
+                          onClick={() => handleSubpageClick(page.slug)}
+                          className={`flex items-center gap-2 px-3 py-2.5 rounded-lg text-left text-sm transition-colors whitespace-nowrap ${
+                            isActive
+                              ? "bg-primary/10 text-primary font-medium"
+                              : "hover:bg-muted text-muted-foreground"
+                          }`}
+                        >
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-muted text-xs font-medium">
+                            {idx + 1}
+                          </span>
+                          <span className="truncate">{page.title}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Active subpage content */}
+                <div className="space-y-6 min-w-0">
+                  <div className="flex items-center gap-2">
                     <CheckCircle2 size={20} className="text-primary" />
                     <span className="font-medium text-sm">You are enrolled in this course</span>
                   </div>
-                  <iframe
-                    srcDoc={injectIframeStyles(course.contentBody)}
-                    title={course.name}
-                    className="w-full border-0 block"
-                    style={{ minHeight: "90vh" }}
-                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
-                    onLoad={(e) => {
-                      try {
-                        const iframe = e.currentTarget;
-                        const doc = iframe.contentDocument || iframe.contentWindow?.document;
-                        if (doc) {
-                          const height = doc.documentElement.scrollHeight;
-                          if (height > 0) iframe.style.height = height + "px";
-                        }
-                      } catch {
-                        // cross-origin fallback — min-height keeps it usable
-                      }
-                    }}
-                  />
+                  {activeSubpage && (
+                    <>
+                      <h2 className="text-2xl md:text-3xl font-serif">{activeSubpage.title}</h2>
+                      <ContentRenderer html={activeSubpage.contentBody} title={activeSubpage.title} />
+                    </>
+                  )}
                 </div>
-              ) : (
-                <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
-                  <div className="flex items-center gap-2 mb-8 pb-8 border-b">
-                    <CheckCircle2 size={24} className="text-primary" />
-                    <span className="font-medium">You are enrolled in this course</span>
-                  </div>
-                  <div className="prose prose-lg prose-neutral max-w-none">
-                    <div dangerouslySetInnerHTML={{ __html: course.contentBody }} />
-                  </div>
-                </div>
-              )
-            )}
-
-            {!course.contentBody && (
-              <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
-                <div className="flex items-center gap-2 mb-8 pb-8 border-b">
-                  <CheckCircle2 size={24} className="text-primary" />
-                  <span className="font-medium">You are enrolled in this course</span>
-                </div>
-                <p className="text-muted-foreground italic">No additional reading material provided for this course.</p>
               </div>
+            ) : (
+              /* ── SINGLE PAGE VIEW (original logic preserved exactly) ── */
+              <>
+                {course.contentBody && (
+                  contentIsFullHtml ? (
+                    <div className="-mx-4 sm:-mx-6 md:-mx-8 lg:-mx-16 xl:-mx-24 rounded-2xl overflow-hidden shadow-sm border border-border">
+                      <div className="flex items-center gap-2 px-6 py-4 border-b bg-card">
+                        <CheckCircle2 size={20} className="text-primary" />
+                        <span className="font-medium text-sm">You are enrolled in this course</span>
+                      </div>
+                      <iframe
+                        srcDoc={injectIframeStyles(course.contentBody)}
+                        title={course.name}
+                        className="w-full border-0 block"
+                        style={{ minHeight: "90vh" }}
+                        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+                        onLoad={(e) => {
+                          try {
+                            const iframe = e.currentTarget;
+                            const doc = iframe.contentDocument || iframe.contentWindow?.document;
+                            if (doc) {
+                              const height = doc.documentElement.scrollHeight;
+                              if (height > 0) iframe.style.height = height + "px";
+                            }
+                          } catch {
+                            // cross-origin fallback — min-height keeps it usable
+                          }
+                        }}
+                      />
+                    </div>
+                  ) : (
+                    <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
+                      <div className="flex items-center gap-2 mb-8 pb-8 border-b">
+                        <CheckCircle2 size={24} className="text-primary" />
+                        <span className="font-medium">You are enrolled in this course</span>
+                      </div>
+                      <div className="prose prose-lg prose-neutral max-w-none">
+                        <div dangerouslySetInnerHTML={{ __html: course.contentBody }} />
+                      </div>
+                    </div>
+                  )
+                )}
+
+                {!course.contentBody && (
+                  <div className="bg-card border rounded-2xl p-8 md:p-12 shadow-sm">
+                    <div className="flex items-center gap-2 mb-8 pb-8 border-b">
+                      <CheckCircle2 size={24} className="text-primary" />
+                      <span className="font-medium">You are enrolled in this course</span>
+                    </div>
+                    <p className="text-muted-foreground italic">No additional reading material provided for this course.</p>
+                  </div>
+                )}
+              </>
             )}
 
             {/* Quiz section */}
