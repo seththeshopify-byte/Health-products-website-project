@@ -230,6 +230,8 @@ function EventGrid({
   formatDate: (iso: string) => string;
   emptyMessage: string;
 }) {
+  const [lightboxUrl, setLightboxUrl] = useState<string | null>(null);
+
   if (isLoading) {
     return (
       <div className="space-y-8 pb-12">
@@ -298,7 +300,8 @@ function EventGrid({
                         <img
                           src={url}
                           alt={`${event.title} photo ${index + 1}`}
-                          className="w-full rounded-xl border border-border/50 bg-muted object-contain"
+                          onClick={() => setLightboxUrl(url)}
+                          className="w-full cursor-zoom-in rounded-xl border border-border/50 bg-muted object-contain transition-opacity hover:opacity-90"
                         />
                         {extra && renderBlock(extra, `img-${index}-extra`)}
                       </div>
@@ -347,6 +350,29 @@ function EventGrid({
           </Card>
         );
       })}
+
+      {/* Lightbox overlay for event photos, matching the testimonial photo lightbox */}
+      {lightboxUrl && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 p-4"
+          onClick={() => setLightboxUrl(null)}
+        >
+          <button
+            type="button"
+            aria-label="Close"
+            onClick={() => setLightboxUrl(null)}
+            className="absolute right-4 top-4 flex h-10 w-10 items-center justify-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/20"
+          >
+            <X size={20} />
+          </button>
+          <img
+            src={lightboxUrl}
+            alt=""
+            onClick={(event) => event.stopPropagation()}
+            className="max-h-[90vh] max-w-[90vw] rounded-lg object-contain"
+          />
+        </div>
+      )}
     </div>
   );
 }
