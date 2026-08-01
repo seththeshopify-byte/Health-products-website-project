@@ -377,7 +377,7 @@ export default function CourseDetail() {
         <ArrowLeft size={16} /> Back to Courses
       </Link>
 
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-[1400px] mx-auto">
         <div className="text-center mb-12">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">Educational Resource</div>
           <h1 className="text-4xl md:text-5xl font-serif mb-6 text-foreground">{course.name}</h1>
