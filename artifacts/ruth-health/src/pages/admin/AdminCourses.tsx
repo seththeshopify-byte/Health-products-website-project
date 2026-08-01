@@ -87,11 +87,14 @@ function HtmlSourceField({ value, onChange }: { value: string; onChange: (html: 
 // ---------------------------------------------------------------------------
 
 async function apiFetch(url: string, opts?: RequestInit) {
-  const res = await fetch(`/api${url}`, {
+  const baseUrl = import.meta.env.VITE_API_URL ?? "";
+  const token = localStorage.getItem("ruth_health_token");
+  const res = await fetch(`${baseUrl}/api${url}`, {
     ...opts,
     credentials: "include",
     headers: {
       "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...(opts?.headers || {}),
     },
   });
