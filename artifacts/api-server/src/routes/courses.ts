@@ -1,12 +1,20 @@
 import { Router } from "express";
-import { db, coursesTable, courseEnrollmentsTable, courseQuizQuestionsTable, courseQuizAttemptsTable } from "@workspace/db";
-import { eq, and, desc } from "drizzle-orm";
+import {
+  db,
+  coursesTable,
+  courseEnrollmentsTable,
+  courseQuizQuestionsTable,
+  courseQuizAttemptsTable,
+  courseModulesTable,
+  courseModuleMediaTable,
+} from "@workspace/db";
+import { eq, and, desc, asc } from "drizzle-orm";
 import { requireAdmin, requireAuth, optionalAuth } from "../middlewares/requireAuth.js";
 
 const router = Router();
 
 // ---------------------------------------------------------------------------
-// COURSES
+// COURSES (existing routes preserved)
 // ---------------------------------------------------------------------------
 
 router.get("/courses", optionalAuth, async (req, res) => {
@@ -85,6 +93,15 @@ router.patch("/courses/:id", requireAdmin, async (req, res) => {
 router.delete("/courses/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
+    // Delete module-level data first
+    const modules = await db.select().from(courseModulesTable).where(eq(courseModulesTable.courseId, id));
+    for (const mod of modules) {
+      await db.delete(courseModuleMediaTable).where(eq(courseModuleMediaTable.moduleId, mod.id));
+      await db.delete(courseQuizAttemptsTable).where(eq(courseQuizAttemptsTable.moduleId, mod.id));
+      await db.delete(courseQuizQuestionsTable).where(eq(courseQuizQuestionsTable.moduleId, mod.id));
+    }
+    await db.delete(courseModulesTable).where(eq(courseModulesTable.courseId, id));
+    // Delete course-level data
     await db.delete(courseQuizAttemptsTable).where(eq(courseQuizAttemptsTable.courseId, id));
     await db.delete(courseQuizQuestionsTable).where(eq(courseQuizQuestionsTable.courseId, id));
     await db.delete(courseEnrollmentsTable).where(eq(courseEnrollmentsTable.courseId, id));
@@ -115,7 +132,122 @@ router.post("/courses/:id/enroll", requireAuth, async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
-// QUIZ — user-facing (no correct answers exposed)
+// MODULES (new)
+// ---------------------------------------------------------------------------
+
+router.get("/courses/:id/modules", async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id);
+    const modules = await db
+      .select()
+      .from(courseModulesTable)
+      .where(eq(courseModulesTable.courseId, courseId))
+      .orderBy(asc(courseModulesTable.orderIndex));
+
+    const modulesWithMedia = await Promise.all(
+      modules.map(async (mod) => {
+        const media = await db
+          .select()
+          .from(courseModuleMediaTable)
+          .where(eq(courseModuleMediaTable.moduleId, mod.id))
+          .orderBy(asc(courseModuleMediaTable.orderIndex));
+        return { ...mod, media };
+      })
+    );
+
+    res.json(modulesWithMedia);
+  } catch (err) {
+    req.log.error({ err }, "listModules error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/courses/:id/modules", requireAdmin, async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id);
+    const { title, introduction, contentBody, orderIndex } = req.body;
+    if (!title) { res.status(400).json({ error: "Title is required" }); return; }
+    const [module] = await db
+      .insert(courseModulesTable)
+      .values({ courseId, title, introduction: introduction ?? null, contentBody: contentBody ?? null, orderIndex: orderIndex ?? 0 })
+      .returning();
+    res.status(201).json(module);
+  } catch (err) {
+    req.log.error({ err }, "createModule error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/courses/:id/modules/:moduleId", requireAdmin, async (req, res) => {
+  try {
+    const moduleId = parseInt(req.params.moduleId);
+    const { title, introduction, contentBody, orderIndex } = req.body;
+    const updates: Record<string, unknown> = {};
+    if (title !== undefined) updates.title = title;
+    if (introduction !== undefined) updates.introduction = introduction;
+    if (contentBody !== undefined) updates.contentBody = contentBody;
+    if (orderIndex !== undefined) updates.orderIndex = orderIndex;
+    const [mod] = await db
+      .update(courseModulesTable)
+      .set(updates)
+      .where(eq(courseModulesTable.id, moduleId))
+      .returning();
+    if (!mod) { res.status(404).json({ error: "Module not found" }); return; }
+    res.json(mod);
+  } catch (err) {
+    req.log.error({ err }, "updateModule error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/courses/:id/modules/:moduleId", requireAdmin, async (req, res) => {
+  try {
+    const moduleId = parseInt(req.params.moduleId);
+    await db.delete(courseModuleMediaTable).where(eq(courseModuleMediaTable.moduleId, moduleId));
+    await db.delete(courseQuizAttemptsTable).where(eq(courseQuizAttemptsTable.moduleId, moduleId));
+    await db.delete(courseQuizQuestionsTable).where(eq(courseQuizQuestionsTable.moduleId, moduleId));
+    await db.delete(courseModulesTable).where(eq(courseModulesTable.id, moduleId));
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "deleteModule error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// MODULE MEDIA (new)
+// ---------------------------------------------------------------------------
+
+router.post("/courses/:id/modules/:moduleId/media", requireAdmin, async (req, res) => {
+  try {
+    const moduleId = parseInt(req.params.moduleId);
+    const { type, url, orderIndex } = req.body;
+    if (!type || !url) { res.status(400).json({ error: "Type and URL are required" }); return; }
+    if (type !== "image" && type !== "video") { res.status(400).json({ error: "Type must be image or video" }); return; }
+    const [media] = await db
+      .insert(courseModuleMediaTable)
+      .values({ moduleId, type, url, orderIndex: orderIndex ?? 0 })
+      .returning();
+    res.status(201).json(media);
+  } catch (err) {
+    req.log.error({ err }, "createModuleMedia error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/courses/:id/modules/:moduleId/media/:mediaId", requireAdmin, async (req, res) => {
+  try {
+    const mediaId = parseInt(req.params.mediaId);
+    await db.delete(courseModuleMediaTable).where(eq(courseModuleMediaTable.id, mediaId));
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "deleteModuleMedia error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// COURSE-LEVEL QUIZ (existing routes preserved for backward compatibility)
 // ---------------------------------------------------------------------------
 
 router.get("/courses/:id/quiz", requireAuth, async (req, res) => {
@@ -124,7 +256,7 @@ router.get("/courses/:id/quiz", requireAuth, async (req, res) => {
     const questions = await db
       .select()
       .from(courseQuizQuestionsTable)
-      .where(eq(courseQuizQuestionsTable.courseId, courseId))
+      .where(and(eq(courseQuizQuestionsTable.courseId, courseId), eq(courseQuizQuestionsTable.moduleId, 0)))
       .orderBy(courseQuizQuestionsTable.orderIndex);
     const publicQuestions = questions.map((q) => ({
       id: q.id,
@@ -146,20 +278,15 @@ router.post("/courses/:id/quiz/submit", requireAuth, async (req, res) => {
     const { answers } = req.body as {
       answers: Array<{ questionId: number; selectedOptionIndex: number }>;
     };
-
-    // Load questions with correct answers
     const questions = await db
       .select()
       .from(courseQuizQuestionsTable)
-      .where(eq(courseQuizQuestionsTable.courseId, courseId))
+      .where(and(eq(courseQuizQuestionsTable.courseId, courseId), eq(courseQuizQuestionsTable.moduleId, 0)))
       .orderBy(courseQuizQuestionsTable.orderIndex);
-
     if (questions.length === 0) {
       res.status(400).json({ error: "No quiz questions found for this course" });
       return;
     }
-
-    // Auto-mark: compare each submitted answer against the correct option
     let correctCount = 0;
     for (const answer of answers) {
       const question = questions.find((q) => q.id === answer.questionId);
@@ -168,18 +295,9 @@ router.post("/courses/:id/quiz/submit", requireAuth, async (req, res) => {
       const selectedOption = options[answer.selectedOptionIndex];
       if (selectedOption?.isCorrect) correctCount++;
     }
-
     const total = questions.length;
-    const passed = correctCount / total >= 0.7; // 70% pass mark
-
-    // Save the attempt
-    await db.insert(courseQuizAttemptsTable).values({
-      userId,
-      courseId,
-      score: correctCount,
-      passed,
-    });
-
+    const passed = correctCount / total >= 0.7;
+    await db.insert(courseQuizAttemptsTable).values({ userId, courseId, moduleId: 0, score: correctCount, passed });
     res.json({ score: correctCount, total, passed });
   } catch (err) {
     req.log.error({ err }, "submitCourseQuiz error");
@@ -191,25 +309,20 @@ router.get("/courses/:id/quiz/result", requireAuth, async (req, res) => {
   try {
     const courseId = parseInt(req.params.id);
     const userId = req.user!.userId;
-
-    // Return the user's best attempt
     const attempts = await db
       .select()
       .from(courseQuizAttemptsTable)
-      .where(and(eq(courseQuizAttemptsTable.userId, userId), eq(courseQuizAttemptsTable.courseId, courseId)))
+      .where(and(eq(courseQuizAttemptsTable.userId, userId), eq(courseQuizAttemptsTable.courseId, courseId), eq(courseQuizAttemptsTable.moduleId, 0)))
       .orderBy(desc(courseQuizAttemptsTable.score));
-
     if (attempts.length === 0) {
       res.json({ score: 0, total: 0, passed: false });
       return;
     }
-
     const best = attempts[0];
     const total = await db
       .select()
       .from(courseQuizQuestionsTable)
-      .where(eq(courseQuizQuestionsTable.courseId, courseId));
-
+      .where(and(eq(courseQuizQuestionsTable.courseId, courseId), eq(courseQuizQuestionsTable.moduleId, 0)));
     res.json({ score: best.score, total: total.length, passed: best.passed });
   } catch (err) {
     req.log.error({ err }, "getCourseQuizResult error");
@@ -217,17 +330,13 @@ router.get("/courses/:id/quiz/result", requireAuth, async (req, res) => {
   }
 });
 
-// ---------------------------------------------------------------------------
-// QUIZ — admin (correct answers included)
-// ---------------------------------------------------------------------------
-
 router.get("/courses/:id/quiz/questions", requireAdmin, async (req, res) => {
   try {
     const courseId = parseInt(req.params.id);
     const questions = await db
       .select()
       .from(courseQuizQuestionsTable)
-      .where(eq(courseQuizQuestionsTable.courseId, courseId))
+      .where(and(eq(courseQuizQuestionsTable.courseId, courseId), eq(courseQuizQuestionsTable.moduleId, 0)))
       .orderBy(courseQuizQuestionsTable.orderIndex);
     res.json(questions);
   } catch (err) {
@@ -247,15 +356,10 @@ router.post("/courses/:id/quiz/questions", requireAdmin, async (req, res) => {
     const existingCount = await db
       .select()
       .from(courseQuizQuestionsTable)
-      .where(eq(courseQuizQuestionsTable.courseId, courseId));
+      .where(and(eq(courseQuizQuestionsTable.courseId, courseId), eq(courseQuizQuestionsTable.moduleId, 0)));
     const [question] = await db
       .insert(courseQuizQuestionsTable)
-      .values({
-        courseId,
-        questionHtml,
-        options,
-        orderIndex: orderIndex ?? existingCount.length,
-      })
+      .values({ courseId, moduleId: 0, questionHtml, options, orderIndex: orderIndex ?? existingCount.length })
       .returning();
     res.status(201).json(question);
   } catch (err) {
@@ -292,6 +396,166 @@ router.delete("/courses/:id/quiz/questions/:questionId", requireAdmin, async (re
     res.json({ success: true });
   } catch (err) {
     req.log.error({ err }, "deleteCourseQuizQuestion error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// MODULE QUIZ — user-facing (new)
+// ---------------------------------------------------------------------------
+
+router.get("/courses/:id/modules/:moduleId/quiz", requireAuth, async (req, res) => {
+  try {
+    const moduleId = parseInt(req.params.moduleId);
+    const questions = await db
+      .select()
+      .from(courseQuizQuestionsTable)
+      .where(eq(courseQuizQuestionsTable.moduleId, moduleId))
+      .orderBy(courseQuizQuestionsTable.orderIndex);
+    const publicQuestions = questions.map((q) => ({
+      id: q.id,
+      questionHtml: q.questionHtml,
+      orderIndex: q.orderIndex,
+      options: (q.options as Array<{ text: string; isCorrect: boolean }>).map(({ text }) => ({ text })),
+    }));
+    res.json(publicQuestions);
+  } catch (err) {
+    req.log.error({ err }, "getModuleQuiz error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/courses/:id/modules/:moduleId/quiz/submit", requireAuth, async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id);
+    const moduleId = parseInt(req.params.moduleId);
+    const userId = req.user!.userId;
+    const { answers } = req.body as {
+      answers: Array<{ questionId: number; selectedOptionIndex: number }>;
+    };
+    const questions = await db
+      .select()
+      .from(courseQuizQuestionsTable)
+      .where(eq(courseQuizQuestionsTable.moduleId, moduleId))
+      .orderBy(courseQuizQuestionsTable.orderIndex);
+    if (questions.length === 0) {
+      res.status(400).json({ error: "No quiz questions found for this module" });
+      return;
+    }
+    let correctCount = 0;
+    for (const answer of answers) {
+      const question = questions.find((q) => q.id === answer.questionId);
+      if (!question) continue;
+      const options = question.options as Array<{ text: string; isCorrect: boolean }>;
+      const selectedOption = options[answer.selectedOptionIndex];
+      if (selectedOption?.isCorrect) correctCount++;
+    }
+    const total = questions.length;
+    const passed = correctCount / total >= 0.7;
+    await db.insert(courseQuizAttemptsTable).values({ userId, courseId, moduleId, score: correctCount, passed });
+    res.json({ score: correctCount, total, passed });
+  } catch (err) {
+    req.log.error({ err }, "submitModuleQuiz error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.get("/courses/:id/modules/:moduleId/quiz/result", requireAuth, async (req, res) => {
+  try {
+    const moduleId = parseInt(req.params.moduleId);
+    const userId = req.user!.userId;
+    const attempts = await db
+      .select()
+      .from(courseQuizAttemptsTable)
+      .where(and(eq(courseQuizAttemptsTable.userId, userId), eq(courseQuizAttemptsTable.moduleId, moduleId)))
+      .orderBy(desc(courseQuizAttemptsTable.score));
+    if (attempts.length === 0) {
+      res.json({ score: 0, total: 0, passed: false });
+      return;
+    }
+    const best = attempts[0];
+    const total = await db
+      .select()
+      .from(courseQuizQuestionsTable)
+      .where(eq(courseQuizQuestionsTable.moduleId, moduleId));
+    res.json({ score: best.score, total: total.length, passed: best.passed });
+  } catch (err) {
+    req.log.error({ err }, "getModuleQuizResult error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// ---------------------------------------------------------------------------
+// MODULE QUIZ — admin (new)
+// ---------------------------------------------------------------------------
+
+router.get("/courses/:id/modules/:moduleId/quiz/questions", requireAdmin, async (req, res) => {
+  try {
+    const moduleId = parseInt(req.params.moduleId);
+    const questions = await db
+      .select()
+      .from(courseQuizQuestionsTable)
+      .where(eq(courseQuizQuestionsTable.moduleId, moduleId))
+      .orderBy(courseQuizQuestionsTable.orderIndex);
+    res.json(questions);
+  } catch (err) {
+    req.log.error({ err }, "listModuleQuizQuestions error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.post("/courses/:id/modules/:moduleId/quiz/questions", requireAdmin, async (req, res) => {
+  try {
+    const courseId = parseInt(req.params.id);
+    const moduleId = parseInt(req.params.moduleId);
+    const { questionHtml, options, orderIndex } = req.body;
+    if (!questionHtml || !options?.length) {
+      res.status(400).json({ error: "Missing required fields" });
+      return;
+    }
+    const existingCount = await db
+      .select()
+      .from(courseQuizQuestionsTable)
+      .where(eq(courseQuizQuestionsTable.moduleId, moduleId));
+    const [question] = await db
+      .insert(courseQuizQuestionsTable)
+      .values({ courseId, moduleId, questionHtml, options, orderIndex: orderIndex ?? existingCount.length })
+      .returning();
+    res.status(201).json(question);
+  } catch (err) {
+    req.log.error({ err }, "createModuleQuizQuestion error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.patch("/courses/:id/modules/:moduleId/quiz/questions/:questionId", requireAdmin, async (req, res) => {
+  try {
+    const questionId = parseInt(req.params.questionId);
+    const { questionHtml, options, orderIndex } = req.body;
+    const updates: Record<string, unknown> = {};
+    if (questionHtml !== undefined) updates.questionHtml = questionHtml;
+    if (options !== undefined) updates.options = options;
+    if (orderIndex !== undefined) updates.orderIndex = orderIndex;
+    const [question] = await db
+      .update(courseQuizQuestionsTable)
+      .set(updates)
+      .where(eq(courseQuizQuestionsTable.id, questionId))
+      .returning();
+    if (!question) { res.status(404).json({ error: "Question not found" }); return; }
+    res.json(question);
+  } catch (err) {
+    req.log.error({ err }, "updateModuleQuizQuestion error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+router.delete("/courses/:id/modules/:moduleId/quiz/questions/:questionId", requireAdmin, async (req, res) => {
+  try {
+    const questionId = parseInt(req.params.questionId);
+    await db.delete(courseQuizQuestionsTable).where(eq(courseQuizQuestionsTable.id, questionId));
+    res.json({ success: true });
+  } catch (err) {
+    req.log.error({ err }, "deleteModuleQuizQuestion error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
