@@ -705,7 +705,7 @@ export default function AdminCourses() {
         await updateCourse.mutateAsync({ id: selectedCourse.id, data: payload });
         toast({ title: "Course updated" });
       } else {
-        await createCourse.mutateAsync(payload);
+        await createCourse.mutateAsync({ data: payload });
         toast({ title: "Course created" });
       }
       queryClient.invalidateQueries({ queryKey: getListCoursesQueryKey() });
