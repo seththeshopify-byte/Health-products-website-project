@@ -21,14 +21,14 @@ export const HealthCheckResponse = zod.object({
  * @summary Login
  */
 export const LoginBody = zod.object({
-  "email": zod.email(),
+  "email": zod.string().email(),
   "password": zod.string()
 })
 
 export const LoginResponse = zod.object({
   "token": zod.string(),
   "user": zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -43,7 +43,7 @@ export const LoginResponse = zod.object({
  * @summary Get current user
  */
 export const GetMeResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -57,7 +57,7 @@ export const GetMeResponse = zod.object({
  * @summary List all products
  */
 export const ListProductsResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -82,7 +82,7 @@ export const CreateProductBody = zod.object({
 })
 
 export const CreateProductResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -101,7 +101,7 @@ export const GetProductParams = zod.object({
 })
 
 export const GetProductResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -129,7 +129,7 @@ export const UpdateProductBody = zod.object({
 })
 
 export const UpdateProductResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -156,7 +156,7 @@ export const DeleteProductResponse = zod.object({
  * @summary List all services
  */
 export const ListServicesResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -181,7 +181,7 @@ export const CreateServiceBody = zod.object({
 })
 
 export const CreateServiceResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -200,7 +200,7 @@ export const GetServiceParams = zod.object({
 })
 
 export const GetServiceResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -228,7 +228,7 @@ export const UpdateServiceBody = zod.object({
 })
 
 export const UpdateServiceResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullable(),
@@ -255,7 +255,7 @@ export const DeleteServiceResponse = zod.object({
  * @summary List all courses
  */
 export const ListCoursesResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullish(),
@@ -279,7 +279,7 @@ export const CreateCourseBody = zod.object({
 })
 
 export const CreateCourseResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullish(),
@@ -298,7 +298,7 @@ export const GetCourseParams = zod.object({
 })
 
 export const GetCourseResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullish(),
@@ -325,7 +325,7 @@ export const UpdateCourseBody = zod.object({
 })
 
 export const UpdateCourseResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "description": zod.string(),
   "imageUrl": zod.string().nullish(),
@@ -368,12 +368,12 @@ export const GetCourseQuizParams = zod.object({
 })
 
 export const GetCourseQuizResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "questionHtml": zod.string(),
   "options": zod.array(zod.object({
   "text": zod.string()
 })),
-  "orderIndex": zod.int()
+  "orderIndex": zod.number().int()
 })
 export const GetCourseQuizResponse = zod.array(GetCourseQuizResponseItem)
 
@@ -387,14 +387,14 @@ export const SubmitCourseQuizParams = zod.object({
 
 export const SubmitCourseQuizBody = zod.object({
   "answers": zod.array(zod.object({
-  "questionId": zod.int(),
-  "selectedOptionIndex": zod.int()
+  "questionId": zod.number().int(),
+  "selectedOptionIndex": zod.number().int()
 }))
 })
 
 export const SubmitCourseQuizResponse = zod.object({
-  "score": zod.int(),
-  "total": zod.int(),
+  "score": zod.number().int(),
+  "total": zod.number().int(),
   "passed": zod.boolean()
 })
 
@@ -407,8 +407,8 @@ export const GetCourseQuizResultParams = zod.object({
 })
 
 export const GetCourseQuizResultResponse = zod.object({
-  "score": zod.int(),
-  "total": zod.int(),
+  "score": zod.number().int(),
+  "total": zod.number().int(),
   "passed": zod.boolean()
 })
 
@@ -421,14 +421,14 @@ export const ListCourseQuizQuestionsParams = zod.object({
 })
 
 export const ListCourseQuizQuestionsResponseItem = zod.object({
-  "id": zod.int(),
-  "courseId": zod.int(),
+  "id": zod.number().int(),
+  "courseId": zod.number().int(),
   "questionHtml": zod.string(),
   "options": zod.array(zod.object({
   "text": zod.string(),
   "isCorrect": zod.boolean()
 })),
-  "orderIndex": zod.int()
+  "orderIndex": zod.number().int()
 })
 export const ListCourseQuizQuestionsResponse = zod.array(ListCourseQuizQuestionsResponseItem)
 
@@ -450,18 +450,18 @@ export const CreateCourseQuizQuestionBody = zod.object({
   "text": zod.string(),
   "isCorrect": zod.boolean()
 })).min(createCourseQuizQuestionBodyOptionsMin),
-  "orderIndex": zod.int().optional()
+  "orderIndex": zod.number().int().optional()
 })
 
 export const CreateCourseQuizQuestionResponse = zod.object({
-  "id": zod.int(),
-  "courseId": zod.int(),
+  "id": zod.number().int(),
+  "courseId": zod.number().int(),
   "questionHtml": zod.string(),
   "options": zod.array(zod.object({
   "text": zod.string(),
   "isCorrect": zod.boolean()
 })),
-  "orderIndex": zod.int()
+  "orderIndex": zod.number().int()
 })
 
 
@@ -483,18 +483,18 @@ export const UpdateCourseQuizQuestionBody = zod.object({
   "text": zod.string(),
   "isCorrect": zod.boolean()
 })).min(updateCourseQuizQuestionBodyOptionsMin),
-  "orderIndex": zod.int().optional()
+  "orderIndex": zod.number().int().optional()
 })
 
 export const UpdateCourseQuizQuestionResponse = zod.object({
-  "id": zod.int(),
-  "courseId": zod.int(),
+  "id": zod.number().int(),
+  "courseId": zod.number().int(),
   "questionHtml": zod.string(),
   "options": zod.array(zod.object({
   "text": zod.string(),
   "isCorrect": zod.boolean()
 })),
-  "orderIndex": zod.int()
+  "orderIndex": zod.number().int()
 })
 
 
@@ -519,7 +519,7 @@ export const ListTestimonialsQueryParams = zod.object({
 })
 
 export const ListTestimonialsResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "photoUrl": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
@@ -546,7 +546,7 @@ export const CreateTestimonialBody = zod.object({
 })
 
 export const CreateTestimonialResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "photoUrl": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
@@ -576,7 +576,7 @@ export const UpdateTestimonialBody = zod.object({
 })
 
 export const UpdateTestimonialResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "photoUrl": zod.string().nullish(),
   "videoUrl": zod.string().nullish(),
@@ -604,7 +604,7 @@ export const DeleteTestimonialResponse = zod.object({
  * @summary List all company events
  */
 export const ListEventsResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
@@ -631,7 +631,7 @@ export const CreateEventBody = zod.object({
 })
 
 export const CreateEventResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
@@ -661,7 +661,7 @@ export const UpdateEventBody = zod.object({
 })
 
 export const UpdateEventResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "title": zod.string(),
   "description": zod.string().nullish(),
   "imageUrl": zod.string().nullish(),
@@ -689,10 +689,10 @@ export const DeleteEventResponse = zod.object({
  * @summary List orders (admin or own orders)
  */
 export const ListOrdersResponseItem = zod.object({
-  "id": zod.int(),
-  "userId": zod.int().nullish(),
+  "id": zod.number().int(),
+  "userId": zod.number().int().nullish(),
   "itemType": zod.enum(['product', 'service']),
-  "itemId": zod.int(),
+  "itemId": zod.number().int(),
   "itemName": zod.string().nullish(),
   "promoCodeUsed": zod.string().nullish(),
   "itemAmount": zod.number(),
@@ -711,7 +711,7 @@ export const ListOrdersResponse = zod.array(ListOrdersResponseItem)
  */
 export const CreateOrderBody = zod.object({
   "itemType": zod.enum(['product', 'service']),
-  "itemId": zod.int(),
+  "itemId": zod.number().int(),
   "promoCodeUsed": zod.string().nullish(),
   "shippingAddress": zod.object({
   "line1": zod.string().optional(),
@@ -724,7 +724,7 @@ export const CreateOrderBody = zod.object({
 
 export const CreateOrderResponse = zod.object({
   "checkoutUrl": zod.string(),
-  "orderId": zod.int()
+  "orderId": zod.number().int()
 })
 
 
@@ -736,10 +736,10 @@ export const GetOrderParams = zod.object({
 })
 
 export const GetOrderResponse = zod.object({
-  "id": zod.int(),
-  "userId": zod.int().nullish(),
+  "id": zod.number().int(),
+  "userId": zod.number().int().nullish(),
   "itemType": zod.enum(['product', 'service']),
-  "itemId": zod.int(),
+  "itemId": zod.number().int(),
   "itemName": zod.string().nullish(),
   "promoCodeUsed": zod.string().nullish(),
   "itemAmount": zod.number(),
@@ -764,7 +764,7 @@ export const StripeWebhookResponse = zod.object({
  * @summary List available booking slots
  */
 export const ListBookingSlotsResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "date": zod.coerce.date(),
   "time": zod.string(),
   "isBooked": zod.boolean()
@@ -781,7 +781,7 @@ export const CreateBookingSlotBody = zod.object({
 })
 
 export const CreateBookingSlotResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "date": zod.coerce.date(),
   "time": zod.string(),
   "isBooked": zod.boolean()
@@ -804,8 +804,8 @@ export const DeleteBookingSlotResponse = zod.object({
  * @summary List all bookings (admin)
  */
 export const ListBookingsResponseItem = zod.object({
-  "id": zod.int(),
-  "slotId": zod.int(),
+  "id": zod.number().int(),
+  "slotId": zod.number().int(),
   "slotDate": zod.string().nullish(),
   "slotTime": zod.string().nullish(),
   "name": zod.string(),
@@ -822,15 +822,15 @@ export const ListBookingsResponse = zod.array(ListBookingsResponseItem)
  * @summary Book a slot
  */
 export const CreateBookingBody = zod.object({
-  "slotId": zod.int(),
+  "slotId": zod.number().int(),
   "name": zod.string(),
-  "email": zod.email(),
+  "email": zod.string().email(),
   "phone": zod.string().nullish()
 })
 
 export const CreateBookingResponse = zod.object({
-  "id": zod.int(),
-  "slotId": zod.int(),
+  "id": zod.number().int(),
+  "slotId": zod.number().int(),
   "slotDate": zod.string().nullish(),
   "slotTime": zod.string().nullish(),
   "name": zod.string(),
@@ -850,8 +850,8 @@ export const CancelBookingParams = zod.object({
 })
 
 export const CancelBookingResponse = zod.object({
-  "id": zod.int(),
-  "slotId": zod.int(),
+  "id": zod.number().int(),
+  "slotId": zod.number().int(),
   "slotDate": zod.string().nullish(),
   "slotTime": zod.string().nullish(),
   "name": zod.string(),
@@ -867,11 +867,11 @@ export const CancelBookingResponse = zod.object({
  * @summary List commission events (admin or own)
  */
 export const ListCommissionEventsResponseItem = zod.object({
-  "id": zod.int(),
-  "referringMemberId": zod.int(),
+  "id": zod.number().int(),
+  "referringMemberId": zod.number().int(),
   "referringMemberName": zod.string().nullish(),
   "type": zod.enum(['sale', 'referral']),
-  "relatedId": zod.int().nullish(),
+  "relatedId": zod.number().int().nullish(),
   "amount": zod.number(),
   "status": zod.enum(['pending', 'paid']),
   "createdAt": zod.coerce.date()
@@ -887,11 +887,11 @@ export const MarkCommissionPaidParams = zod.object({
 })
 
 export const MarkCommissionPaidResponse = zod.object({
-  "id": zod.int(),
-  "referringMemberId": zod.int(),
+  "id": zod.number().int(),
+  "referringMemberId": zod.number().int(),
   "referringMemberName": zod.string().nullish(),
   "type": zod.enum(['sale', 'referral']),
-  "relatedId": zod.int().nullish(),
+  "relatedId": zod.number().int().nullish(),
   "amount": zod.number(),
   "status": zod.enum(['pending', 'paid']),
   "createdAt": zod.coerce.date()
@@ -902,7 +902,7 @@ export const MarkCommissionPaidResponse = zod.object({
  * @summary List all users (admin)
  */
 export const ListUsersResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -922,14 +922,14 @@ export const createUserBodyPasswordMin = 6;
 
 export const CreateUserBody = zod.object({
   "name": zod.string(),
-  "email": zod.email(),
+  "email": zod.string().email(),
   "password": zod.string().min(createUserBodyPasswordMin),
   "role": zod.enum(['member', 'admin']).optional(),
   "referredByCode": zod.string().nullish()
 })
 
 export const CreateUserResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -947,7 +947,7 @@ export const GetUserParams = zod.object({
 })
 
 export const GetUserResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -970,7 +970,7 @@ export const UpdateUserBody = zod.object({
 })
 
 export const UpdateUserResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -984,15 +984,15 @@ export const UpdateUserResponse = zod.object({
  * @summary Admin dashboard summary stats
  */
 export const GetDashboardSummaryResponse = zod.object({
-  "totalMembers": zod.int(),
-  "totalOrders": zod.int(),
+  "totalMembers": zod.number().int(),
+  "totalOrders": zod.number().int(),
   "totalRevenue": zod.number(),
   "totalCommissionPending": zod.number(),
   "recentOrders": zod.array(zod.object({
-  "id": zod.int(),
-  "userId": zod.int().nullish(),
+  "id": zod.number().int(),
+  "userId": zod.number().int().nullish(),
   "itemType": zod.enum(['product', 'service']),
-  "itemId": zod.int(),
+  "itemId": zod.number().int(),
   "itemName": zod.string().nullish(),
   "promoCodeUsed": zod.string().nullish(),
   "itemAmount": zod.number(),
@@ -1004,11 +1004,11 @@ export const GetDashboardSummaryResponse = zod.object({
   "createdAt": zod.coerce.date()
 })),
   "topReferrers": zod.array(zod.object({
-  "memberId": zod.int(),
+  "memberId": zod.number().int(),
   "memberName": zod.string(),
   "promoCode": zod.string(),
   "totalCommission": zod.number(),
-  "referralCount": zod.int()
+  "referralCount": zod.number().int()
 }))
 })
 
@@ -1023,17 +1023,17 @@ export const GetMemberDashboardResponse = zod.object({
   "referralCommission": zod.number(),
   "totalCommission": zod.number(),
   "commissionEvents": zod.array(zod.object({
-  "id": zod.int(),
-  "referringMemberId": zod.int(),
+  "id": zod.number().int(),
+  "referringMemberId": zod.number().int(),
   "referringMemberName": zod.string().nullish(),
   "type": zod.enum(['sale', 'referral']),
-  "relatedId": zod.int().nullish(),
+  "relatedId": zod.number().int().nullish(),
   "amount": zod.number(),
   "status": zod.enum(['pending', 'paid']),
   "createdAt": zod.coerce.date()
 })),
   "referredMembers": zod.array(zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "name": zod.string(),
   "email": zod.string(),
   "role": zod.enum(['guest', 'member', 'admin']),
@@ -1048,7 +1048,7 @@ export const GetMemberDashboardResponse = zod.object({
  * @summary List shipping zones
  */
 export const ListShippingZonesResponseItem = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "country": zod.string(),
   "regionOrPostalPrefix": zod.string().nullish(),
   "feeAmount": zod.number(),
@@ -1068,7 +1068,7 @@ export const CreateShippingZoneBody = zod.object({
 })
 
 export const CreateShippingZoneResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "country": zod.string(),
   "regionOrPostalPrefix": zod.string().nullish(),
   "feeAmount": zod.number(),
@@ -1091,7 +1091,7 @@ export const UpdateShippingZoneBody = zod.object({
 })
 
 export const UpdateShippingZoneResponse = zod.object({
-  "id": zod.int(),
+  "id": zod.number().int(),
   "country": zod.string(),
   "regionOrPostalPrefix": zod.string().nullish(),
   "feeAmount": zod.number(),
