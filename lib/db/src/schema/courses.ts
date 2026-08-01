@@ -51,13 +51,13 @@ export const courseModuleMediaTable = pgTable("course_module_media", {
 });
 
 // ---------------------------------------------------------------------------
-// Updated: Quiz questions now support moduleId (nullable for backward compat)
+// Updated: Quiz questions now support moduleId (default 0 = course-level)
 // ---------------------------------------------------------------------------
 
 export const courseQuizQuestionsTable = pgTable("course_quiz_questions", {
   id: serial("id").primaryKey(),
   courseId: integer("course_id").notNull(),
-  moduleId: integer("module_id"),            // NEW: links quiz to a specific module
+  moduleId: integer("module_id").notNull().default(0),   // ← FIXED: default 0 for backward compat
   questionHtml: text("question_html").notNull(),
   options: json("options").$type<Array<{ text: string; isCorrect: boolean }>>().notNull(),
   orderIndex: integer("order_index").default(0),
@@ -65,14 +65,14 @@ export const courseQuizQuestionsTable = pgTable("course_quiz_questions", {
 });
 
 // ---------------------------------------------------------------------------
-// Updated: Quiz attempts now support moduleId (nullable for backward compat)
+// Updated: Quiz attempts now support moduleId (default 0 = course-level)
 // ---------------------------------------------------------------------------
 
 export const courseQuizAttemptsTable = pgTable("course_quiz_attempts", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull(),
   courseId: integer("course_id").notNull(),
-  moduleId: integer("module_id"),            // NEW: nullable for backward compat
+  moduleId: integer("module_id").notNull().default(0),   // ← FIXED: default 0 for backward compat
   score: integer("score").notNull(),
   passed: boolean("passed").notNull(),
   createdAt: timestamp("created_at").defaultNow(),
