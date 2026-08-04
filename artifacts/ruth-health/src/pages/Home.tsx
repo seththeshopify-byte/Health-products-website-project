@@ -5,6 +5,16 @@ import { ArrowRight, Star, ShieldCheck, HeartPulse, Sparkles } from "lucide-reac
 import { useListProducts, useListServices, useListTestimonials, getListProductsQueryKey, getListServicesQueryKey, getListTestimonialsQueryKey } from "@workspace/api-client-react";
 import { formatPrice } from "@/lib/utils";
 
+// Strips HTML tags/entities down to plain readable text, so the homepage preview
+// never shows raw markup even if the full testimonial contains rich formatting.
+function stripHtml(html: string): string {
+  if (!html) return "";
+  if (typeof document === "undefined") return html.replace(/<[^>]*>/g, "");
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
 export default function Home() {
   const { data: products } = useListProducts({ query: { queryKey: getListProductsQueryKey() } });
   const { data: services } = useListServices({ query: { queryKey: getListServicesQueryKey() } });
@@ -179,8 +189,8 @@ export default function Home() {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {featuredTestimonials.map(testimonial => (
-              <Card key={testimonial.id} className="text-left border-border/50 bg-card">
-                <CardContent className="p-8">
+              <Card key={testimonial.id} className="flex h-64 flex-col text-left border-border/50 bg-card overflow-hidden">
+                <CardContent className="flex h-full flex-col p-8">
                   <div className="flex text-amber-400 mb-4">
                     <Star size={16} fill="currentColor" />
                     <Star size={16} fill="currentColor" />
@@ -188,8 +198,10 @@ export default function Home() {
                     <Star size={16} fill="currentColor" />
                     <Star size={16} fill="currentColor" />
                   </div>
-                  <p className="text-foreground italic mb-6">"{testimonial.text}"</p>
-                  <div className="flex items-center gap-3">
+                  <p className="text-foreground italic mb-6 flex-1 overflow-hidden line-clamp-4">
+                    "{stripHtml(testimonial.text)}"
+                  </p>
+                  <div className="mt-auto flex items-center gap-3">
                     <div className="w-10 h-10 rounded-full bg-accent flex items-center justify-center overflow-hidden">
                       {testimonial.photoUrl ? (
                         <img src={testimonial.photoUrl} alt={testimonial.name} className="w-full h-full object-cover" />
