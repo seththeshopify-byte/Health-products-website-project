@@ -4,25 +4,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { PlayCircle, Lock } from "lucide-react";
-
 function stripHtml(html: string): string {
   const div = document.createElement("div");
   div.innerHTML = html;
   return div.textContent || div.innerText || "";
 }
-
 export default function Courses() {
   const { data: courses, isLoading } = useListCourses({ query: { queryKey: getListCoursesQueryKey() } });
-
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
+    <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="mb-12 max-w-3xl">
         <h1 className="text-4xl md:text-5xl font-serif mb-4">Educational Resources</h1>
         <p className="text-xl text-muted-foreground">
           Empower yourself with evidence-based knowledge. Our free courses are designed to help you take control of your long-term health.
         </p>
       </div>
-
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {[1, 2, 3].map(i => (
