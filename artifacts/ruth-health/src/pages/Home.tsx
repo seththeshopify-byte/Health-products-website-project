@@ -84,29 +84,30 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-stone-900 min-h-[520px] md:min-h-[560px] flex items-center">
-        {/* Background layer */}
-        <div className="absolute inset-0">
-          {/* Placeholder gradient shown until the photo finishes loading */}
-          <div
-            className={`absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 transition-opacity duration-700 ${
-              bgLoaded ? "opacity-0" : "opacity-100"
-            }`}
-          />
-          <img
-            src={bg}
-            alt=""
-            aria-hidden="true"
-            onLoad={() => setBgLoaded(true)}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-              bgLoaded ? "opacity-100 hero-kenburns" : "opacity-0"
-            }`}
-          />
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
-        </div>
+      {/* Fixed full-page wallpaper — stays behind the whole page while scrolling,
+          so it remains visible through the semi-transparent footer below. */}
+      <div className="fixed inset-0 -z-10">
+        {/* Placeholder gradient shown until the photo finishes loading */}
+        <div
+          className={`absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 transition-opacity duration-700 ${
+            bgLoaded ? "opacity-0" : "opacity-100"
+          }`}
+        />
+        <img
+          src={bg}
+          alt=""
+          aria-hidden="true"
+          onLoad={() => setBgLoaded(true)}
+          className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+            bgLoaded ? "opacity-100 hero-kenburns" : "opacity-0"
+          }`}
+        />
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
+      </div>
 
+      {/* Hero Section */}
+      <section className="relative min-h-[520px] md:min-h-[560px] flex items-center">
         <div
           className={`container mx-auto px-4 relative z-10 py-10 md:py-14 transition-all duration-700 ${
             bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
