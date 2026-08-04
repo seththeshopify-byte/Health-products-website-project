@@ -43,75 +43,126 @@ const trustMarkers = [
   },
 ];
 
+// Rotating welcome backgrounds — a different one loads on every page visit.
+const heroBackgrounds = [
+  "/attached_assets/generated_images/106979063-1637620676414Master_Bed_2.webp",
+  "/attached_assets/generated_images/106979065-1637620676414Breakfast_Table_1.webp",
+  "/attached_assets/generated_images/106979066-1637620676414Kitchen_3.webp",
+  "/attached_assets/generated_images/106979068-1637620676414Family_Room_1.webp",
+  "/attached_assets/generated_images/106979069-1637620676414Guest_Bed_5.webp",
+  "/attached_assets/generated_images/106979071-1637620676414Twilight_Aerial_1.webp",
+  "/attached_assets/generated_images/106979072-1637620676414Terrace_View_1.webp",
+  "/attached_assets/generated_images/106979073-1637621072294-Aerial_1.webp",
+  "/attached_assets/generated_images/106979078-1637621796055-Twilight_1.webp",
+  "/attached_assets/generated_images/106979081-1637621967928Twilight_3.webp",
+  "/attached_assets/generated_images/106979088-1637623357214Patio_5.webp",
+  "/attached_assets/generated_images/106979099-1637625605353Master_Bed_3.webp",
+  "/attached_assets/generated_images/106979145-1637629270455Aerial_8.webp",
+  "/attached_assets/generated_images/106979146-1637629270455Aerial_6.webp",
+];
+
 export default function Home() {
   const [openMarker, setOpenMarker] = useState<string | null>(null);
+  const [bg] = useState(
+    () => heroBackgrounds[Math.floor(Math.random() * heroBackgrounds.length)]
+  );
+  const [bgLoaded, setBgLoaded] = useState(false);
 
   return (
     <div className="flex flex-col w-full">
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Signature botanical line-art motif, in place of a generic gradient orb backdrop */}
-        <svg
-          className="absolute -right-24 top-1/2 -translate-y-1/2 w-[420px] h-[420px] text-primary/[0.06] pointer-events-none hidden lg:block"
-          viewBox="0 0 200 200"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.2"
-        >
-          <path d="M100 190 C100 140, 95 110, 100 10" />
-          <path d="M100 150 C130 140, 150 120, 165 90" />
-          <path d="M100 150 C70 140, 50 120, 35 90" />
-          <path d="M100 110 C125 102, 140 85, 150 60" />
-          <path d="M100 110 C75 102, 60 85, 50 60" />
-          <path d="M100 70 C118 62, 128 48, 133 30" />
-          <path d="M100 70 C82 62, 72 48, 67 30" />
-          <circle cx="100" cy="14" r="4" />
-        </svg>
+      {/* Local styles: slow continuous zoom on the background, respects reduced-motion */}
+      <style>{`
+        @keyframes heroKenBurns {
+          0%   { transform: scale(1) translate(0, 0); }
+          100% { transform: scale(1.12) translate(-1.5%, -1.5%); }
+        }
+        .hero-kenburns {
+          animation: heroKenBurns 24s ease-in-out infinite alternate;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .hero-kenburns { animation: none; }
+        }
+      `}</style>
 
-        <div className="container mx-auto px-4 relative z-10 py-4 md:py-5">
+      {/* Hero Section */}
+      <section className="relative overflow-hidden bg-stone-900 min-h-[520px] md:min-h-[560px] flex items-center">
+        {/* Background layer */}
+        <div className="absolute inset-0">
+          {/* Placeholder gradient shown until the photo finishes loading */}
+          <div
+            className={`absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 transition-opacity duration-700 ${
+              bgLoaded ? "opacity-0" : "opacity-100"
+            }`}
+          />
+          <img
+            src={bg}
+            alt=""
+            aria-hidden="true"
+            onLoad={() => setBgLoaded(true)}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+              bgLoaded ? "opacity-100 hero-kenburns" : "opacity-0"
+            }`}
+          />
+          {/* Dark overlay for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
+        </div>
+
+        <div
+          className={`container mx-auto px-4 relative z-10 py-10 md:py-14 transition-all duration-700 ${
+            bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+          }`}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.55fr_1fr] gap-6 lg:gap-6 items-center">
             {/* Left: heading + copy + primary actions */}
-            <div className="text-center lg:text-left">
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-secondary mb-2">
+            <div
+              className={`text-center lg:text-left transition-all duration-700 delay-150 ${
+                bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
+            >
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-2">
                 Lagos, Nigeria
               </p>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-foreground mb-2 leading-[1.08] tracking-tight">
+              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-white mb-2 leading-[1.08] tracking-tight">
                 Natural purity.<br/>
-                <span className="text-primary italic">Personalized care.</span>
+                <span className="text-white/90 italic">Personalized care.</span>
               </h1>
-              <p className="text-xs md:text-sm text-muted-foreground mb-3 max-w-md mx-auto lg:mx-0 leading-relaxed">
+              <p className="text-xs md:text-sm text-white/80 mb-3 max-w-md mx-auto lg:mx-0 leading-relaxed">
                 Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2">
-                <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md bg-primary text-primary-foreground text-xs md:text-sm font-medium hover:bg-primary/90 transition-colors gap-2">
+                <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md bg-white text-stone-900 text-xs md:text-sm font-medium hover:bg-white/90 transition-colors gap-2">
                   Shop Products <ArrowRight size={14} />
                 </Link>
-                <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md border border-input bg-background text-xs md:text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+                <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md border border-white/50 bg-white/5 backdrop-blur-sm text-white text-xs md:text-sm font-medium hover:bg-white/15 transition-colors">
                   Book Consultation
                 </Link>
               </div>
             </div>
 
             {/* Middle: click-to-reveal trust markers */}
-            <div className="flex flex-row lg:flex-col items-center lg:items-start justify-center gap-2 lg:gap-2.5">
+            <div
+              className={`flex flex-row lg:flex-col items-center lg:items-start justify-center gap-2 lg:gap-2.5 transition-all duration-700 delay-300 ${
+                bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
+            >
               {trustMarkers.map(({ id, icon: Icon, title, description }) => (
                 <div key={id} className="relative">
                   <button
                     type="button"
                     onClick={() => setOpenMarker(openMarker === id ? null : id)}
                     aria-expanded={openMarker === id}
-                    className="group flex items-center gap-2 rounded-full border border-border bg-card/70 pl-2 pr-3 py-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md"
+                    className="group flex items-center gap-2 rounded-full border border-white/25 bg-white/10 backdrop-blur-md pl-2 pr-3 py-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white/20"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
                       <Icon size={14} />
                     </span>
-                    <span className="hidden sm:inline text-[11px] font-medium leading-tight text-foreground text-left">
+                    <span className="hidden sm:inline text-[11px] font-medium leading-tight text-white text-left">
                       {title}
                     </span>
                   </button>
 
                   {openMarker === id && (
-                    <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-lg top-full mt-2 left-1/2 -translate-x-1/2 lg:left-full lg:top-0 lg:mt-0 lg:ml-2 lg:translate-x-0">
+                    <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-xl top-full mt-2 left-1/2 -translate-x-1/2 lg:left-full lg:top-0 lg:mt-0 lg:ml-2 lg:translate-x-0">
                       <button
                         type="button"
                         onClick={() => setOpenMarker(null)}
@@ -133,17 +184,21 @@ export default function Home() {
             </div>
 
             {/* Right: quick-access tile grid */}
-            <div className="grid grid-cols-3 gap-2 md:gap-3">
+            <div
+              className={`grid grid-cols-3 gap-2 md:gap-3 transition-all duration-700 delay-500 ${
+                bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+              }`}
+            >
               {quickLinks.map(({ href, label, icon: Icon }) => (
                 <Link
                   key={href}
                   href={href}
-                  className="group flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-border bg-card/70 shadow-sm px-1.5 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md"
+                  className="group flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm px-1.5 text-center transition-all hover:-translate-y-0.5 hover:bg-white/20"
                 >
-                  <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                  <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
                     <Icon size={14} />
                   </span>
-                  <span className="text-[10px] md:text-[11px] font-medium leading-tight text-foreground">
+                  <span className="text-[10px] md:text-[11px] font-medium leading-tight text-white">
                     {label}
                   </span>
                 </Link>
