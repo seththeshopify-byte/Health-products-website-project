@@ -5,20 +5,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { formatPrice } from "@/lib/utils";
-
 export default function Products() {
   const { data: products, isLoading } = useListProducts({ query: { queryKey: getListProductsQueryKey() } });
   const { isMember } = useAuth();
-
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
+    <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="mb-12">
         <h1 className="text-4xl md:text-5xl font-serif mb-4">Wellness Apothecary</h1>
         <p className="text-xl text-muted-foreground max-w-2xl">
           Curated supplements and wellness devices selected for their efficacy and quality.
         </p>
       </div>
-
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {[1, 2, 3, 4, 5, 6].map(i => (
