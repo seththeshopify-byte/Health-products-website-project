@@ -86,13 +86,13 @@ export default function ProductDetail() {
         {/* Product Info */}
         <div className="flex flex-col">
           <div className="mb-8">
-            <h1 className="text-3xl md:text-5xl font-serif mb-4 text-foreground">{product.name}</h1>
+            <h1 className="text-2xl md:text-3xl font-serif mb-3 text-foreground leading-tight">{product.name}</h1>
             
-            <div className="flex flex-col gap-2 mb-6">
+            <div className="flex flex-col gap-2 mb-6 pb-6 border-b">
               <div className="flex items-end gap-3">
-                <span className="text-3xl font-medium text-primary">{formatPrice(price)}</span>
-                {isMember ? (
-                  <span className="text-xl text-muted-foreground line-through pb-1">{formatPrice(product.guestPrice)}</span>
+                <span className="text-2xl md:text-3xl font-semibold text-primary">{formatPrice(price)}</span>
+                {isMember && product.guestPrice !== price ? (
+                  <span className="text-base text-muted-foreground line-through pb-0.5">{formatPrice(product.guestPrice)}</span>
                 ) : null}
               </div>
               
@@ -100,7 +100,7 @@ export default function ProductDetail() {
                 <Badge variant="secondary" className="w-fit">Member Pricing Applied</Badge>
               ) : (
                 <div className="text-sm bg-accent/50 text-accent-foreground px-4 py-3 rounded-md mt-2 flex items-center gap-2">
-                  <ShieldCheck size={18} className="text-secondary" />
+                  <ShieldCheck size={18} className="text-secondary shrink-0" />
                   <span>Members pay {formatPrice(product.memberPrice)}. Contact an administrator to access member rates.</span>
                 </div>
               )}
@@ -113,7 +113,7 @@ export default function ProductDetail() {
 
             <Dialog open={isCheckoutOpen} onOpenChange={setIsCheckoutOpen}>
               <DialogTrigger asChild>
-                <Button className="w-full h-14 text-lg mb-8">
+                <Button className="w-full h-12 text-base mb-6">
                   Proceed to Checkout
                 </Button>
               </DialogTrigger>
@@ -189,19 +189,19 @@ export default function ProductDetail() {
               </DialogContent>
             </Dialog>
 
-            <div className="space-y-4 border-t pt-8">
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <ShieldCheck size={20} className="text-primary" />
-              <span>Premium organic quality ingredients</span>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <Truck size={20} className="text-primary" />
-              <span>Ships across Nigeria</span>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <RotateCcw size={20} className="text-primary" />
-              <span>30-day quality guarantee</span>
-            </div>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t pt-6 text-sm text-muted-foreground">
+              <div className="flex items-center gap-2">
+                <ShieldCheck size={16} className="text-primary shrink-0" />
+                <span>Organic quality</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <Truck size={16} className="text-primary shrink-0" />
+                <span>Ships nationwide</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <RotateCcw size={16} className="text-primary shrink-0" />
+                <span>30-day guarantee</span>
+              </div>
             </div>
           </div>
         </div>
