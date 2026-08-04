@@ -14,7 +14,7 @@ export default function Courses() {
   return (
     <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="mb-12 max-w-3xl">
-        <h1 className="text-4xl md:text-5xl font-serif mb-4">Educational Resources</h1>
+        <h1 className="text-3xl md:text-4xl font-serif mb-4">Educational Resources</h1>
         <p className="text-xl text-muted-foreground">
           Empower yourself with evidence-based knowledge. Our free courses are designed to help you take control of your long-term health.
         </p>
