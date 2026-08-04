@@ -45,13 +45,13 @@ export default function ServiceDetail() {
   const price = isMember ? service.memberPrice : service.guestPrice;
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
-      <Link href="/services" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8 gap-2 transition-colors">
+    <div className="container mx-auto px-4 py-3 md:py-6">
+      <Link href="/services" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-4 gap-2 transition-colors">
         <ArrowLeft size={16} /> Back to Services
       </Link>
       
       <div className="max-w-5xl mx-auto">
-        <div className="w-full bg-muted rounded-3xl overflow-hidden relative mb-12 flex items-center justify-center max-h-[480px]">
+        <div className="w-full bg-muted rounded-3xl overflow-hidden relative mb-8 flex items-center justify-center max-h-[480px]">
           <AppImage 
             src={service.imageUrl || undefined} 
             fallbackType="consultation"
