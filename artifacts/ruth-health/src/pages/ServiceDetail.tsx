@@ -51,12 +51,12 @@ export default function ServiceDetail() {
       </Link>
       
       <div className="max-w-5xl mx-auto">
-        <div className="aspect-[21/9] w-full bg-muted rounded-3xl overflow-hidden relative mb-12">
+        <div className="w-full bg-muted rounded-3xl overflow-hidden relative mb-12 flex items-center justify-center max-h-[480px]">
           <AppImage 
             src={service.imageUrl || undefined} 
             fallbackType="consultation"
             alt={service.name} 
-            className="w-full h-full object-cover"
+            className="w-full h-full max-h-[480px] object-contain"
           />
         </div>
 
