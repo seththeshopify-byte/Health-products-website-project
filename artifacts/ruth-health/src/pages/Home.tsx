@@ -1,15 +1,35 @@
 import { Link } from "wouter";
-import { ArrowRight, ShieldCheck, HeartPulse, Sparkles } from "lucide-react";
+import {
+  ArrowRight,
+  ShieldCheck,
+  HeartPulse,
+  Sparkles,
+  ShoppingBag,
+  CalendarCheck,
+  GraduationCap,
+  MessagesSquare,
+  Video,
+  UserRound,
+} from "lucide-react";
+
+const quickLinks = [
+  { href: "/products", label: "Shop Products", icon: ShoppingBag },
+  { href: "/services", label: "Services", icon: Sparkles },
+  { href: "/courses", label: "Courses", icon: GraduationCap },
+  { href: "/book-a-call", label: "Book a Call", icon: CalendarCheck },
+  { href: "/testimonials", label: "Testimonials", icon: MessagesSquare },
+  { href: "/login", label: "Member Login", icon: UserRound },
+];
 
 export default function Home() {
 
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      <section className="relative pt-8 pb-10 md:pt-12 md:pb-14 overflow-hidden">
+      <section className="relative overflow-hidden">
         {/* Signature botanical line-art motif, in place of a generic gradient orb backdrop */}
         <svg
-          className="absolute -right-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] text-primary/[0.06] pointer-events-none hidden md:block"
+          className="absolute -right-24 top-1/2 -translate-y-1/2 w-[420px] h-[420px] text-primary/[0.06] pointer-events-none hidden lg:block"
           viewBox="0 0 200 200"
           fill="none"
           stroke="currentColor"
@@ -25,48 +45,69 @@ export default function Home() {
           <circle cx="100" cy="14" r="4" />
         </svg>
 
-        <div className="container mx-auto px-4 relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary mb-4">
-              Lagos, Nigeria
-            </p>
-            <h1 className="text-5xl md:text-7xl font-serif text-foreground mb-6 leading-[1.1] tracking-tight">
-              Natural purity.<br/>
-              <span className="text-primary italic">Personalized care.</span>
-            </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
-              Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
-            </p>
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-md bg-primary text-primary-foreground font-medium hover:bg-primary/90 transition-colors gap-2">
-                Shop Products <ArrowRight size={18} />
-              </Link>
-              <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-12 px-8 rounded-md border border-input bg-background font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
-                Book Consultation
-              </Link>
+        <div className="container mx-auto px-4 relative z-10 py-6 md:py-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-10 items-center">
+            {/* Left: heading + copy + primary actions */}
+            <div className="text-center lg:text-left">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-secondary mb-2">
+                Lagos, Nigeria
+              </p>
+              <h1 className="text-3xl md:text-4xl lg:text-[2.75rem] font-serif text-foreground mb-3 leading-[1.08] tracking-tight">
+                Natural purity.<br/>
+                <span className="text-primary italic">Personalized care.</span>
+              </h1>
+              <p className="text-sm md:text-base text-muted-foreground mb-5 max-w-md mx-auto lg:mx-0 leading-relaxed">
+                Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
+              </p>
+              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3">
+                <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-10 px-6 rounded-md bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors gap-2">
+                  Shop Products <ArrowRight size={16} />
+                </Link>
+                <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-10 px-6 rounded-md border border-input bg-background text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors">
+                  Book Consultation
+                </Link>
+              </div>
+            </div>
+
+            {/* Right: quick-access tile grid */}
+            <div className="grid grid-cols-3 gap-3 md:gap-4">
+              {quickLinks.map(({ href, label, icon: Icon }) => (
+                <Link
+                  key={href}
+                  href={href}
+                  className="group flex flex-col items-center justify-center gap-2 aspect-square rounded-xl border border-border bg-card/70 shadow-sm px-2 py-3 text-center transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md"
+                >
+                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                    <Icon size={17} />
+                  </span>
+                  <span className="text-[11px] md:text-xs font-medium leading-tight text-foreground">
+                    {label}
+                  </span>
+                </Link>
+              ))}
             </div>
           </div>
         </div>
       </section>
 
       {/* Trust Markers */}
-      <section className="py-8 md:py-10 border-y bg-muted/30">
+      <section className="py-5 md:py-6 border-y bg-muted/30">
         <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x border-border">
-            <div className="flex flex-col items-center justify-center p-4">
-              <HeartPulse className="text-secondary mb-3" size={32} />
-              <h3 className="font-serif text-xl font-medium mb-2">Curated Products</h3>
-              <p className="text-sm text-muted-foreground">Rigorous selection of premium health and wellness supplements.</p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 text-center divide-y md:divide-y-0 md:divide-x border-border">
+            <div className="flex flex-col items-center justify-center p-2">
+              <HeartPulse className="text-secondary mb-1.5" size={22} />
+              <h3 className="font-serif text-sm font-medium mb-0.5">Curated Products</h3>
+              <p className="text-xs text-muted-foreground">Rigorous selection of premium health and wellness supplements.</p>
             </div>
-            <div className="flex flex-col items-center justify-center p-4">
-              <Sparkles className="text-secondary mb-3" size={32} />
-              <h3 className="font-serif text-xl font-medium mb-2">Exclusive Member Pricing</h3>
-              <p className="text-sm text-muted-foreground">Members unlock significant savings and earn referral commissions.</p>
+            <div className="flex flex-col items-center justify-center p-2">
+              <Sparkles className="text-secondary mb-1.5" size={22} />
+              <h3 className="font-serif text-sm font-medium mb-0.5">Exclusive Member Pricing</h3>
+              <p className="text-xs text-muted-foreground">Members unlock significant savings and earn referral commissions.</p>
             </div>
-            <div className="flex flex-col items-center justify-center p-4">
-              <ShieldCheck className="text-secondary mb-3" size={32} />
-              <h3 className="font-serif text-xl font-medium mb-2">Wellness Consultations</h3>
-              <p className="text-sm text-muted-foreground">Private, dedicated time with wellness experts via Zoom.</p>
+            <div className="flex flex-col items-center justify-center p-2">
+              <ShieldCheck className="text-secondary mb-1.5" size={22} />
+              <h3 className="font-serif text-sm font-medium mb-0.5">Wellness Consultations</h3>
+              <p className="text-xs text-muted-foreground">Private, dedicated time with wellness experts via Zoom.</p>
             </div>
           </div>
         </div>
