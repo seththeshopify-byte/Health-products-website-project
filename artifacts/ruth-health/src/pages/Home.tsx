@@ -17,23 +17,35 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      <section className="relative pt-10 pb-12 md:pt-14 md:pb-16 overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-secondary/10 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl opacity-50 translate-y-1/3 -translate-x-1/3" />
-        </div>
-        
+      <section className="relative pt-8 pb-10 md:pt-12 md:pb-14 overflow-hidden">
+        {/* Signature botanical line-art motif, in place of a generic gradient orb backdrop */}
+        <svg
+          className="absolute -right-24 top-1/2 -translate-y-1/2 w-[520px] h-[520px] text-primary/[0.06] pointer-events-none hidden md:block"
+          viewBox="0 0 200 200"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.2"
+        >
+          <path d="M100 190 C100 140, 95 110, 100 10" />
+          <path d="M100 150 C130 140, 150 120, 165 90" />
+          <path d="M100 150 C70 140, 50 120, 35 90" />
+          <path d="M100 110 C125 102, 140 85, 150 60" />
+          <path d="M100 110 C75 102, 60 85, 50 60" />
+          <path d="M100 70 C118 62, 128 48, 133 30" />
+          <path d="M100 70 C82 62, 72 48, 67 30" />
+          <circle cx="100" cy="14" r="4" />
+        </svg>
+
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl mx-auto text-center">
-            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 text-primary text-sm font-medium mb-6">
-              <ShieldCheck size={16} />
-              Premium Organic Wellness from Lagos
-            </span>
-            <h1 className="text-5xl md:text-7xl font-serif text-foreground mb-8 leading-[1.1] tracking-tight">
+            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-secondary mb-4">
+              Lagos, Nigeria
+            </p>
+            <h1 className="text-5xl md:text-7xl font-serif text-foreground mb-6 leading-[1.1] tracking-tight">
               Natural purity.<br/>
               <span className="text-primary italic">Personalized care.</span>
             </h1>
-            <p className="text-lg md:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed">
               Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
