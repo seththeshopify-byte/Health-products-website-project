@@ -1,10 +1,9 @@
 import { useState } from "react";
 import { Phone, MessageSquare, X, HelpCircle } from "lucide-react";
-
 const PHONE_DISPLAY = "+1 (807) 709-2017";
 const PHONE_TEL = "+18077092017";
 const WHATSAPP_NUMBER = "18077092017";
-
+const SUPPORT_TEAL = "#0F4C46";
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -13,38 +12,33 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
-
   return (
-    <div className="fixed bottom-5 left-5 z-50 flex flex-col items-start gap-3">
+    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
       {open && (
-        <div className="flex flex-col gap-2">
+        <div className="flex flex-col gap-2 items-end">
           <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
             <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white">
               <WhatsAppIcon className="w-5 h-5" />
             </span>
             <span className="text-sm font-medium">WhatsApp</span>
           </a>
-
           <a href={"sms:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground">
+            <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
               <MessageSquare className="w-5 h-5" />
             </span>
             <span className="text-sm font-medium">Text Us</span>
           </a>
-
           <a href={"tel:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-primary text-primary-foreground">
+            <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
               <Phone className="w-5 h-5" />
             </span>
             <span className="text-sm font-medium">Call {PHONE_DISPLAY}</span>
           </a>
         </div>
       )}
-
-      <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-2 rounded-full bg-primary text-primary-foreground shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3">
+      <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-2 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3" style={{ backgroundColor: SUPPORT_TEAL }}>
         {open ? <X className="w-5 h-5" /> : <HelpCircle className="w-5 h-5" />}
         <span className="text-sm font-medium">{open ? "Close" : "Get Help"}</span>
       </button>
