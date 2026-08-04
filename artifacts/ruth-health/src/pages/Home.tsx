@@ -17,7 +17,7 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section */}
-      <section className="relative pt-24 pb-32 overflow-hidden">
+      <section className="relative pt-10 pb-12 md:pt-14 md:pb-16 overflow-hidden">
         <div className="absolute inset-0 z-0">
           <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-secondary/10 rounded-full blur-3xl opacity-50 -translate-y-1/2 translate-x-1/3" />
           <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-primary/5 rounded-full blur-3xl opacity-50 translate-y-1/3 -translate-x-1/3" />
@@ -49,7 +49,7 @@ export default function Home() {
       </section>
 
       {/* Trust Markers */}
-      <section className="py-12 border-y bg-muted/30">
+      <section className="py-8 md:py-10 border-y bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center divide-y md:divide-y-0 md:divide-x border-border">
             <div className="flex flex-col items-center justify-center p-4">
@@ -72,7 +72,7 @@ export default function Home() {
       </section>
 
       {/* Featured Products */}
-      <section className="py-24">
+      <section className="pt-10 pb-24 md:pt-14 md:pb-24">
         <div className="container mx-auto px-4">
           <div className="flex justify-between items-end mb-12">
             <div>
