@@ -63,20 +63,15 @@ export default function Testimonials() {
     });
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-10">
-      <div className="relative mx-auto mb-6 max-w-4xl overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-6 py-6 text-center md:py-8">
-        <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-secondary/20 blur-3xl" />
-        <div className="absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
-        <p className="relative mb-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+    <div className="container mx-auto px-4 py-4 md:py-6">
+      <div className="mx-auto mb-4 max-w-3xl text-center">
+        <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           The Ruth Health Community
         </p>
-        <h1 className="relative mb-2 font-serif text-3xl md:text-4xl">Testimonials & Events</h1>
-        <p className="relative mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
-          Discover the people, progress, and shared experiences behind the Ruth Health journey.
-        </p>
+        <h1 className="font-serif text-2xl md:text-3xl">Testimonials & Events</h1>
       </div>
 
-      <div className="mx-auto mb-6 grid max-w-5xl grid-cols-1 gap-2.5 md:grid-cols-3">
+      <div className="mx-auto mb-6 grid max-w-5xl grid-cols-1 gap-2 md:grid-cols-3">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -84,37 +79,27 @@ export default function Testimonials() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`group flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
+              className={`group flex items-center gap-2.5 rounded-lg border px-3.5 py-2.5 text-left transition-all ${
                 isActive
                   ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/15"
                   : "border-border bg-card hover:border-primary/40 hover:bg-accent/30"
               }`}
             >
-              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+              <span className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
                 isActive ? "bg-primary-foreground/15" : "bg-primary/10"
               }`}>
-                <Icon size={16} />
+                <Icon size={15} />
               </span>
               <div className="min-w-0 flex-1">
-                <div className="font-serif text-base leading-tight">{tab.label}</div>
+                <div className="font-serif text-sm leading-tight">{tab.label}</div>
               </div>
-              <ArrowUpRight size={16} className={`shrink-0 ${isActive ? "opacity-80" : "text-muted-foreground"}`} />
+              <ArrowUpRight size={14} className={`shrink-0 ${isActive ? "opacity-80" : "text-muted-foreground"}`} />
             </button>
           );
         })}
       </div>
 
       <div className="mx-auto max-w-6xl">
-        <div className="mb-8 flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
-          <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.18em] text-primary">Explore the stories</p>
-            <h2 className="mt-2 font-serif text-3xl md:text-4xl">{currentTab.label}</h2>
-          </div>
-          <p className="max-w-md text-sm leading-relaxed text-muted-foreground md:text-right">
-            {currentTab.description}
-          </p>
-        </div>
-
         {activeTab === "productUsers" && (
           <TestimonialGrid testimonials={productTestimonials} isLoading={loadingProduct} />
         )}
@@ -125,12 +110,12 @@ export default function Testimonials() {
 
         {activeTab === "companyEvents" && (
           <>
-            <div className="mb-8 flex w-fit rounded-full border bg-card p-1">
+            <div className="mb-4 flex w-fit rounded-full border bg-card p-1">
               {(["upcoming", "past"] as EventTab[]).map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setEventTab(tab)}
-                  className={`rounded-full px-5 py-2 text-sm font-medium transition-colors ${
+                  className={`rounded-full px-4 py-1.5 text-sm font-medium transition-colors ${
                     eventTab === tab ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
