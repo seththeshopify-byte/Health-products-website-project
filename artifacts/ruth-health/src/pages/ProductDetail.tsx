@@ -65,7 +65,7 @@ export default function ProductDetail() {
   if (!product) return <div className="min-h-[50vh] flex items-center justify-center">Product not found</div>;
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
+    <div className="container mx-auto px-4 py-6 md:py-10">
       <Link href="/products" className="inline-flex items-center text-sm text-muted-foreground hover:text-primary mb-8 gap-2 transition-colors">
         <ArrowLeft size={16} /> Back to Apothecary
       </Link>
@@ -73,7 +73,7 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
         {/* Image Gallery */}
         <div className="space-y-6">
-          <div className="aspect-square bg-muted rounded-2xl overflow-hidden relative">
+          <div className="aspect-square max-w-[480px] mx-auto md:mx-0 bg-muted rounded-2xl overflow-hidden relative">
             <AppImage 
               src={product.imageUrl || undefined} 
               fallbackType="supplement"
