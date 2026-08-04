@@ -19,8 +19,8 @@ export default function Services() {
   return (
     <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="mb-12 max-w-3xl">
-        <h1 className="text-4xl md:text-5xl font-serif mb-4">Professional Services</h1>
-        <p className="text-xl text-muted-foreground">
+        <h1 className="text-2xl md:text-3xl font-serif mb-2 text-foreground">Professional Services</h1>
+        <p className="text-sm md:text-base text-muted-foreground">
           Dedicated, one-on-one virtual consultations with our wellness experts. 
           Receive personalized guidance tailored to your unique health profile.
         </p>
@@ -54,24 +54,24 @@ export default function Services() {
                     </div>
                   )}
                 </div>
-                <CardContent className="p-8 flex flex-col justify-between h-[calc(100%-56.25%)]">
+                <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-56.25%)]">
                   <div>
-                    <h3 className="font-serif text-2xl mb-3 group-hover:text-primary transition-colors">{service.name}</h3>
-                    <p className="text-base text-muted-foreground line-clamp-3 mb-6">{stripHtml(service.description)}</p>
+                    <h3 className="font-serif text-lg mb-2 group-hover:text-primary transition-colors">{service.name}</h3>
+                    <p className="text-sm text-muted-foreground line-clamp-3 mb-4">{stripHtml(service.description)}</p>
                   </div>
-                  <div className="mt-auto border-t pt-6">
+                  <div className="mt-auto border-t pt-4">
                     {isMember ? (
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-muted-foreground">Member Rate</span>
                         <div className="flex items-baseline gap-2">
                           <span className="text-sm text-muted-foreground line-through pb-0.5">{formatPrice(service.guestPrice)}</span>
-                          <span className="text-2xl font-medium text-primary">{formatPrice(service.memberPrice)}</span>
+                          <span className="text-xl font-medium text-primary">{formatPrice(service.memberPrice)}</span>
                         </div>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between">
                         <span className="text-sm font-medium text-muted-foreground">Consultation Fee</span>
-                        <span className="text-2xl font-medium text-foreground">{formatPrice(service.guestPrice)}</span>
+                        <span className="text-xl font-medium text-foreground">{formatPrice(service.guestPrice)}</span>
                       </div>
                     )}
                   </div>
