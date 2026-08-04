@@ -6,6 +6,12 @@ import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { formatPrice } from "@/lib/utils";
 
+function stripHtml(html: string): string {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
 export default function Services() {
   const { data: services, isLoading } = useListServices({ query: { queryKey: getListServicesQueryKey() } });
   const { isMember } = useAuth();
@@ -51,7 +57,7 @@ export default function Services() {
                 <CardContent className="p-8 flex flex-col justify-between h-[calc(100%-56.25%)]">
                   <div>
                     <h3 className="font-serif text-2xl mb-3 group-hover:text-primary transition-colors">{service.name}</h3>
-                    <p className="text-base text-muted-foreground line-clamp-3 mb-6">{service.description}</p>
+                    <p className="text-base text-muted-foreground line-clamp-3 mb-6">{stripHtml(service.description)}</p>
                   </div>
                   <div className="mt-auto border-t pt-6">
                     {isMember ? (
