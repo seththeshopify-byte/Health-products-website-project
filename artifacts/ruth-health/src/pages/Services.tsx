@@ -11,7 +11,7 @@ export default function Services() {
   const { isMember } = useAuth();
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
+    <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="mb-12 max-w-3xl">
         <h1 className="text-4xl md:text-5xl font-serif mb-4">Professional Services</h1>
         <p className="text-xl text-muted-foreground">
