@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import {
   ArrowRight,
@@ -8,8 +9,8 @@ import {
   CalendarCheck,
   GraduationCap,
   MessagesSquare,
-  Video,
   UserRound,
+  X,
 } from "lucide-react";
 
 const quickLinks = [
@@ -21,7 +22,29 @@ const quickLinks = [
   { href: "/login", label: "Member Login", icon: UserRound },
 ];
 
+const trustMarkers = [
+  {
+    id: "curated-products",
+    icon: HeartPulse,
+    title: "Curated Products",
+    description: "Rigorous selection of premium health and wellness supplements.",
+  },
+  {
+    id: "member-pricing",
+    icon: Sparkles,
+    title: "Exclusive Member Pricing",
+    description: "Members unlock significant savings and earn referral commissions.",
+  },
+  {
+    id: "wellness-consultations",
+    icon: ShieldCheck,
+    title: "Wellness Consultations",
+    description: "Private, dedicated time with wellness experts via Zoom.",
+  },
+];
+
 export default function Home() {
+  const [openMarker, setOpenMarker] = useState<string | null>(null);
 
   return (
     <div className="flex flex-col w-full">
@@ -46,7 +69,7 @@ export default function Home() {
         </svg>
 
         <div className="container mx-auto px-4 relative z-10 py-4 md:py-5">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.55fr_1fr] gap-6 lg:gap-6 items-center">
             {/* Left: heading + copy + primary actions */}
             <div className="text-center lg:text-left">
               <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-secondary mb-2">
@@ -69,6 +92,46 @@ export default function Home() {
               </div>
             </div>
 
+            {/* Middle: click-to-reveal trust markers */}
+            <div className="flex flex-row lg:flex-col items-center lg:items-start justify-center gap-2 lg:gap-2.5">
+              {trustMarkers.map(({ id, icon: Icon, title, description }) => (
+                <div key={id} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setOpenMarker(openMarker === id ? null : id)}
+                    aria-expanded={openMarker === id}
+                    className="group flex items-center gap-2 rounded-full border border-border bg-card/70 pl-2 pr-3 py-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:bg-card hover:shadow-md"
+                  >
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                      <Icon size={14} />
+                    </span>
+                    <span className="hidden sm:inline text-[11px] font-medium leading-tight text-foreground text-left">
+                      {title}
+                    </span>
+                  </button>
+
+                  {openMarker === id && (
+                    <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-lg top-full mt-2 left-1/2 -translate-x-1/2 lg:left-full lg:top-0 lg:mt-0 lg:ml-2 lg:translate-x-0">
+                      <button
+                        type="button"
+                        onClick={() => setOpenMarker(null)}
+                        aria-label="Close"
+                        className="absolute right-1.5 top-1.5 text-muted-foreground hover:text-foreground"
+                      >
+                        <X size={14} />
+                      </button>
+                      <h4 className="font-serif text-xs font-medium mb-1 pr-4 text-foreground">
+                        {title}
+                      </h4>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed">
+                        {description}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
             {/* Right: quick-access tile grid */}
             <div className="grid grid-cols-3 gap-2 md:gap-3">
               {quickLinks.map(({ href, label, icon: Icon }) => (
@@ -89,30 +152,6 @@ export default function Home() {
           </div>
         </div>
       </section>
-
-      {/* Trust Markers */}
-      <section className="py-3 md:py-4 border-y bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 text-center divide-y md:divide-y-0 md:divide-x border-border">
-            <div className="flex flex-col items-center justify-center p-1.5">
-              <HeartPulse className="text-secondary mb-1" size={18} />
-              <h3 className="font-serif text-xs md:text-sm font-medium mb-0.5">Curated Products</h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground">Rigorous selection of premium health and wellness supplements.</p>
-            </div>
-            <div className="flex flex-col items-center justify-center p-1.5">
-              <Sparkles className="text-secondary mb-1" size={18} />
-              <h3 className="font-serif text-xs md:text-sm font-medium mb-0.5">Exclusive Member Pricing</h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground">Members unlock significant savings and earn referral commissions.</p>
-            </div>
-            <div className="flex flex-col items-center justify-center p-1.5">
-              <ShieldCheck className="text-secondary mb-1" size={18} />
-              <h3 className="font-serif text-xs md:text-sm font-medium mb-0.5">Wellness Consultations</h3>
-              <p className="text-[10px] md:text-xs text-muted-foreground">Private, dedicated time with wellness experts via Zoom.</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
     </div>
   );
 }
