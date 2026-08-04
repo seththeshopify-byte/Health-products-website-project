@@ -63,7 +63,7 @@ export default function Testimonials() {
     });
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-24">
+    <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="relative mx-auto mb-12 max-w-4xl overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-6 py-12 text-center md:px-12">
         <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-secondary/20 blur-3xl" />
         <div className="absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
