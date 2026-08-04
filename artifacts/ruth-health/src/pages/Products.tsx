@@ -11,8 +11,8 @@ export default function Products() {
   return (
     <div className="container mx-auto px-4 py-6 md:py-10">
       <div className="mb-12">
-        <h1 className="text-3xl md:text-4xl font-serif mb-3">Wellness Apothecary</h1>
-        <p className="text-base md:text-lg text-muted-foreground max-w-2xl">
+        <h1 className="text-2xl md:text-3xl font-serif mb-2 text-foreground">Wellness Apothecary</h1>
+        <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
           Curated supplements and wellness devices selected for their efficacy and quality.
         </p>
       </div>
