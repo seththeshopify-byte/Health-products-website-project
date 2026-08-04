@@ -136,12 +136,24 @@ export default function Testimonials() {
   );
 }
 
+// Strips HTML tags/entities down to plain readable text, used for the short card
+// preview so a card's height never depends on how much markup the full testimonial has.
+function stripHtml(html: string): string {
+  if (!html) return "";
+  if (typeof document === "undefined") return html.replace(/<[^>]*>/g, "");
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
 function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | undefined; isLoading: boolean }) {
+  const [expanded, setExpanded] = useState<any | null>(null);
+
   if (isLoading) {
     return (
-      <div className="columns-1 gap-6 space-y-6 md:columns-2 lg:columns-3">
+      <div className="grid grid-cols-1 gap-6 pb-12 sm:grid-cols-2 lg:grid-cols-3">
         {[1, 2, 3, 4, 5, 6].map((item) => (
-          <div key={item} className="h-[250px] w-full animate-pulse rounded-2xl bg-muted" />
+          <div key={item} className="h-64 w-full animate-pulse rounded-2xl bg-muted" />
         ))}
       </div>
     );
@@ -152,41 +164,94 @@ function TestimonialGrid({ testimonials, isLoading }: { testimonials: any[] | un
   }
 
   return (
-    <div className="space-y-8 pb-12">
-      {testimonials.map((testimonial) => (
-        <div key={testimonial.id}>
-          <Card className="overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:bg-card hover:shadow-lg">
-            <CardContent className="p-8">
-              <div className="mb-6 flex text-amber-400">
-                {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} fill="currentColor" />)}
-              </div>
-              <div
-                className="prose prose-sm mb-8 max-w-none text-foreground [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                dangerouslySetInnerHTML={{ __html: testimonial.text }}
-              />
-              <MediaGallery
-                imageUrls={(testimonial.photoUrls?.length ? testimonial.photoUrls : testimonial.photoUrl ? [testimonial.photoUrl] : []).slice(1)}
-                videoUrls={testimonial.videoUrls?.length ? testimonial.videoUrls : testimonial.videoUrl ? [testimonial.videoUrl] : []}
-                alt={testimonial.name}
-              />
-              <div className="flex items-center gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-accent shadow-sm">
-                  {testimonial.photoUrl ? (
-                    <img src={testimonial.photoUrl} alt={testimonial.name} className="h-full w-full object-cover" />
-                  ) : (
-                    <span className="font-serif text-lg text-muted-foreground">{testimonial.name.charAt(0)}</span>
-                  )}
+    <>
+      <div className="grid grid-cols-1 gap-6 pb-12 sm:grid-cols-2 lg:grid-cols-3">
+        {testimonials.map((testimonial) => {
+          const preview = stripHtml(testimonial.text);
+          return (
+            <Card
+              key={testimonial.id}
+              className="flex h-64 flex-col overflow-hidden border-border/50 bg-card/70 shadow-sm transition-all hover:-translate-y-1 hover:bg-card hover:shadow-lg"
+            >
+              <CardContent className="flex h-full flex-col p-6">
+                <div className="mb-3 flex text-amber-400">
+                  {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={14} fill="currentColor" />)}
                 </div>
-                <div>
-                  <div className="text-base font-medium">{testimonial.name}</div>
-                  <div className="text-sm font-medium text-secondary">Verified Ruth Health Member</div>
+                <p className="mb-3 flex-1 overflow-hidden text-sm leading-relaxed text-foreground line-clamp-4">
+                  {preview}
+                </p>
+                <button
+                  type="button"
+                  onClick={() => setExpanded(testimonial)}
+                  className="mb-4 self-start text-sm font-medium text-primary hover:underline"
+                >
+                  Read more
+                </button>
+                <div className="mt-auto flex items-center gap-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-accent shadow-sm">
+                    {testimonial.photoUrl ? (
+                      <img src={testimonial.photoUrl} alt={testimonial.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="font-serif text-base text-muted-foreground">{testimonial.name.charAt(0)}</span>
+                    )}
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">{testimonial.name}</div>
+                    <div className="text-xs font-medium text-secondary">Verified Ruth Health Member</div>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </div>
+
+      {expanded && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+          onClick={() => setExpanded(null)}
+        >
+          <div
+            className="relative max-h-[85vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-card p-8 shadow-xl"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <button
+              type="button"
+              aria-label="Close"
+              onClick={() => setExpanded(null)}
+              className="absolute right-4 top-4 flex h-9 w-9 items-center justify-center rounded-full bg-muted text-foreground transition-colors hover:bg-muted/70"
+            >
+              <X size={18} />
+            </button>
+            <div className="mb-6 flex text-amber-400">
+              {[1, 2, 3, 4, 5].map((star) => <Star key={star} size={16} fill="currentColor" />)}
+            </div>
+            <div
+              className="prose prose-sm mb-8 max-w-none text-foreground [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+              dangerouslySetInnerHTML={{ __html: expanded.text }}
+            />
+            <MediaGallery
+              imageUrls={(expanded.photoUrls?.length ? expanded.photoUrls : expanded.photoUrl ? [expanded.photoUrl] : []).slice(1)}
+              videoUrls={expanded.videoUrls?.length ? expanded.videoUrls : expanded.videoUrl ? [expanded.videoUrl] : []}
+              alt={expanded.name}
+            />
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-border bg-accent shadow-sm">
+                {expanded.photoUrl ? (
+                  <img src={expanded.photoUrl} alt={expanded.name} className="h-full w-full object-cover" />
+                ) : (
+                  <span className="font-serif text-lg text-muted-foreground">{expanded.name.charAt(0)}</span>
+                )}
               </div>
-            </CardContent>
-          </Card>
+              <div>
+                <div className="text-base font-medium">{expanded.name}</div>
+                <div className="text-sm font-medium text-secondary">Verified Ruth Health Member</div>
+              </div>
+            </div>
+          </div>
         </div>
-      ))}
-    </div>
+      )}
+    </>
   );
 }
 
