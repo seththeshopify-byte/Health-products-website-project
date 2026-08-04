@@ -64,19 +64,19 @@ export default function Testimonials() {
 
   return (
     <div className="container mx-auto px-4 py-6 md:py-10">
-      <div className="relative mx-auto mb-12 max-w-4xl overflow-hidden rounded-[2rem] border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-6 py-12 text-center md:px-12">
-        <div className="absolute -right-16 -top-16 h-40 w-40 rounded-full bg-secondary/20 blur-3xl" />
-        <div className="absolute -bottom-20 -left-16 h-48 w-48 rounded-full bg-primary/10 blur-3xl" />
-        <p className="relative mb-3 text-sm font-semibold uppercase tracking-[0.22em] text-primary">
+      <div className="relative mx-auto mb-6 max-w-4xl overflow-hidden rounded-2xl border border-primary/10 bg-gradient-to-br from-primary/10 via-background to-secondary/10 px-6 py-6 text-center md:py-8">
+        <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-secondary/20 blur-3xl" />
+        <div className="absolute -bottom-16 -left-16 h-32 w-32 rounded-full bg-primary/10 blur-3xl" />
+        <p className="relative mb-1.5 text-xs font-semibold uppercase tracking-[0.2em] text-primary">
           The Ruth Health Community
         </p>
-        <h1 className="relative mb-5 font-serif text-4xl md:text-6xl">Testimonials & Events</h1>
-        <p className="relative mx-auto max-w-2xl text-lg leading-relaxed text-muted-foreground md:text-xl">
+        <h1 className="relative mb-2 font-serif text-3xl md:text-4xl">Testimonials & Events</h1>
+        <p className="relative mx-auto max-w-2xl text-sm leading-relaxed text-muted-foreground md:text-base">
           Discover the people, progress, and shared experiences behind the Ruth Health journey.
         </p>
       </div>
 
-      <div className="mx-auto mb-10 grid max-w-5xl grid-cols-1 gap-3 md:grid-cols-3">
+      <div className="mx-auto mb-6 grid max-w-5xl grid-cols-1 gap-2.5 md:grid-cols-3">
         {TABS.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
@@ -84,24 +84,21 @@ export default function Testimonials() {
             <button
               key={tab.key}
               onClick={() => setActiveTab(tab.key)}
-              className={`group rounded-2xl border p-5 text-left transition-all ${
+              className={`group flex items-center gap-3 rounded-xl border px-4 py-3 text-left transition-all ${
                 isActive
-                  ? "border-primary bg-primary text-primary-foreground shadow-lg shadow-primary/15"
-                  : "border-border bg-card hover:-translate-y-0.5 hover:border-primary/40 hover:bg-accent/30"
+                  ? "border-primary bg-primary text-primary-foreground shadow-sm shadow-primary/15"
+                  : "border-border bg-card hover:border-primary/40 hover:bg-accent/30"
               }`}
             >
-              <div className="mb-4 flex items-center justify-between">
-                <span className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  isActive ? "bg-primary-foreground/15" : "bg-primary/10"
-                }`}>
-                  <Icon size={19} />
-                </span>
-                <ArrowUpRight size={18} className={isActive ? "opacity-80" : "text-muted-foreground"} />
+              <span className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${
+                isActive ? "bg-primary-foreground/15" : "bg-primary/10"
+              }`}>
+                <Icon size={16} />
+              </span>
+              <div className="min-w-0 flex-1">
+                <div className="font-serif text-base leading-tight">{tab.label}</div>
               </div>
-              <div className="font-serif text-xl">{tab.label}</div>
-              <p className={`mt-2 text-sm leading-relaxed ${isActive ? "text-primary-foreground/80" : "text-muted-foreground"}`}>
-                {tab.description}
-              </p>
+              <ArrowUpRight size={16} className={`shrink-0 ${isActive ? "opacity-80" : "text-muted-foreground"}`} />
             </button>
           );
         })}
