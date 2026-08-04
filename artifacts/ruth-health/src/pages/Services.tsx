@@ -3,7 +3,6 @@ import { Link } from "wouter";
 import { useListServices, getListServicesQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { formatPrice } from "@/lib/utils";
 import { X } from "lucide-react";
@@ -56,11 +55,6 @@ export default function Services() {
                     alt={service.name} 
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700"
                   />
-                  {isMember && (
-                    <div className="absolute top-3 left-3">
-                      <Badge variant="secondary" className="shadow-sm bg-background/80 backdrop-blur-sm border-transparent text-foreground">Member Pricing</Badge>
-                    </div>
-                  )}
                 </div>
                 <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-56.25%)]">
                   <div>
@@ -115,11 +109,6 @@ export default function Services() {
                 alt={selected.name}
                 className="w-full h-full object-contain"
               />
-              {isMember && (
-                <div className="absolute top-3 left-3">
-                  <Badge variant="secondary" className="shadow-sm bg-background/80 backdrop-blur-sm border-transparent text-foreground">Member Pricing</Badge>
-                </div>
-              )}
             </div>
 
             <div className="p-8">
