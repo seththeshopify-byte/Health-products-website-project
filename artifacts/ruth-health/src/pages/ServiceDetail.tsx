@@ -64,9 +64,10 @@ export default function ServiceDetail() {
           <div className="lg:col-span-2 space-y-8">
             <div>
               <h1 className="text-3xl md:text-5xl font-serif mb-6 text-foreground">{service.name}</h1>
-              <div className="prose prose-lg prose-neutral max-w-none text-muted-foreground">
-                <p>{service.description}</p>
-              </div>
+              <div
+                className="prose prose-lg prose-neutral max-w-none text-muted-foreground [&_h2]:font-serif [&_h2]:text-foreground [&_h3]:font-serif [&_h3]:text-foreground [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+                dangerouslySetInnerHTML={{ __html: service.description }}
+              />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-8 border-t">
