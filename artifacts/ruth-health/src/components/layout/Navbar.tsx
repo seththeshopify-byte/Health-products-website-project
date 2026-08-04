@@ -30,7 +30,7 @@ export function Navbar() {
       <div className="container mx-auto px-4 md:px-8 h-16 flex items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="font-serif text-2xl font-semibold text-primary">
-            Ruth Health.
+            Dashboard
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
             {navItems.map((item) => (
