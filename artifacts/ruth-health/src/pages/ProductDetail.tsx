@@ -26,6 +26,8 @@ export default function ProductDetail() {
   const { isMember } = useAuth();
   const createOrder = useCreateOrder();
   
+  const [email, setEmail] = useState("");
+
   const [shippingAddress, setShippingAddress] = useState({
     line1: "",
     city: "",
@@ -38,7 +40,14 @@ export default function ProductDetail() {
 
   const price = isMember && product ? product.memberPrice : (product?.guestPrice || 0);
 
+  const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+
   const handleCheckout = () => {
+    if (!email || !isValidEmail(email)) {
+      toast({ title: "Required", description: "A valid email is required to receive your payment confirmation", variant: "destructive" });
+      return;
+    }
+
     if (!shippingAddress.country) {
       toast({ title: "Required", description: "Country is required for shipping", variant: "destructive" });
       return;
@@ -49,7 +58,8 @@ export default function ProductDetail() {
         itemType: "product",
         itemId: id,
         promoCodeUsed: localStorage.getItem(REF_CODE_KEY) || undefined,
-        shippingAddress
+        shippingAddress,
+        email
       }
     }, {
       onSuccess: (data) => {
@@ -123,6 +133,16 @@ export default function ProductDetail() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input 
+                      id="email" 
+                      type="email"
+                      placeholder="you@example.com"
+                      value={email} 
+                      onChange={e => setEmail(e.target.value)} 
+                    />
+                  </div>
+                  <div className="grid gap-2 mt-4">
                     <Label htmlFor="line1">Address Line 1</Label>
                     <Input 
                       id="line1" 
@@ -181,7 +201,7 @@ export default function ProductDetail() {
                 </div>
                 <Button 
                   onClick={handleCheckout} 
-                  disabled={createOrder.isPending || !shippingAddress.country}
+                  disabled={createOrder.isPending || !shippingAddress.country || !email}
                   className="w-full h-12"
                 >
                   {createOrder.isPending ? "Processing..." : "Continue to Payment"}
