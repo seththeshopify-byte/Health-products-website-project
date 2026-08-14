@@ -3,22 +3,27 @@ import { db, ordersTable, productsTable, servicesTable, commissionEventsTable, u
 import { eq } from "drizzle-orm";
 import { requireAuth, requireAdmin, optionalAuth } from "../middlewares/requireAuth.js";
 import { calculateShipping } from "../lib/shipping.js";
-import Stripe from "stripe";
+import crypto from "crypto";
 import { logger } from "../lib/logger.js";
 
 const router = Router();
 
-const stripe = process.env.STRIPE_SECRET_KEY
-  ? new Stripe(process.env.STRIPE_SECRET_KEY)
-  : null;
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
+const PAYSTACK_BASE_URL = "https://api.paystack.co";
 
-// POST /orders — create Stripe checkout session
+// POST /orders — create Paystack checkout session
 router.post("/orders", optionalAuth, async (req, res) => {
   try {
-    const { itemType, itemId, promoCodeUsed, shippingAddress } = req.body;
+    const { itemType, itemId, promoCodeUsed, shippingAddress, email } = req.body;
 
     if (!itemType || !itemId || !shippingAddress?.country) {
       res.status(400).json({ error: "itemType, itemId, and shippingAddress.country are required" });
+      return;
+    }
+
+    const customerEmail = (req.user as any)?.email || email;
+    if (!customerEmail) {
+      res.status(400).json({ error: "email is required to initiate checkout" });
       return;
     }
 
@@ -70,11 +75,11 @@ router.post("/orders", optionalAuth, async (req, res) => {
       status: "pending",
     }).returning();
 
-    if (!stripe) {
-      // No Stripe key: return a mock checkout URL for development
-      logger.warn("STRIPE_SECRET_KEY not set — returning mock checkout URL");
+    if (!PAYSTACK_SECRET_KEY) {
+      // No Paystack key: return a mock checkout URL for development
+      logger.warn("PAYSTACK_SECRET_KEY not set — returning mock checkout URL");
       res.json({
-        checkoutUrl: `/checkout/success?order_id=${order.id}&session_id=mock`,
+        checkoutUrl: `/checkout/success?order_id=${order.id}&reference=mock`,
         orderId: order.id,
       });
       return;
@@ -84,67 +89,72 @@ router.post("/orders", optionalAuth, async (req, res) => {
       ? `https://${process.env.REPLIT_DEV_DOMAIN}`
       : process.env.APP_URL ?? "http://localhost:80";
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "payment",
-      line_items: [
-        {
-          price_data: {
-            currency: "ngn",
-            product_data: { name: itemName },
-            unit_amount: Math.round(totalAmount * 100),
-          },
-          quantity: 1,
-        },
-      ],
-      metadata: { orderId: String(order.id) },
-      success_url: `${baseUrl}/checkout/success?order_id=${order.id}&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/checkout/cancel?order_id=${order.id}`,
+    const paystackRes = await fetch(`${PAYSTACK_BASE_URL}/transaction/initialize`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: customerEmail,
+        amount: Math.round(totalAmount * 100), // Paystack expects kobo (amount x 100)
+        currency: "NGN",
+        callback_url: `${baseUrl}/checkout/success?order_id=${order.id}`,
+        metadata: { orderId: String(order.id) },
+      }),
     });
 
-    await db.update(ordersTable).set({ stripeSessionId: session.id }).where(eq(ordersTable.id, order.id));
+    const paystackData: any = await paystackRes.json();
 
-    res.json({ checkoutUrl: session.url!, orderId: order.id });
+    if (!paystackRes.ok || !paystackData.status) {
+      req.log.error({ paystackData }, "Paystack initialize failed");
+      res.status(502).json({ error: "Failed to initialize payment" });
+      return;
+    }
+
+    const { authorization_url, reference } = paystackData.data;
+
+    await db.update(ordersTable).set({ paystackReference: reference }).where(eq(ordersTable.id, order.id));
+
+    res.json({ checkoutUrl: authorization_url, orderId: order.id });
   } catch (err) {
     req.log.error({ err }, "createOrder error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
-// POST /orders/webhook — Stripe webhook
+// POST /orders/webhook — Paystack webhook
 router.post("/orders/webhook", async (req, res) => {
   try {
-    if (!stripe) { res.json({ success: true }); return; }
+    if (!PAYSTACK_SECRET_KEY) { res.json({ success: true }); return; }
 
-    const sig = req.headers["stripe-signature"] as string;
-    const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
-
-    if (!webhookSecret) {
-      req.log.warn("STRIPE_WEBHOOK_SECRET not configured — rejecting webhook");
-      res.status(400).json({ error: "Webhook secret not configured" });
-      return;
-    }
+    const sig = req.headers["x-paystack-signature"] as string;
     if (!sig) {
-      res.status(400).json({ error: "Missing stripe-signature header" });
+      res.status(400).json({ error: "Missing x-paystack-signature header" });
       return;
     }
 
-    let event: Stripe.Event;
-    try {
-      event = stripe.webhooks.constructEvent(req.body, sig, webhookSecret);
-    } catch (err) {
-      req.log.warn({ err }, "Stripe webhook signature verification failed");
+    // IMPORTANT: this relies on req.body being the raw request buffer/string,
+    // not JSON already parsed by express.json(). See note below the code.
+    const rawBody = (req as any).rawBody ?? JSON.stringify(req.body);
+    const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(rawBody).digest("hex");
+
+    if (hash !== sig) {
+      req.log.warn("Paystack webhook signature verification failed");
       res.status(400).json({ error: "Webhook signature verification failed" });
       return;
     }
 
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
-      const orderId = parseInt(session.metadata?.orderId ?? "0");
+    const event = req.body;
+
+    if (event.event === "charge.success") {
+      const reference = event.data.reference as string;
+      const orderId = parseInt(event.data.metadata?.orderId ?? "0");
+
       if (orderId) {
         const [order] = await db
           .update(ordersTable)
-          .set({ status: "paid", stripePaymentId: session.payment_intent as string })
+          .set({ status: "paid", paystackReference: reference })
           .where(eq(ordersTable.id, orderId))
           .returning();
 
@@ -176,7 +186,7 @@ router.post("/orders/webhook", async (req, res) => {
 
     res.json({ success: true });
   } catch (err) {
-    req.log.error({ err }, "stripeWebhook error");
+    req.log.error({ err }, "paystackWebhook error");
     res.status(400).json({ error: "Webhook error" });
   }
 });
