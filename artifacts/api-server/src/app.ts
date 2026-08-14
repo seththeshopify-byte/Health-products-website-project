@@ -28,7 +28,7 @@ app.use(
 
 app.use(cors());
 
-// Raw body for Stripe webhook must come before json parser
+// Raw body for Paystack webhook signature verification must come before json parser
 app.use("/api/orders/webhook", express.raw({ type: "application/json" }));
 
 app.use(express.json());
