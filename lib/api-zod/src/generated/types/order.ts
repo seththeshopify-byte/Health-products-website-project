@@ -24,7 +24,7 @@ export interface Order {
   /** @nullable */
   shippingAddress?: string | null;
   /** @nullable */
-  stripePaymentId?: string | null;
+  paystackReference?: string | null;
   status: OrderStatus;
   createdAt: Date;
 }
