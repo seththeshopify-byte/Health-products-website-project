@@ -127,7 +127,7 @@ export default function ProductDetail() {
                   Proceed to Checkout
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px]">
+              <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Shipping Information</DialogTitle>
                 </DialogHeader>
