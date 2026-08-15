@@ -1,14 +1,30 @@
 import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
-import { useGetMemberDashboard, getGetMemberDashboardQueryKey } from "@workspace/api-client-react";
+import { useGetMemberDashboard, getGetMemberDashboardQueryKey, useListOrders } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { formatPrice } from "@/lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Copy, Gift, TrendingUp, Users, CheckCircle2 } from "lucide-react";
+import { Copy, Gift, TrendingUp, Users, CheckCircle2, Package } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+
+const ORDER_STATUS_STYLES: Record<string, string> = {
+  pending: "bg-amber-100 text-amber-700",
+  paid: "bg-blue-100 text-blue-700",
+  shipped: "bg-purple-100 text-purple-700",
+  delivered: "bg-green-100 text-green-700",
+  cancelled: "bg-red-100 text-red-700",
+};
+
+const ORDER_STATUS_LABELS: Record<string, string> = {
+  pending: "Awaiting Payment",
+  paid: "Processing",
+  shipped: "Shipped",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+};
 
 export default function Dashboard() {
   const { isLoggedIn, isLoading: authLoading } = useAuth();
@@ -23,6 +39,10 @@ export default function Dashboard() {
 
   const { data: dashboard, isLoading: dashboardLoading } = useGetMemberDashboard({
     query: { enabled: isLoggedIn, queryKey: getGetMemberDashboardQueryKey() }
+  });
+
+  const { data: orders, isLoading: ordersLoading } = useListOrders({
+    query: { enabled: isLoggedIn }
   });
 
   const [copied, setCopied] = useState(false);
@@ -111,11 +131,58 @@ export default function Dashboard() {
         </CardContent>
       </Card>
 
-      <Tabs defaultValue="events" className="w-full">
+      <Tabs defaultValue="orders" className="w-full">
         <TabsList className="mb-6">
+          <TabsTrigger value="orders">My Orders</TabsTrigger>
           <TabsTrigger value="events">Commission History</TabsTrigger>
           <TabsTrigger value="network">Referred Network</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="orders" className="space-y-4">
+          <Card>
+            <CardContent className="p-0">
+              {ordersLoading ? (
+                <div className="p-12 text-center text-muted-foreground">Loading your orders...</div>
+              ) : !orders || orders.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground">
+                  You haven't placed any orders yet.
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {orders
+                    .slice()
+                    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+                    .map(order => (
+                      <div key={order.id} className="p-6 flex items-center justify-between gap-4">
+                        <div className="flex items-center gap-4">
+                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                            <Package size={18} />
+                          </div>
+                          <div>
+                            <div className="font-medium flex items-center gap-2 flex-wrap">
+                              <span>Order #{order.id}</span>
+                              {order.itemName && (
+                                <span className="text-muted-foreground font-normal">— {order.itemName}</span>
+                              )}
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${ORDER_STATUS_STYLES[order.status] ?? "bg-muted text-muted-foreground"}`}>
+                                {ORDER_STATUS_LABELS[order.status] ?? order.status}
+                              </span>
+                            </div>
+                            <div className="text-sm text-muted-foreground mt-1">
+                              {new Date(order.createdAt).toLocaleDateString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="text-xl font-medium text-foreground shrink-0">
+                          {formatPrice(order.totalAmount)}
+                        </div>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
         
         <TabsContent value="events" className="space-y-4">
           <Card>
