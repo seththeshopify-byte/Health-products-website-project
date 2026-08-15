@@ -68,3 +68,53 @@ export async function sendBookingConfirmation(opts: {
     logger.error({ err }, "Failed to send booking confirmation email");
   }
 }
+
+export async function sendOrderConfirmation(opts: {
+  to: string;
+  orderId: number;
+  itemName: string;
+  totalAmount: number;
+  shippingAddress: {
+    line1: string;
+    city: string;
+    province: string;
+    postalCode: string;
+    country: string;
+  };
+  reference: string;
+}): Promise<void> {
+  try {
+    const t = await getTransporter();
+    const formattedTotal = new Intl.NumberFormat("en-NG", {
+      style: "currency",
+      currency: "NGN",
+    }).format(opts.totalAmount);
+
+    const info = await t.sendMail({
+      from: `"Ruth Health" <${process.env.SMTP_FROM ?? "noreply@ruthhealth.com"}>`,
+      to: opts.to,
+      subject: `Order Confirmation #${opts.orderId} — Ruth Health`,
+      html: `
+        <h2>Thank you for your order!</h2>
+        <p>Your payment was successful and your order is now being processed.</p>
+        <p><strong>Order #:</strong> ${opts.orderId}<br/>
+        <strong>Item:</strong> ${opts.itemName}<br/>
+        <strong>Total:</strong> ${formattedTotal}<br/>
+        <strong>Payment reference:</strong> ${opts.reference}</p>
+        <p><strong>Shipping to:</strong><br/>
+        ${opts.shippingAddress.line1}<br/>
+        ${opts.shippingAddress.city}, ${opts.shippingAddress.province}<br/>
+        ${opts.shippingAddress.postalCode}, ${opts.shippingAddress.country}</p>
+        <p>We'll be in touch when your order ships.</p>
+        <hr/>
+        <p style="font-size:12px;color:#666;">Ruth Health — Lagos, Nigeria.</p>
+      `,
+    });
+    logger.info({ messageId: info.messageId, orderId: opts.orderId }, "Order confirmation email sent");
+    if (nodemailer.getTestMessageUrl(info)) {
+      logger.info({ previewUrl: nodemailer.getTestMessageUrl(info) }, "Preview URL");
+    }
+  } catch (err) {
+    logger.error({ err, orderId: opts.orderId }, "Failed to send order confirmation email");
+  }
+}
