@@ -140,7 +140,18 @@ router.post("/orders/webhook", async (req, res) => {
     // NOT a parsed object. Convert it to a string once, use that string for
     // the HMAC signature check (this must match the exact bytes Paystack
     // signed), then JSON.parse it to get the usable event object below.
-    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : JSON.stringify(req.body);
+    const isBuffer = Buffer.isBuffer(req.body);
+    const rawBody = isBuffer ? req.body.toString("utf8") : JSON.stringify(req.body);
+
+    // TEMPORARY DIAGNOSTIC — remove once the "[object Object]" issue is
+    // confirmed fixed. Logs whether express.raw() actually produced a
+    // Buffer here, plus a safe preview of what was received, so we can see
+    // exactly what's arriving instead of guessing.
+    req.log.info(
+      { isBuffer, contentType: req.headers["content-type"], bodyPreview: rawBody.slice(0, 300) },
+      "Webhook raw body diagnostic"
+    );
+
     const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(rawBody).digest("hex");
 
     if (hash !== sig) {
