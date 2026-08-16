@@ -135,9 +135,12 @@ router.post("/orders/webhook", async (req, res) => {
       return;
     }
 
-    // IMPORTANT: this relies on req.body being the raw request buffer/string,
-    // not JSON already parsed by express.json(). See note below the code.
-    const rawBody = (req as any).rawBody ?? JSON.stringify(req.body);
+    // app.ts mounts express.raw({ type: "application/json" }) on this exact
+    // path before express.json() runs, so req.body here is a raw Buffer —
+    // NOT a parsed object. Convert it to a string once, use that string for
+    // the HMAC signature check (this must match the exact bytes Paystack
+    // signed), then JSON.parse it to get the usable event object below.
+    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : JSON.stringify(req.body);
     const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(rawBody).digest("hex");
 
     if (hash !== sig) {
@@ -146,7 +149,7 @@ router.post("/orders/webhook", async (req, res) => {
       return;
     }
 
-    const event = req.body;
+    const event = JSON.parse(rawBody);
 
     if (event.event === "charge.success") {
       const reference = event.data.reference as string;
