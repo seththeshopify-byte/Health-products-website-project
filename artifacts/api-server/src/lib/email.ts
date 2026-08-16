@@ -1,9 +1,15 @@
-import nodemailer from "nodemailer";
 import { logger } from "./logger.js";
 
-// Configure a transporter — uses SMTP env vars if available, otherwise uses
-// nodemailer's built-in test account (ethereal.email) in development.
-let transporter: nodemailer.Transporter | null = null;
+// Sends transactional email via Brevo's HTTPS API instead of raw SMTP.
+// This avoids outbound SMTP port blocks (25/465/587) that some hosts
+// (e.g. Render's free tier) enforce at the network level.
+//
+// Required env vars:
+//   BREVO_API_KEY  — Brevo API key (Settings > SMTP & API > API Keys)
+//   SMTP_FROM      — sender email address, MUST be a verified sender in Brevo
+//   ADMIN_EMAIL    — optional comma-separated list of admin notification recipients
+
+const BREVO_API_URL = "https://api.brevo.com/v3/smtp/email";
 
 // Default admin recipients for internal payment notifications.
 // Override in production by setting ADMIN_EMAIL to a comma-separated list,
@@ -20,35 +26,50 @@ function getAdminEmails(): string[] {
   return DEFAULT_ADMIN_EMAILS;
 }
 
-async function getTransporter(): Promise<nodemailer.Transporter> {
-  if (transporter) return transporter;
+interface BrevoRecipient {
+  email: string;
+  name?: string;
+}
 
-  if (process.env.SMTP_HOST) {
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT ?? 587),
-      secure: process.env.SMTP_SECURE === "true",
-      auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-      },
-    });
-  } else {
-    // Ethereal test account for local dev
-    const testAccount = await nodemailer.createTestAccount();
-    transporter = nodemailer.createTransport({
-      host: "smtp.ethereal.email",
-      port: 587,
-      secure: false,
-      auth: {
-        user: testAccount.user,
-        pass: testAccount.pass,
-      },
-    });
-    logger.info({ url: "https://ethereal.email" }, "Using Ethereal email test account");
+interface SendEmailOpts {
+  to: BrevoRecipient[];
+  subject: string;
+  html: string;
+  fromName?: string;
+}
+
+async function sendViaBrevo(opts: SendEmailOpts): Promise<{ messageId?: string }> {
+  const apiKey = process.env.BREVO_API_KEY;
+  if (!apiKey) {
+    throw new Error("BREVO_API_KEY is not set");
   }
 
-  return transporter;
+  const fromEmail = process.env.SMTP_FROM ?? "noreply@ruthhealth.com";
+
+  const res = await fetch(BREVO_API_URL, {
+    method: "POST",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json",
+      "api-key": apiKey,
+    },
+    body: JSON.stringify({
+      sender: { name: opts.fromName ?? "Ruth Health", email: fromEmail },
+      to: opts.to,
+      subject: opts.subject,
+      htmlContent: opts.html,
+    }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+
+  if (!res.ok) {
+    throw new Error(
+      `Brevo API error (${res.status}): ${JSON.stringify(data)}`
+    );
+  }
+
+  return { messageId: (data as { messageId?: string }).messageId };
 }
 
 export async function sendBookingConfirmation(opts: {
@@ -59,10 +80,8 @@ export async function sendBookingConfirmation(opts: {
   zoomLink?: string | null;
 }): Promise<void> {
   try {
-    const t = await getTransporter();
-    const info = await t.sendMail({
-      from: `"Ruth Health" <${process.env.SMTP_FROM ?? "noreply@ruthhealth.com"}>`,
-      to: opts.to,
+    const result = await sendViaBrevo({
+      to: [{ email: opts.to, name: opts.name }],
       subject: "Your Zoom Session Confirmation — Ruth Health",
       html: `
         <h2>Your session is confirmed!</h2>
@@ -75,10 +94,7 @@ export async function sendBookingConfirmation(opts: {
         <p style="font-size:12px;color:#666;">Ruth Health — Lagos, Nigeria.</p>
       `,
     });
-    logger.info({ messageId: info.messageId }, "Booking confirmation email sent");
-    if (nodemailer.getTestMessageUrl(info)) {
-      logger.info({ previewUrl: nodemailer.getTestMessageUrl(info) }, "Preview URL");
-    }
+    logger.info({ messageId: result.messageId }, "Booking confirmation email sent");
   } catch (err) {
     logger.error({ err }, "Failed to send booking confirmation email");
   }
@@ -99,15 +115,13 @@ export async function sendOrderConfirmation(opts: {
   reference: string;
 }): Promise<void> {
   try {
-    const t = await getTransporter();
     const formattedTotal = new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
     }).format(opts.totalAmount);
 
-    const info = await t.sendMail({
-      from: `"Ruth Health" <${process.env.SMTP_FROM ?? "noreply@ruthhealth.com"}>`,
-      to: opts.to,
+    const result = await sendViaBrevo({
+      to: [{ email: opts.to }],
       subject: `Order Confirmation #${opts.orderId} — Ruth Health`,
       html: `
         <h2>Thank you for your order!</h2>
@@ -125,10 +139,10 @@ export async function sendOrderConfirmation(opts: {
         <p style="font-size:12px;color:#666;">Ruth Health — Lagos, Nigeria.</p>
       `,
     });
-    logger.info({ messageId: info.messageId, orderId: opts.orderId }, "Order confirmation email sent");
-    if (nodemailer.getTestMessageUrl(info)) {
-      logger.info({ previewUrl: nodemailer.getTestMessageUrl(info) }, "Preview URL");
-    }
+    logger.info(
+      { messageId: result.messageId, orderId: opts.orderId },
+      "Order confirmation email sent"
+    );
   } catch (err) {
     logger.error({ err, orderId: opts.orderId }, "Failed to send order confirmation email");
   }
@@ -162,7 +176,6 @@ export async function sendAdminPaymentNotification(opts: {
       return;
     }
 
-    const t = await getTransporter();
     const currency = (n: number) =>
       new Intl.NumberFormat("en-NG", { style: "currency", currency: "NGN" }).format(n);
 
@@ -171,9 +184,9 @@ export async function sendAdminPaymentNotification(opts: {
       timeStyle: "short",
     }).format(new Date());
 
-    const info = await t.sendMail({
-      from: `"Ruth Health Orders" <${process.env.SMTP_FROM ?? "noreply@ruthhealth.com"}>`,
-      to: admins.join(","),
+    const result = await sendViaBrevo({
+      fromName: "Ruth Health Orders",
+      to: admins.map((email) => ({ email })),
       subject: `💰 New Paid Order #${opts.orderId} — ${currency(opts.totalAmount)}`,
       html: `
         <h2>New payment received</h2>
@@ -210,12 +223,9 @@ export async function sendAdminPaymentNotification(opts: {
     });
 
     logger.info(
-      { messageId: info.messageId, orderId: opts.orderId, admins },
+      { messageId: result.messageId, orderId: opts.orderId, admins },
       "Admin payment notification sent"
     );
-    if (nodemailer.getTestMessageUrl(info)) {
-      logger.info({ previewUrl: nodemailer.getTestMessageUrl(info) }, "Preview URL");
-    }
   } catch (err) {
     logger.error({ err, orderId: opts.orderId }, "Failed to send admin payment notification");
   }
