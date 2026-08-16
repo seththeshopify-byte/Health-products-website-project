@@ -3,7 +3,7 @@ import { db, ordersTable, productsTable, servicesTable, commissionEventsTable, u
 import { eq } from "drizzle-orm";
 import { requireAuth, requireAdmin, optionalAuth } from "../middlewares/requireAuth.js";
 import { calculateShipping } from "../lib/shipping.js";
-import { sendOrderConfirmation } from "../lib/email.js";
+import { sendOrderConfirmation, sendAdminPaymentNotification } from "../lib/email.js";
 import crypto from "crypto";
 import { logger } from "../lib/logger.js";
 
@@ -159,21 +159,22 @@ router.post("/orders/webhook", async (req, res) => {
           .where(eq(ordersTable.id, orderId))
           .returning();
 
-        // Send order confirmation email
+        // Send order confirmation email + internal admin notification
         if (order) {
           const customerEmail = event.data.customer?.email;
+
+          let itemName = "Your order";
+          if (order.itemType === "product") {
+            const rows = await db.select().from(productsTable).where(eq(productsTable.id, order.itemId));
+            if (rows[0]) itemName = rows[0].name;
+          } else {
+            const rows = await db.select().from(servicesTable).where(eq(servicesTable.id, order.itemId));
+            if (rows[0]) itemName = rows[0].name;
+          }
+
+          const shippingAddress = JSON.parse(order.shippingAddress as string);
+
           if (customerEmail) {
-            let itemName = "Your order";
-            if (order.itemType === "product") {
-              const rows = await db.select().from(productsTable).where(eq(productsTable.id, order.itemId));
-              if (rows[0]) itemName = rows[0].name;
-            } else {
-              const rows = await db.select().from(servicesTable).where(eq(servicesTable.id, order.itemId));
-              if (rows[0]) itemName = rows[0].name;
-            }
-
-            const shippingAddress = JSON.parse(order.shippingAddress as string);
-
             await sendOrderConfirmation({
               to: customerEmail,
               orderId: order.id,
@@ -185,6 +186,25 @@ router.post("/orders/webhook", async (req, res) => {
           } else {
             req.log.warn({ orderId: order.id }, "No customer email on Paystack event — skipping order confirmation email");
           }
+
+          // Pull customer name/phone directly from the Paystack event payload
+          const customerFirstName = event.data.customer?.first_name ?? "";
+          const customerLastName = event.data.customer?.last_name ?? "";
+          const customerName = `${customerFirstName} ${customerLastName}`.trim() || null;
+          const customerPhone = event.data.customer?.phone ?? null;
+
+          await sendAdminPaymentNotification({
+            orderId: order.id,
+            itemName,
+            itemAmount: Number(order.itemAmount),
+            shippingFee: Number(order.shippingFee),
+            totalAmount: Number(order.totalAmount),
+            customerName,
+            customerEmail: customerEmail ?? "Not provided",
+            customerPhone,
+            shippingAddress,
+            reference,
+          });
         }
 
         // Log commission event for promo code
