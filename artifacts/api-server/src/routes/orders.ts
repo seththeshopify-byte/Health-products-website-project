@@ -140,18 +140,7 @@ router.post("/orders/webhook", async (req, res) => {
     // NOT a parsed object. Convert it to a string once, use that string for
     // the HMAC signature check (this must match the exact bytes Paystack
     // signed), then JSON.parse it to get the usable event object below.
-    const isBuffer = Buffer.isBuffer(req.body);
-    const rawBody = isBuffer ? req.body.toString("utf8") : JSON.stringify(req.body);
-
-    // TEMPORARY DIAGNOSTIC — remove once the "[object Object]" issue is
-    // confirmed fixed. Logs whether express.raw() actually produced a
-    // Buffer here, plus a safe preview of what was received, so we can see
-    // exactly what's arriving instead of guessing.
-    req.log.info(
-      { isBuffer, contentType: req.headers["content-type"], bodyPreview: rawBody.slice(0, 300) },
-      "Webhook raw body diagnostic"
-    );
-
+    const rawBody = Buffer.isBuffer(req.body) ? req.body.toString("utf8") : JSON.stringify(req.body);
     const hash = crypto.createHmac("sha512", PAYSTACK_SECRET_KEY).update(rawBody).digest("hex");
 
     if (hash !== sig) {
@@ -186,7 +175,16 @@ router.post("/orders/webhook", async (req, res) => {
             if (rows[0]) itemName = rows[0].name;
           }
 
-          const shippingAddress = JSON.parse(order.shippingAddress as string);
+          // order.shippingAddress may come back as an already-parsed object
+          // (if the DB column is jsonb, Drizzle auto-deserializes it) or as
+          // a raw JSON string (if it's a text column). JSON.parse() on an
+          // object that's already parsed silently stringifies it first via
+          // toString(), producing the literal text "[object Object]" and
+          // then failing to parse — so only parse when it's actually a string.
+          const shippingAddress =
+            typeof order.shippingAddress === "string"
+              ? JSON.parse(order.shippingAddress)
+              : order.shippingAddress;
 
           if (customerEmail) {
             await sendOrderConfirmation({
