@@ -28,11 +28,33 @@ app.use(
 
 app.use(cors());
 
-// Raw body for Paystack webhook signature verification must come before json parser
-app.use("/api/orders/webhook", express.raw({ type: "application/json" }));
+const PAYSTACK_WEBHOOK_PATH = "/api/orders/webhook";
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Raw body for Paystack webhook signature verification must come before
+// any JSON body parsing.
+app.use(PAYSTACK_WEBHOOK_PATH, express.raw({ type: "application/json" }));
+
+// IMPORTANT: express.json() and express.urlencoded() below must SKIP the
+// webhook path entirely. app.use() with no path argument runs on every
+// request regardless of what earlier path-scoped middleware already did —
+// so without this guard, these parsers would run a second time on the
+// webhook request, consuming/overwriting the Buffer that express.raw()
+// already set on req.body, corrupting it before the route handler runs.
+app.use((req, res, next) => {
+  if (req.path === PAYSTACK_WEBHOOK_PATH) {
+    next();
+    return;
+  }
+  express.json()(req, res, next);
+});
+
+app.use((req, res, next) => {
+  if (req.path === PAYSTACK_WEBHOOK_PATH) {
+    next();
+    return;
+  }
+  express.urlencoded({ extended: true })(req, res, next);
+});
 
 app.use("/api", router);
 
