@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { requireAuth, requireAdmin, optionalAuth } from "../middlewares/requireAuth.js";
 import { calculateShipping } from "../lib/shipping.js";
 import { sendOrderConfirmation, sendAdminPaymentNotification } from "../lib/email.js";
+import { sendWhatsAppPaymentNotification } from "../lib/whatsapp.js";
 import crypto from "crypto";
 import { logger } from "../lib/logger.js";
 
@@ -215,6 +216,18 @@ router.post("/orders/webhook", async (req, res) => {
             customerEmail: customerEmail ?? "Not provided",
             customerPhone,
             shippingAddress,
+            reference,
+          });
+
+          // Owner-facing WhatsApp alert (independent of email — failure here
+          // never blocks the webhook response or the email notifications above)
+          await sendWhatsAppPaymentNotification({
+            orderId: order.id,
+            itemName,
+            totalAmount: Number(order.totalAmount),
+            customerName,
+            customerEmail: customerEmail ?? "Not provided",
+            customerPhone,
             reference,
           });
         }
