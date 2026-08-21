@@ -11,6 +11,9 @@ import {
   MessagesSquare,
   UserRound,
   X,
+  BedDouble,
+  Image as GalleryIcon,
+  Phone,
 } from "lucide-react";
 
 const quickLinks = [
@@ -61,6 +64,16 @@ const heroBackgrounds = [
   "/attached_assets/generated_images/106979146-1637629270455Aerial_6.webp",
 ];
 
+// Hotel quick-access menu — these pages don't exist yet, so tiles are
+// placeholders (non-navigating) until the hotel section is built out.
+const hotelQuickLinks = [
+  { label: "Rooms & Suites", icon: BedDouble },
+  { label: "Book a Stay", icon: CalendarCheck },
+  { label: "Amenities", icon: Sparkles },
+  { label: "Gallery", icon: GalleryIcon },
+  { label: "Contact", icon: Phone },
+];
+
 export default function Home() {
   const [openMarker, setOpenMarker] = useState<string | null>(null);
   const [bg] = useState(
@@ -84,129 +97,184 @@ export default function Home() {
         }
       `}</style>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden bg-stone-900 min-h-[520px] md:min-h-[560px] flex items-center">
-        {/* Background layer */}
-        <div className="absolute inset-0">
-          {/* Placeholder gradient shown until the photo finishes loading */}
+      {/* Two-column layout: Entrepreneur (left) / Hotel (right). Stacks on mobile. */}
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+
+        {/* ===================== LEFT COLUMN — THE ENTREPRENEUR ===================== */}
+        <section className="relative overflow-hidden bg-stone-900 min-h-[520px] md:min-h-[560px] flex items-center">
+          {/* Background layer */}
+          <div className="absolute inset-0">
+            {/* Placeholder gradient shown until the photo finishes loading */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 transition-opacity duration-700 ${
+                bgLoaded ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <img
+              src={bg}
+              alt=""
+              aria-hidden="true"
+              onLoad={() => setBgLoaded(true)}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                bgLoaded ? "opacity-100 hero-kenburns" : "opacity-0"
+              }`}
+            />
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
+          </div>
+
           <div
-            className={`absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 transition-opacity duration-700 ${
-              bgLoaded ? "opacity-0" : "opacity-100"
+            className={`container mx-auto px-4 relative z-10 py-10 md:py-14 transition-all duration-700 ${
+              bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
-          />
-          <img
-            src={bg}
-            alt=""
-            aria-hidden="true"
-            onLoad={() => setBgLoaded(true)}
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
-              bgLoaded ? "opacity-100 hero-kenburns" : "opacity-0"
-            }`}
-          />
-          {/* Dark overlay for text readability */}
-          <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
-        </div>
-
-        <div
-          className={`container mx-auto px-4 relative z-10 py-10 md:py-14 transition-all duration-700 ${
-            bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-        >
-          <div className="grid grid-cols-1 lg:grid-cols-[1.15fr_0.55fr_1fr] gap-6 lg:gap-6 items-center">
-            {/* Left: heading + copy + primary actions */}
-            <div
-              className={`text-center lg:text-left transition-all duration-700 delay-150 ${
-                bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-            >
-              <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-2">
-                Lagos, Nigeria
-              </p>
-              <h1 className="text-2xl md:text-3xl lg:text-4xl font-serif text-white mb-2 leading-[1.08] tracking-tight">
-                Natural purity.<br/>
-                <span className="text-white/90 italic">Personalized care.</span>
-              </h1>
-              <p className="text-xs md:text-sm text-white/80 mb-3 max-w-md mx-auto lg:mx-0 leading-relaxed">
-                Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
-              </p>
-              <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-2">
-                <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md bg-white text-stone-900 text-xs md:text-sm font-medium hover:bg-white/90 transition-colors gap-2">
-                  Shop Products <ArrowRight size={14} />
-                </Link>
-                <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md border border-white/50 bg-white/5 backdrop-blur-sm text-white text-xs md:text-sm font-medium hover:bg-white/15 transition-colors">
-                  Book Consultation
-                </Link>
+          >
+            <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.55fr_1fr] gap-6 xl:gap-6 items-center">
+              {/* Left: heading + copy + primary actions */}
+              <div
+                className={`text-center xl:text-left transition-all duration-700 delay-150 ${
+                  bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+              >
+                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-2">
+                  Lagos, Nigeria
+                </p>
+                <h1 className="text-2xl md:text-3xl xl:text-4xl font-serif text-white mb-2 leading-[1.08] tracking-tight">
+                  Natural purity.<br/>
+                  <span className="text-white/90 italic">Personalized care.</span>
+                </h1>
+                <p className="text-xs md:text-sm text-white/80 mb-3 max-w-md mx-auto xl:mx-0 leading-relaxed">
+                  Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
+                </p>
+                <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start gap-2">
+                  <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md bg-white text-stone-900 text-xs md:text-sm font-medium hover:bg-white/90 transition-colors gap-2">
+                    Shop Products <ArrowRight size={14} />
+                  </Link>
+                  <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md border border-white/50 bg-white/5 backdrop-blur-sm text-white text-xs md:text-sm font-medium hover:bg-white/15 transition-colors">
+                    Book Consultation
+                  </Link>
+                </div>
               </div>
-            </div>
 
-            {/* Middle: click-to-reveal trust markers */}
-            <div
-              className={`flex flex-row lg:flex-col items-center lg:items-start justify-center gap-2 lg:gap-2.5 transition-all duration-700 delay-300 ${
-                bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-            >
-              {trustMarkers.map(({ id, icon: Icon, title, description }) => (
-                <div key={id} className="relative">
-                  <button
-                    type="button"
-                    onClick={() => setOpenMarker(openMarker === id ? null : id)}
-                    aria-expanded={openMarker === id}
-                    className="group flex items-center gap-2 rounded-full border border-white/25 bg-white/10 backdrop-blur-md pl-2 pr-3 py-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white/20"
+              {/* Middle: click-to-reveal trust markers */}
+              <div
+                className={`flex flex-row xl:flex-col items-center xl:items-start justify-center gap-2 xl:gap-2.5 transition-all duration-700 delay-300 ${
+                  bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+              >
+                {trustMarkers.map(({ id, icon: Icon, title, description }) => (
+                  <div key={id} className="relative">
+                    <button
+                      type="button"
+                      onClick={() => setOpenMarker(openMarker === id ? null : id)}
+                      aria-expanded={openMarker === id}
+                      className="group flex items-center gap-2 rounded-full border border-white/25 bg-white/10 backdrop-blur-md pl-2 pr-3 py-1.5 shadow-sm transition-all hover:-translate-y-0.5 hover:bg-white/20"
+                    >
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
+                        <Icon size={14} />
+                      </span>
+                      <span className="hidden sm:inline text-[11px] font-medium leading-tight text-white text-left">
+                        {title}
+                      </span>
+                    </button>
+
+                    {openMarker === id && (
+                      <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-xl top-full mt-2 left-1/2 -translate-x-1/2 xl:left-full xl:top-0 xl:mt-0 xl:ml-2 xl:translate-x-0">
+                        <button
+                          type="button"
+                          onClick={() => setOpenMarker(null)}
+                          aria-label="Close"
+                          className="absolute right-1.5 top-1.5 text-muted-foreground hover:text-foreground"
+                        >
+                          <X size={14} />
+                        </button>
+                        <h4 className="font-serif text-xs font-medium mb-1 pr-4 text-foreground">
+                          {title}
+                        </h4>
+                        <p className="text-[11px] text-muted-foreground leading-relaxed">
+                          {description}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Right: quick-access tile grid */}
+              <div
+                className={`grid grid-cols-3 gap-2 md:gap-3 transition-all duration-700 delay-500 ${
+                  bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
+                }`}
+              >
+                {quickLinks.map(({ href, label, icon: Icon }) => (
+                  <Link
+                    key={href}
+                    href={href}
+                    className="group flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm px-1.5 text-center transition-all hover:-translate-y-0.5 hover:bg-white/20"
                   >
-                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
+                    <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
                       <Icon size={14} />
                     </span>
-                    <span className="hidden sm:inline text-[11px] font-medium leading-tight text-white text-left">
-                      {title}
+                    <span className="text-[10px] md:text-[11px] font-medium leading-tight text-white">
+                      {label}
                     </span>
-                  </button>
-
-                  {openMarker === id && (
-                    <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-xl top-full mt-2 left-1/2 -translate-x-1/2 lg:left-full lg:top-0 lg:mt-0 lg:ml-2 lg:translate-x-0">
-                      <button
-                        type="button"
-                        onClick={() => setOpenMarker(null)}
-                        aria-label="Close"
-                        className="absolute right-1.5 top-1.5 text-muted-foreground hover:text-foreground"
-                      >
-                        <X size={14} />
-                      </button>
-                      <h4 className="font-serif text-xs font-medium mb-1 pr-4 text-foreground">
-                        {title}
-                      </h4>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed">
-                        {description}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-
-            {/* Right: quick-access tile grid */}
-            <div
-              className={`grid grid-cols-3 gap-2 md:gap-3 transition-all duration-700 delay-500 ${
-                bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-              }`}
-            >
-              {quickLinks.map(({ href, label, icon: Icon }) => (
-                <Link
-                  key={href}
-                  href={href}
-                  className="group flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm px-1.5 text-center transition-all hover:-translate-y-0.5 hover:bg-white/20"
-                >
-                  <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
-                    <Icon size={14} />
-                  </span>
-                  <span className="text-[10px] md:text-[11px] font-medium leading-tight text-white">
-                    {label}
-                  </span>
-                </Link>
-              ))}
+                  </Link>
+                ))}
+              </div>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
+
+        {/* ===================== RIGHT COLUMN — HOTEL DASHBOARD ===================== */}
+        <section className="relative overflow-hidden bg-neutral-950 min-h-[520px] md:min-h-[560px] flex items-center">
+          {/* Background layer */}
+          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-950" />
+
+          <div className="container mx-auto px-4 relative z-10 py-10 md:py-14">
+            <div className="flex flex-col items-center text-center gap-4">
+              <img
+                src="/attached_assets/generated_images/RuthHotelLogo.png"
+                alt="Benington Hotel & Suite"
+                className="h-24 md:h-28 w-auto object-contain"
+              />
+
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-400/80 mb-1">
+                  Benin City, Edo State
+                </p>
+                <h2 className="text-xl md:text-2xl font-serif text-white mb-1">
+                  Benington Hotel &amp; Suite
+                </h2>
+                <p className="text-xs text-white/60 max-w-xs mx-auto leading-relaxed">
+                  46, 1st Federal Road, Off Medical Store Road
+                </p>
+                <p className="text-xs text-white/60">Tel: 07075-787-516</p>
+              </div>
+
+              {/* Hotel quick-access tile grid (placeholders — pages coming soon) */}
+              <div className="grid grid-cols-3 gap-2 md:gap-3 w-full max-w-sm mt-2">
+                {hotelQuickLinks.map(({ label, icon: Icon }) => (
+                  <div
+                    key={label}
+                    className="flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-amber-400/20 bg-white/5 backdrop-blur-md shadow-sm px-1.5 text-center"
+                  >
+                    <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-400">
+                      <Icon size={14} />
+                    </span>
+                    <span className="text-[10px] md:text-[11px] font-medium leading-tight text-white">
+                      {label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <p className="text-[11px] text-white/40 mt-2">
+                Full hotel booking experience coming soon.
+              </p>
+            </div>
+          </div>
+        </section>
+
+      </div>
     </div>
   );
 }
