@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Phone, MessageSquare, X, HelpCircle } from "lucide-react";
 
 const PHONE_DISPLAY = "+1 (807) 709-2017";
 const PHONE_TEL = "+18077092017";
 const WHATSAPP_NUMBER = "18077092017";
 const SUPPORT_TEAL = "#0F4C46";
+
+const HOTEL_PHONE_TEL = "07075787516";
+const HOTEL_GOLD = "#B8860B";
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -15,36 +18,76 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
+// Shows the hotel call button only once the person has scrolled down to
+// the footer, keeping it out of the way the rest of the page.
+function useNearFooter(threshold = 300) {
+  const [nearFooter, setNearFooter] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrolledToBottom =
+        window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - threshold;
+      setNearFooter(scrolledToBottom);
+    };
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleScroll);
+    };
+  }, [threshold]);
+
+  return nearFooter;
+}
+
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
+  const nearFooter = useNearFooter();
+
   return (
-    <div className="fixed bottom-5 right-5 lg:right-[calc(50%+1.25rem)] z-50 flex flex-col items-end gap-3">
-      {open && (
-        <div className="flex flex-col gap-2 items-end">
-          <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-            <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white">
-              <WhatsAppIcon className="w-5 h-5" />
-            </span>
-            <span className="text-sm font-medium">WhatsApp</span>
-          </a>
-          <a href={"sms:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-            <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
-              <MessageSquare className="w-5 h-5" />
-            </span>
-            <span className="text-sm font-medium">Text Us</span>
-          </a>
-          <a href={"tel:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-            <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
-              <Phone className="w-5 h-5" />
-            </span>
-            <span className="text-sm font-medium">Call {PHONE_DISPLAY}</span>
-          </a>
-        </div>
+    <>
+      {/* Wellness support — Get Help, docked to the right edge of the left column */}
+      <div className="fixed bottom-5 right-5 lg:right-[calc(50%+1.25rem)] z-50 flex flex-col items-end gap-3">
+        {open && (
+          <div className="flex flex-col gap-2 items-end">
+            <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white">
+                <WhatsAppIcon className="w-5 h-5" />
+              </span>
+              <span className="text-sm font-medium">WhatsApp</span>
+            </a>
+            <a href={"sms:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
+                <MessageSquare className="w-5 h-5" />
+              </span>
+              <span className="text-sm font-medium">Text Us</span>
+            </a>
+            <a href={"tel:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
+              <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
+                <Phone className="w-5 h-5" />
+              </span>
+              <span className="text-sm font-medium">Call {PHONE_DISPLAY}</span>
+            </a>
+          </div>
+        )}
+        <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-2 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3" style={{ backgroundColor: SUPPORT_TEAL }}>
+          {open ? <X className="w-5 h-5" /> : <HelpCircle className="w-5 h-5" />}
+          <span className="text-sm font-medium">{open ? "Close" : "Get Help"}</span>
+        </button>
+      </div>
+
+      {/* Hotel call button — only appears once the footer is in view */}
+      {nearFooter && (
+        <a
+          href={"tel:" + HOTEL_PHONE_TEL}
+          className="fixed bottom-5 left-5 lg:left-auto lg:right-5 z-50 flex items-center gap-2 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3 animate-in fade-in slide-in-from-bottom-2"
+          style={{ backgroundColor: HOTEL_GOLD }}
+        >
+          <Phone className="w-5 h-5" />
+          <span className="text-sm font-medium">Call Hotel</span>
+        </a>
       )}
-      <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-2 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3" style={{ backgroundColor: SUPPORT_TEAL }}>
-        {open ? <X className="w-5 h-5" /> : <HelpCircle className="w-5 h-5" />}
-        <span className="text-sm font-medium">{open ? "Close" : "Get Help"}</span>
-      </button>
-    </div>
+    </>
   );
 }
