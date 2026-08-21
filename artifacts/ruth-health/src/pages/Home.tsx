@@ -120,7 +120,7 @@ export default function Home() {
               }`}
             />
             {/* Dark overlay for text readability */}
-            <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/45 to-black/60" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/55 to-black/70" />
           </div>
 
           <div
@@ -226,8 +226,26 @@ export default function Home() {
 
         {/* ===================== RIGHT COLUMN — HOTEL DASHBOARD ===================== */}
         <section className="relative overflow-hidden bg-neutral-950 min-h-[520px] md:min-h-[560px] flex items-center">
-          {/* Background layer */}
-          <div className="absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-950" />
+          {/* Background layer — same rotating photo as the left column */}
+          <div className="absolute inset-0">
+            {/* Placeholder gradient shown until the photo finishes loading */}
+            <div
+              className={`absolute inset-0 bg-gradient-to-br from-neutral-900 via-black to-neutral-950 transition-opacity duration-700 ${
+                bgLoaded ? "opacity-0" : "opacity-100"
+              }`}
+            />
+            <img
+              src={bg}
+              alt=""
+              aria-hidden="true"
+              onLoad={() => setBgLoaded(true)}
+              className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-1000 ${
+                bgLoaded ? "opacity-100 hero-kenburns" : "opacity-0"
+              }`}
+            />
+            {/* Darker overlay — roughly double the dim of the left column, for a moodier hotel feel */}
+            <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/80 to-black/90" />
+          </div>
 
           <div className="container mx-auto px-4 relative z-10 py-10 md:py-14">
             <div className="flex flex-col items-center text-center gap-4">
