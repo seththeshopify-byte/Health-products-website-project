@@ -1,9 +1,11 @@
 import { useState } from "react";
 import { Phone, MessageSquare, X, HelpCircle } from "lucide-react";
+
 const PHONE_DISPLAY = "+1 (807) 709-2017";
 const PHONE_TEL = "+18077092017";
 const WHATSAPP_NUMBER = "18077092017";
 const SUPPORT_TEAL = "#0F4C46";
+
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 24 24" className={className} fill="currentColor">
@@ -12,10 +14,11 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
+
 export function SupportWidget() {
   const [open, setOpen] = useState(false);
   return (
-    <div className="fixed bottom-5 right-5 z-50 flex flex-col items-end gap-3">
+    <div className="fixed bottom-5 right-5 lg:right-[calc(50%+1.25rem)] z-50 flex flex-col items-end gap-3">
       {open && (
         <div className="flex flex-col gap-2 items-end">
           <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
