@@ -18,8 +18,8 @@ function WhatsAppIcon({ className }: { className?: string }) {
   );
 }
 
-// Shows the hotel call button only once the person has scrolled down to
-// the footer, keeping it out of the way the rest of the page.
+// Both floating buttons only appear once the person has scrolled down to
+// the footer, and disappear again when they scroll back up.
 function useNearFooter(threshold = 300) {
   const [nearFooter, setNearFooter] = useState(false);
 
@@ -45,49 +45,49 @@ export function SupportWidget() {
   const [open, setOpen] = useState(false);
   const nearFooter = useNearFooter();
 
+  if (!nearFooter) return null;
+
   return (
     <>
       {/* Wellness support — Get Help, docked to the right edge of the left column */}
-      <div className="fixed bottom-5 right-5 lg:right-[calc(50%+1.25rem)] z-50 flex flex-col items-end gap-3">
+      <div className="fixed bottom-4 right-4 lg:right-[calc(50%+1rem)] z-50 flex flex-col items-end gap-2 animate-in fade-in slide-in-from-bottom-2">
         {open && (
-          <div className="flex flex-col gap-2 items-end">
-            <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-              <span className="flex items-center justify-center w-9 h-9 rounded-full bg-[#25D366] text-white">
-                <WhatsAppIcon className="w-5 h-5" />
+          <div className="flex flex-col gap-1.5 items-end">
+            <a href={"https://wa.me/" + WHATSAPP_NUMBER} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 bg-card border shadow-lg rounded-full pl-3 pr-4 py-2 hover:shadow-xl transition-all">
+              <span className="flex items-center justify-center w-7 h-7 rounded-full bg-[#25D366] text-white">
+                <WhatsAppIcon className="w-4 h-4" />
               </span>
-              <span className="text-sm font-medium">WhatsApp</span>
+              <span className="text-xs font-medium">WhatsApp</span>
             </a>
-            <a href={"sms:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-              <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
-                <MessageSquare className="w-5 h-5" />
+            <a href={"sms:" + PHONE_TEL} className="flex items-center gap-2 bg-card border shadow-lg rounded-full pl-3 pr-4 py-2 hover:shadow-xl transition-all">
+              <span className="flex items-center justify-center w-7 h-7 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
+                <MessageSquare className="w-4 h-4" />
               </span>
-              <span className="text-sm font-medium">Text Us</span>
+              <span className="text-xs font-medium">Text Us</span>
             </a>
-            <a href={"tel:" + PHONE_TEL} className="flex items-center gap-3 bg-card border shadow-lg rounded-full pl-4 pr-5 py-3 hover:shadow-xl transition-all">
-              <span className="flex items-center justify-center w-9 h-9 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
-                <Phone className="w-5 h-5" />
+            <a href={"tel:" + PHONE_TEL} className="flex items-center gap-2 bg-card border shadow-lg rounded-full pl-3 pr-4 py-2 hover:shadow-xl transition-all">
+              <span className="flex items-center justify-center w-7 h-7 rounded-full text-white" style={{ backgroundColor: SUPPORT_TEAL }}>
+                <Phone className="w-4 h-4" />
               </span>
-              <span className="text-sm font-medium">Call {PHONE_DISPLAY}</span>
+              <span className="text-xs font-medium">Call {PHONE_DISPLAY}</span>
             </a>
           </div>
         )}
-        <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-2 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3" style={{ backgroundColor: SUPPORT_TEAL }}>
-          {open ? <X className="w-5 h-5" /> : <HelpCircle className="w-5 h-5" />}
-          <span className="text-sm font-medium">{open ? "Close" : "Get Help"}</span>
+        <button onClick={() => setOpen(!open)} aria-label="Get help" className="flex items-center gap-1.5 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-3 pr-4 py-2" style={{ backgroundColor: SUPPORT_TEAL }}>
+          {open ? <X className="w-4 h-4" /> : <HelpCircle className="w-4 h-4" />}
+          <span className="text-xs font-medium">{open ? "Close" : "Get Help"}</span>
         </button>
       </div>
 
-      {/* Hotel call button — only appears once the footer is in view */}
-      {nearFooter && (
-        <a
-          href={"tel:" + HOTEL_PHONE_TEL}
-          className="fixed bottom-5 left-5 lg:left-auto lg:right-5 z-50 flex items-center gap-2 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-4 pr-5 py-3 animate-in fade-in slide-in-from-bottom-2"
-          style={{ backgroundColor: HOTEL_GOLD }}
-        >
-          <Phone className="w-5 h-5" />
-          <span className="text-sm font-medium">Call Hotel</span>
-        </a>
-      )}
+      {/* Hotel call button */}
+      <a
+        href={"tel:" + HOTEL_PHONE_TEL}
+        className="fixed bottom-4 left-4 lg:left-auto lg:right-4 z-50 flex items-center gap-1.5 rounded-full text-white shadow-lg hover:shadow-xl transition-all pl-3 pr-4 py-2 animate-in fade-in slide-in-from-bottom-2"
+        style={{ backgroundColor: HOTEL_GOLD }}
+      >
+        <Phone className="w-4 h-4" />
+        <span className="text-xs font-medium">Call Hotel</span>
+      </a>
     </>
   );
 }
