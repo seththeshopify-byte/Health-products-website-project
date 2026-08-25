@@ -36,6 +36,8 @@ tags:
     description: Shipping zone configuration
   - name: events
     description: Company events
+  - name: rooms
+    description: Hotel rooms and suites
 
 paths:
   /healthz:
@@ -714,6 +716,104 @@ paths:
       operationId: deleteEvent
       tags: [events]
       summary: Delete a company event (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  # ROOMS
+  /rooms:
+    get:
+      operationId: listRooms
+      tags: [rooms]
+      summary: List all hotel rooms
+      responses:
+        "200":
+          description: List of rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Room"
+    post:
+      operationId: createRoom
+      tags: [rooms]
+      summary: Create a room (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+
+  /rooms/{id}:
+    get:
+      operationId: getRoom
+      tags: [rooms]
+      summary: Get a room
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Room
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateRoom
+      tags: [rooms]
+      summary: Update a room (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RoomUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Room"
+    delete:
+      operationId: deleteRoom
+      tags: [rooms]
+      summary: Delete a room (admin)
       parameters:
         - name: id
           in: path
@@ -1652,6 +1752,86 @@ components:
           type: string
           format: date-time
 
+    # ROOMS
+    Room:
+      type: object
+      required: [id, name, description, imageUrl, guestPrice, memberPrice, commissionPct, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    RoomInput:
+      type: object
+      required: [name, description, guestPrice, memberPrice, commissionPct]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+
+    RoomUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
+        guestPrice:
+          type: number
+        memberPrice:
+          type: number
+        commissionPct:
+          type: number
+
     # ORDERS
     OrderInput:
       type: object
@@ -1817,7 +1997,21 @@ components:
           type: string
           format: date-time
 
-    # DASHBOARD
+    ReferrerSummary:
+      type: object
+      required: [memberId, memberName, promoCode, totalCommission, referralCount]
+      properties:
+        memberId:
+          type: integer
+        memberName:
+          type: string
+        promoCode:
+          type: string
+        totalCommission:
+          type: number
+        referralCount:
+          type: integer
+
     DashboardSummary:
       type: object
       required: [totalMembers, totalOrders, totalRevenue, totalCommissionPending, recentOrders, topReferrers]
@@ -1838,21 +2032,6 @@ components:
           type: array
           items:
             $ref: "#/components/schemas/ReferrerSummary"
-
-    ReferrerSummary:
-      type: object
-      required: [memberId, memberName, promoCode, totalCommission, referralCount]
-      properties:
-        memberId:
-          type: integer
-        memberName:
-          type: string
-        promoCode:
-          type: string
-        totalCommission:
-          type: number
-        referralCount:
-          type: integer
 
     MemberDashboard:
       type: object
