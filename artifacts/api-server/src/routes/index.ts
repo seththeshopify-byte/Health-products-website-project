@@ -12,6 +12,8 @@ import usersRouter from "./users.js";
 import dashboardRouter from "./dashboard.js";
 import shippingZonesRouter from "./shippingZones.js";
 import eventsRouter from "./events.js";
+import roomsRouter from "./rooms.js";
+
 const router: IRouter = Router();
 router.use(healthRouter);
 router.use(authRouter);
@@ -26,4 +28,6 @@ router.use(usersRouter);
 router.use(dashboardRouter);
 router.use(shippingZonesRouter);
 router.use(eventsRouter);
+router.use(roomsRouter);
+
 export default router;
