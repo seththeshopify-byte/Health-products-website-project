@@ -328,6 +328,44 @@ export interface EventUpdate {
   eventDate?: string;
 }
 
+export interface Room {
+  id: number;
+  name: string;
+  description: string;
+  /** @nullable */
+  imageUrl: string | null;
+  imageUrls?: string[];
+  videoUrls?: string[];
+  guestPrice: number;
+  memberPrice: number;
+  commissionPct: number;
+  createdAt: string;
+}
+
+export interface RoomInput {
+  name: string;
+  description: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  imageUrls?: string[];
+  videoUrls?: string[];
+  guestPrice: number;
+  memberPrice: number;
+  commissionPct: number;
+}
+
+export interface RoomUpdate {
+  name?: string;
+  description?: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  imageUrls?: string[];
+  videoUrls?: string[];
+  guestPrice?: number;
+  memberPrice?: number;
+  commissionPct?: number;
+}
+
 export type OrderInputItemType = typeof OrderInputItemType[keyof typeof OrderInputItemType];
 
 
@@ -543,4 +581,3 @@ export const ListTestimonialsCategory = {
   product: 'product',
   business: 'business',
 } as const;
-
