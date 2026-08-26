@@ -372,6 +372,7 @@ export type OrderInputItemType = typeof OrderInputItemType[keyof typeof OrderInp
 export const OrderInputItemType = {
   product: 'product',
   service: 'service',
+  room: 'room',
 } as const;
 
 export interface ShippingAddress {
@@ -396,6 +397,7 @@ export type OrderItemType = typeof OrderItemType[keyof typeof OrderItemType];
 export const OrderItemType = {
   product: 'product',
   service: 'service',
+  room: 'room',
 } as const;
 
 export type OrderStatus = typeof OrderStatus[keyof typeof OrderStatus];
