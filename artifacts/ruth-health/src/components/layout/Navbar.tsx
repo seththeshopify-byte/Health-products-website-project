@@ -22,6 +22,7 @@ export function Navbar() {
     { label: "Products", path: "/products" },
     { label: "Services", path: "/services" },
     { label: "Courses", path: "/courses" },
+    { label: "Rooms", path: "/rooms" },
   ];
 
   return (
