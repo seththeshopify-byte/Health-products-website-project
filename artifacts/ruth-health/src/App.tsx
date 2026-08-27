@@ -18,6 +18,7 @@ import Login from "@/pages/Login";
 import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import CheckoutCancel from "@/pages/CheckoutCancel";
 import Privacy from "@/pages/Privacy";
+import Rooms from "@/pages/Rooms";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminServices from "@/pages/admin/AdminServices";
@@ -29,7 +30,6 @@ import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminCommissions from "@/pages/admin/AdminCommissions";
 import AdminShipping from "@/pages/admin/AdminShipping";
 import NotFound from "@/pages/not-found";
-
 function AdminRoutes() {
   return (
     <AdminLayout>
@@ -49,7 +49,6 @@ function AdminRoutes() {
     </AdminLayout>
   );
 }
-
 function Router() {
   return (
     <Switch>
@@ -72,6 +71,7 @@ function Router() {
             <Route path="/checkout/success" component={CheckoutSuccess} />
             <Route path="/checkout/cancel" component={CheckoutCancel} />
             <Route path="/privacy" component={Privacy} />
+            <Route path="/rooms" component={Rooms} />
             <Route component={NotFound} />
           </Switch>
         </PageShell>
@@ -79,9 +79,7 @@ function Router() {
     </Switch>
   );
 }
-
 const queryClient = new QueryClient();
-
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
