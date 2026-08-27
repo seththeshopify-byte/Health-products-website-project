@@ -1,4 +1,5 @@
 import { Link } from "wouter";
+import { X } from "lucide-react";
 import { useListRooms, getListRoomsQueryKey } from "@workspace/api-client-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,7 +12,14 @@ export default function Rooms() {
   const { isMember } = useAuth();
 
   return (
-    <div className="container mx-auto px-4 py-6 md:py-10">
+    <div className="container mx-auto px-4 py-6 md:py-10 relative">
+      <Link
+        href="/"
+        aria-label="Close"
+        className="absolute top-4 right-4 md:top-6 md:right-6 z-10 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+      >
+        <X size={18} />
+      </Link>
       <div className="mb-12">
         <h1 className="text-2xl md:text-3xl font-serif mb-2 text-foreground">Wellness Rooms</h1>
         <p className="text-sm md:text-base text-muted-foreground max-w-2xl">
