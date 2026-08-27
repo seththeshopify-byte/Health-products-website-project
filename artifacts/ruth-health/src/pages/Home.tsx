@@ -15,6 +15,7 @@ import {
   Image as GalleryIcon,
   Phone,
 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const quickLinks = [
   { href: "/products", label: "Shop Products", icon: ShoppingBag },
@@ -64,10 +65,15 @@ const heroBackgrounds = [
   "/attached_assets/generated_images/106979146-1637629270455Aerial_6.webp",
 ];
 
-// Hotel quick-access menu — these pages don't exist yet, so tiles are
-// placeholders (non-navigating) until the hotel section is built out.
-const hotelQuickLinks = [
-  { label: "Rooms & Suites", icon: BedDouble },
+// Hotel quick-access menu. "Rooms & Suites" links to the real /rooms page.
+// The remaining tiles don't have pages built yet, so they show a
+// "Coming soon" toast on click instead of navigating.
+const hotelQuickLinks: {
+  label: string;
+  icon: typeof BedDouble;
+  href?: string;
+}[] = [
+  { label: "Rooms & Suites", icon: BedDouble, href: "/rooms" },
   { label: "Book a Stay", icon: CalendarCheck },
   { label: "Amenities", icon: Sparkles },
   { label: "Gallery", icon: GalleryIcon },
@@ -80,6 +86,7 @@ export default function Home() {
     () => heroBackgrounds[Math.floor(Math.random() * heroBackgrounds.length)]
   );
   const [bgLoaded, setBgLoaded] = useState(false);
+  const { toast } = useToast();
 
   return (
     <div className="flex flex-col w-full">
@@ -268,21 +275,48 @@ export default function Home() {
                 <p className="text-xs text-white/60">Tel: 07075-787-516</p>
               </div>
 
-              {/* Hotel quick-access tile grid (placeholders — pages coming soon) */}
+              {/* Hotel quick-access tile grid — Rooms & Suites navigates for real,
+                  the rest show a "Coming soon" toast until those pages exist. */}
               <div className="grid grid-cols-3 gap-2 md:gap-3 w-full max-w-sm mt-2">
-                {hotelQuickLinks.map(({ label, icon: Icon }) => (
-                  <div
-                    key={label}
-                    className="flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-amber-400/20 bg-white/5 backdrop-blur-md shadow-sm px-1.5 text-center"
-                  >
-                    <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-400">
-                      <Icon size={14} />
-                    </span>
-                    <span className="text-[10px] md:text-[11px] font-medium leading-tight text-white">
-                      {label}
-                    </span>
-                  </div>
-                ))}
+                {hotelQuickLinks.map(({ label, icon: Icon, href }) => {
+                  const tileClasses =
+                    "flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-amber-400/20 bg-white/5 backdrop-blur-md shadow-sm px-1.5 text-center transition-all hover:-translate-y-0.5 hover:bg-white/10";
+
+                  const tileContent = (
+                    <>
+                      <span className="flex h-7 w-7 md:h-8 md:w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-400">
+                        <Icon size={14} />
+                      </span>
+                      <span className="text-[10px] md:text-[11px] font-medium leading-tight text-white">
+                        {label}
+                      </span>
+                    </>
+                  );
+
+                  if (href) {
+                    return (
+                      <Link key={label} href={href} className={tileClasses}>
+                        {tileContent}
+                      </Link>
+                    );
+                  }
+
+                  return (
+                    <button
+                      key={label}
+                      type="button"
+                      onClick={() =>
+                        toast({
+                          title: "Coming soon",
+                          description: `${label} isn't available yet — check back soon.`,
+                        })
+                      }
+                      className={tileClasses}
+                    >
+                      {tileContent}
+                    </button>
+                  );
+                })}
               </div>
 
               <p className="text-[11px] text-white/40 mt-2">
