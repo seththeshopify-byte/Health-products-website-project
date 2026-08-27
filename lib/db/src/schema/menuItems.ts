@@ -1,13 +1,24 @@
-export * from "./users";
-export * from "./products";
-export * from "./services";
-export * from "./courses";
-export * from "./testimonials";
-export * from "./orders";
-export * from "./shippingZones";
-export * from "./commissionEvents";
-export * from "./bookings";
-export * from "./settings";
-export * from "./events";
-export * from "./rooms";
-export * from "./menuItems";
+import { pgTable, serial, text, numeric, timestamp, varchar, jsonb } from "drizzle-orm/pg-core";
+import { createInsertSchema } from "drizzle-zod";
+import { z } from "zod/v4";
+export const menuItemsTable = pgTable("menu_items", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  imageUrl: text("image_url"),
+  imageUrls: jsonb("image_urls").$type<string[]>().notNull().default([]),
+  type: varchar("type", { length: 10 }).notNull(),
+  category: varchar("category", { length: 40 }).notNull(),
+  guestPrice: numeric("guest_price", { precision: 10, scale: 2 }).notNull(),
+  memberPrice: numeric("member_price", { precision: 10, scale: 2 }).notNull(),
+  commissionPct: numeric("commission_pct", { precision: 5, scale: 2 }).notNull().default("10"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+export const insertMenuItemSchema = createInsertSchema(menuItemsTable, {
+  type: z.enum(["food", "drink"]),
+}).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertMenuItem = z.infer<typeof insertMenuItemSchema>;
+export type MenuItem = typeof menuItemsTable.$inferSelect;
