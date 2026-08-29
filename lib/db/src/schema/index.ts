@@ -11,3 +11,4 @@ export * from "./settings";
 export * from "./events";
 export * from "./rooms";
 export * from "./menuItems";
+export * from "./menuCategoryBackgrounds";
