@@ -19,6 +19,8 @@ import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import CheckoutCancel from "@/pages/CheckoutCancel";
 import Privacy from "@/pages/Privacy";
 import Rooms from "@/pages/Rooms";
+import Food from "@/pages/Food";
+import Drinks from "@/pages/Drinks";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminProducts from "@/pages/admin/AdminProducts";
 import AdminServices from "@/pages/admin/AdminServices";
@@ -72,6 +74,8 @@ function Router() {
             <Route path="/checkout/cancel" component={CheckoutCancel} />
             <Route path="/privacy" component={Privacy} />
             <Route path="/rooms" component={Rooms} />
+            <Route path="/food" component={Food} />
+            <Route path="/drinks" component={Drinks} />
             <Route component={NotFound} />
           </Switch>
         </PageShell>
