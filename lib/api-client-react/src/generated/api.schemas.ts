@@ -366,6 +366,64 @@ export interface RoomUpdate {
   commissionPct?: number;
 }
 
+export type MenuItemType = typeof MenuItemType[keyof typeof MenuItemType];
+
+export const MenuItemType = {
+  food: 'food',
+  drink: 'drink',
+} as const;
+
+export interface MenuItem {
+  id: number;
+  name: string;
+  description: string;
+  /** @nullable */
+  imageUrl: string | null;
+  imageUrls?: string[];
+  type: MenuItemType;
+  category: string;
+  /** @nullable */
+  guestPrice: number | null;
+  /** @nullable */
+  memberPrice: number | null;
+  commissionPct: number;
+  createdAt: string;
+}
+
+export interface MenuItemInput {
+  name: string;
+  description: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  imageUrls?: string[];
+  type: MenuItemType;
+  category: string;
+  /** @nullable */
+  guestPrice?: number | null;
+  /** @nullable */
+  memberPrice?: number | null;
+  commissionPct?: number;
+}
+
+export interface MenuItemUpdate {
+  name?: string;
+  description?: string;
+  /** @nullable */
+  imageUrl?: string | null;
+  imageUrls?: string[];
+  type?: MenuItemType;
+  category?: string;
+  /** @nullable */
+  guestPrice?: number | null;
+  /** @nullable */
+  memberPrice?: number | null;
+  commissionPct?: number;
+}
+
+export type ListMenuItemsParams = {
+  type?: MenuItemType;
+};
+
 export type OrderInputItemType = typeof OrderInputItemType[keyof typeof OrderInputItemType];
 
 
