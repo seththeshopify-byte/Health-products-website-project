@@ -13,7 +13,7 @@ import dashboardRouter from "./dashboard.js";
 import shippingZonesRouter from "./shippingZones.js";
 import eventsRouter from "./events.js";
 import roomsRouter from "./rooms.js";
-
+import menuItemsRouter from "./menuItems.js";
 const router: IRouter = Router();
 router.use(healthRouter);
 router.use(authRouter);
@@ -29,5 +29,5 @@ router.use(dashboardRouter);
 router.use(shippingZonesRouter);
 router.use(eventsRouter);
 router.use(roomsRouter);
-
+router.use(menuItemsRouter);
 export default router;
