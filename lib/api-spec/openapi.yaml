@@ -828,6 +828,111 @@ paths:
               schema:
                 $ref: "#/components/schemas/SuccessResponse"
 
+  # MENU ITEMS (FOOD & DRINKS)
+  /menu-items:
+    get:
+      operationId: listMenuItems
+      tags: [menuItems]
+      summary: List all food & drink menu items
+      parameters:
+        - name: type
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [food, drink]
+      responses:
+        "200":
+          description: List of menu items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MenuItem"
+    post:
+      operationId: createMenuItem
+      tags: [menuItems]
+      summary: Create a menu item (admin)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuItemInput"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+
+  /menu-items/{id}:
+    get:
+      operationId: getMenuItem
+      tags: [menuItems]
+      summary: Get a menu item
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Menu item
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    patch:
+      operationId: updateMenuItem
+      tags: [menuItems]
+      summary: Update a menu item (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MenuItemUpdate"
+      responses:
+        "200":
+          description: Updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MenuItem"
+    delete:
+      operationId: deleteMenuItem
+      tags: [menuItems]
+      summary: Delete a menu item (admin)
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
   # ORDERS
   /orders:
     get:
@@ -1829,6 +1934,89 @@ components:
           type: number
         memberPrice:
           type: number
+        commissionPct:
+          type: number
+
+    # MENU ITEMS (FOOD & DRINKS)
+    MenuItem:
+      type: object
+      required: [id, name, description, imageUrl, type, category, guestPrice, memberPrice, commissionPct, createdAt]
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          enum: [food, drink]
+        category:
+          type: string
+        guestPrice:
+          type: ["number", "null"]
+        memberPrice:
+          type: ["number", "null"]
+        commissionPct:
+          type: number
+        createdAt:
+          type: string
+          format: date-time
+
+    MenuItemInput:
+      type: object
+      required: [name, description, type, category]
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          enum: [food, drink]
+        category:
+          type: string
+        guestPrice:
+          type: ["number", "null"]
+        memberPrice:
+          type: ["number", "null"]
+        commissionPct:
+          type: number
+
+    MenuItemUpdate:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: ["string", "null"]
+        imageUrls:
+          type: array
+          items:
+            type: string
+        type:
+          type: string
+          enum: [food, drink]
+        category:
+          type: string
+        guestPrice:
+          type: ["number", "null"]
+        memberPrice:
+          type: ["number", "null"]
         commissionPct:
           type: number
 
