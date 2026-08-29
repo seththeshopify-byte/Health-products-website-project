@@ -9,8 +9,8 @@ export const menuItemsTable = pgTable("menu_items", {
   imageUrls: jsonb("image_urls").$type<string[]>().notNull().default([]),
   type: varchar("type", { length: 10 }).notNull(),
   category: varchar("category", { length: 40 }).notNull(),
-  guestPrice: numeric("guest_price", { precision: 10, scale: 2 }).notNull(),
-  memberPrice: numeric("member_price", { precision: 10, scale: 2 }).notNull(),
+  guestPrice: numeric("guest_price", { precision: 10, scale: 2 }),
+  memberPrice: numeric("member_price", { precision: 10, scale: 2 }),
   commissionPct: numeric("commission_pct", { precision: 5, scale: 2 }).notNull().default("10"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
