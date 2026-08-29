@@ -13,8 +13,8 @@ function formatMenuItem(m: typeof menuItemsTable.$inferSelect) {
     imageUrls: m.imageUrls ?? [],
     type: m.type,
     category: m.category,
-    guestPrice: Number(m.guestPrice),
-    memberPrice: Number(m.memberPrice),
+    guestPrice: m.guestPrice == null ? null : Number(m.guestPrice),
+    memberPrice: m.memberPrice == null ? null : Number(m.memberPrice),
     commissionPct: Number(m.commissionPct),
     createdAt: m.createdAt,
   };
@@ -38,7 +38,7 @@ router.get("/menu-items", async (req, res) => {
 router.post("/menu-items", requireAdmin, async (req, res) => {
   try {
     const { name, description, imageUrl, imageUrls, type, category, guestPrice, memberPrice, commissionPct } = req.body;
-    if (!name || !description || !type || !category || guestPrice == null || memberPrice == null) {
+    if (!name || !description || !type || !category) {
       res.status(400).json({ error: "Missing required fields" });
       return;
     }
@@ -55,8 +55,8 @@ router.post("/menu-items", requireAdmin, async (req, res) => {
         imageUrls: imageUrls ?? [],
         type,
         category,
-        guestPrice: String(guestPrice),
-        memberPrice: String(memberPrice),
+        guestPrice: guestPrice == null ? null : String(guestPrice),
+        memberPrice: memberPrice == null ? null : String(memberPrice),
         commissionPct: String(commissionPct ?? 10),
       })
       .returning();
@@ -100,8 +100,8 @@ router.patch("/menu-items/:id", requireAdmin, async (req, res) => {
     }
     if (type !== undefined) updates.type = type;
     if (category !== undefined) updates.category = category;
-    if (guestPrice !== undefined) updates.guestPrice = String(guestPrice);
-    if (memberPrice !== undefined) updates.memberPrice = String(memberPrice);
+    if (guestPrice !== undefined) updates.guestPrice = guestPrice == null ? null : String(guestPrice);
+    if (memberPrice !== undefined) updates.memberPrice = memberPrice == null ? null : String(memberPrice);
     if (commissionPct !== undefined) updates.commissionPct = String(commissionPct);
     const [item] = await db
       .update(menuItemsTable)
