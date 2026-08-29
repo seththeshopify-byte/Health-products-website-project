@@ -7,6 +7,7 @@ export const menuItemsTable = pgTable("menu_items", {
   description: text("description").notNull(),
   imageUrl: text("image_url"),
   imageUrls: jsonb("image_urls").$type<string[]>().notNull().default([]),
+  videoUrls: jsonb("video_urls").$type<string[]>().notNull().default([]),
   type: varchar("type", { length: 10 }).notNull(),
   category: varchar("category", { length: 40 }).notNull(),
   guestPrice: numeric("guest_price", { precision: 10, scale: 2 }),
