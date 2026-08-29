@@ -14,8 +14,16 @@ import {
   BedDouble,
   Image as GalleryIcon,
   Phone,
+  UtensilsCrossed,
+  GlassWater,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 const quickLinks = [
   { href: "/products", label: "Shop Products", icon: ShoppingBag },
@@ -66,15 +74,17 @@ const heroBackgrounds = [
 ];
 
 // Hotel quick-access menu. "Rooms & Suites" links to the real /rooms page.
-// The remaining tiles don't have pages built yet, so they show a
-// "Coming soon" toast on click instead of navigating.
+// "Food & Drinks" opens a popup with Food / Drinks options. The remaining
+// tiles don't have pages built yet, so they show a "Coming soon" toast on
+// click instead of navigating.
 const hotelQuickLinks: {
   label: string;
   icon: typeof BedDouble;
   href?: string;
+  action?: "dialog";
 }[] = [
   { label: "Rooms & Suites", icon: BedDouble, href: "/rooms" },
-  { label: "Book a Stay", icon: CalendarCheck },
+  { label: "Food & Drinks", icon: UtensilsCrossed, action: "dialog" },
   { label: "Amenities", icon: Sparkles },
   { label: "Gallery", icon: GalleryIcon },
   { label: "Contact", icon: Phone },
@@ -86,6 +96,7 @@ export default function Home() {
     () => heroBackgrounds[Math.floor(Math.random() * heroBackgrounds.length)]
   );
   const [bgLoaded, setBgLoaded] = useState(false);
+  const [foodDrinksOpen, setFoodDrinksOpen] = useState(false);
   const { toast } = useToast();
 
   return (
@@ -278,7 +289,7 @@ export default function Home() {
               {/* Hotel quick-access tile grid — Rooms & Suites navigates for real,
                   the rest show a "Coming soon" toast until those pages exist. */}
               <div className="grid grid-cols-3 gap-2 md:gap-3 w-full max-w-sm mt-2">
-                {hotelQuickLinks.map(({ label, icon: Icon, href }) => {
+                {hotelQuickLinks.map(({ label, icon: Icon, href, action }) => {
                   const tileClasses =
                     "flex flex-col items-center justify-center gap-1.5 h-20 md:h-24 rounded-xl border border-amber-400/20 bg-white/5 backdrop-blur-md shadow-sm px-1.5 text-center transition-all hover:-translate-y-0.5 hover:bg-white/10";
 
@@ -301,6 +312,19 @@ export default function Home() {
                     );
                   }
 
+                  if (action === "dialog") {
+                    return (
+                      <button
+                        key={label}
+                        type="button"
+                        onClick={() => setFoodDrinksOpen(true)}
+                        className={tileClasses}
+                      >
+                        {tileContent}
+                      </button>
+                    );
+                  }
+
                   return (
                     <button
                       key={label}
@@ -318,6 +342,35 @@ export default function Home() {
                   );
                 })}
               </div>
+
+              {/* Food & Drinks popup: choose Food or Drinks menu */}
+              <Dialog open={foodDrinksOpen} onOpenChange={setFoodDrinksOpen}>
+                <DialogContent className="sm:max-w-xs">
+                  <DialogHeader>
+                    <DialogTitle className="font-serif text-center">
+                      Food &amp; Drinks
+                    </DialogTitle>
+                  </DialogHeader>
+                  <div className="grid grid-cols-2 gap-3 pt-2">
+                    <Link
+                      href="/food"
+                      onClick={() => setFoodDrinksOpen(false)}
+                      className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 text-foreground transition-colors hover:bg-muted"
+                    >
+                      <UtensilsCrossed className="text-amber-500" size={22} />
+                      <span className="text-sm font-medium">Food</span>
+                    </Link>
+                    <Link
+                      href="/drinks"
+                      onClick={() => setFoodDrinksOpen(false)}
+                      className="flex flex-col items-center gap-2 rounded-lg border border-border p-4 text-foreground transition-colors hover:bg-muted"
+                    >
+                      <GlassWater className="text-amber-500" size={22} />
+                      <span className="text-sm font-medium">Drinks</span>
+                    </Link>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
               <p className="text-[11px] text-white/40 mt-2">
                 Full hotel booking experience coming soon.
