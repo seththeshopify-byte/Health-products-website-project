@@ -1,137 +1,259 @@
-import { useEffect, useState } from "react";
-import { useListMenuItems, getListMenuItemsQueryKey } from "@workspace/api-client-react";
+import { useState } from "react";
 import { useMenuCart } from "@/hooks/use-menu-cart";
-import { MenuCartDrawer } from "@/components/menu-cart-drawer";
+import { useAuth } from "@/hooks/use-auth";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import { ShoppingBasket, Minus, Plus, X } from "lucide-react";
 
-export default function Food() {
-  const { data: items, isLoading } = useListMenuItems(
-    { type: "food" },
-    { query: { queryKey: getListMenuItemsQueryKey({ type: "food" }) } }
-  );
-  const { addItem } = useMenuCart();
+type Step = "cart" | "fulfillment" | "delivery-details" | "dine-in-confirmed";
 
-  const categories = Array.from(new Set((items ?? []).map((i) => i.category)));
-  const [activeCategory, setActiveCategory] = useState<string | null>(null);
+export function MenuCartDrawer() {
+  const { lines, updateQuantity, removeItem, clear, count } = useMenuCart();
+  const { isMember } = useAuth();
+  const { toast } = useToast();
 
-  useEffect(() => {
-    if (!activeCategory && categories.length > 0) {
-      setActiveCategory(categories[0]);
+  const [open, setOpen] = useState(false);
+  const [step, setStep] = useState<Step>("cart");
+  const [submitting, setSubmitting] = useState(false);
+  const [email, setEmail] = useState("");
+  const [shippingAddress, setShippingAddress] = useState({
+    line1: "",
+    city: "",
+    province: "",
+    postalCode: "",
+    country: "Nigeria",
+  });
+  const [dineInOrderId, setDineInOrderId] = useState<number | null>(null);
+
+  const priceFor = (l: (typeof lines)[number]) => Number((isMember ? l.memberPrice ?? l.guestPrice : l.guestPrice) ?? 0);
+  const total = lines.reduce((sum, l) => sum + priceFor(l) * l.quantity, 0);
+
+  const isValidEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+
+  const resetAndClose = () => {
+    setStep("cart");
+    setOpen(false);
+  };
+
+  const submitDelivery = async () => {
+    if (!email || !isValidEmail(email)) {
+      toast({ title: "Required", description: "A valid email is required to receive your payment confirmation", variant: "destructive" });
+      return;
     }
-  }, [categories, activeCategory]);
+    if (!shippingAddress.country) {
+      toast({ title: "Required", description: "Country is required for delivery", variant: "destructive" });
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/orders/cart/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          items: lines.map((l) => ({ itemType: "menuItem", itemId: l.itemId, quantity: l.quantity })),
+          shippingAddress,
+          email,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Error", description: data.error || "Failed to initiate checkout", variant: "destructive" });
+        return;
+      }
+      clear();
+      window.location.href = data.checkoutUrl;
+    } catch {
+      toast({ title: "Error", description: "Failed to initiate checkout", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
-  const visibleItems = (items ?? []).filter((i) => i.category === activeCategory);
+  const submitDineIn = async () => {
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/orders/cart/dine-in", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          items: lines.map((l) => ({ itemType: "menuItem", itemId: l.itemId, quantity: l.quantity })),
+          email: email || undefined,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        toast({ title: "Error", description: data.error || "Failed to place order", variant: "destructive" });
+        return;
+      }
+      setDineInOrderId(data.orderId);
+      clear();
+      setStep("dine-in-confirmed");
+    } catch {
+      toast({ title: "Error", description: "Failed to place order", variant: "destructive" });
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   return (
-    <div className="relative">
-      <style>{`
-        .menu-texture {
-          background-image: repeating-linear-gradient(
-            to bottom,
-            transparent,
-            transparent 37px,
-            hsl(var(--border)) 37px,
-            hsl(var(--border)) 38px
-          );
-        }
-      `}</style>
-
-      <div className="menu-texture">
-        <div className="container mx-auto px-4 py-10 md:py-14 max-w-2xl">
-          <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
-            <p className="text-[11px] font-medium uppercase tracking-[0.3em] text-amber-600 mb-3">
-              Kitchen
-            </p>
-            <h1 className="text-3xl md:text-4xl font-serif italic text-foreground mb-2">
-              Food Menu
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Benington Hotel &amp; Suite
-            </p>
-          </div>
-
-          {isLoading ? (
-            <div className="space-y-3">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <div key={i} className="h-6 bg-muted rounded animate-pulse" />
-              ))}
-            </div>
-          ) : categories.length === 0 ? (
-            <p className="text-center text-sm text-muted-foreground py-12">
-              Menu items coming soon.
-            </p>
-          ) : (
-            <>
-              <nav className="sticky top-0 z-10 -mx-4 px-4 py-3 mb-8 bg-background/90 backdrop-blur-sm border-b border-border flex flex-wrap justify-center gap-x-6 gap-y-2">
-                {categories.map((cat) => (
-                  <button
-                    key={cat}
-                    type="button"
-                    onClick={() => setActiveCategory(cat)}
-                    className={`text-xs font-medium uppercase tracking-[0.14em] pb-1.5 border-b-2 transition-colors ${
-                      activeCategory === cat
-                        ? "border-amber-500 text-foreground"
-                        : "border-transparent text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {cat}
-                  </button>
+    <Dialog
+      open={open}
+      onOpenChange={(v) => {
+        setOpen(v);
+        if (!v) setStep("cart");
+      }}
+    >
+      <DialogTrigger asChild>
+        <Button
+          variant="outline"
+          className="fixed bottom-6 right-6 z-20 h-12 px-5 rounded-full shadow-lg gap-2 bg-background border-amber-500/50"
+        >
+          <ShoppingBasket size={18} />
+          {count > 0 && <span className="text-xs font-medium">{count}</span>}
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[440px] max-h-[90vh] overflow-y-auto">
+        {step === "cart" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-serif italic">Your Order</DialogTitle>
+            </DialogHeader>
+            {lines.length === 0 ? (
+              <p className="text-sm text-muted-foreground py-8 text-center">Your basket is empty.</p>
+            ) : (
+              <div className="py-2">
+                {lines.map((l) => (
+                  <div key={l.itemId} className="flex items-center gap-3 py-2.5 border-b border-dotted border-border">
+                    <span className="flex-1 font-serif text-[15px]" dangerouslySetInnerHTML={{ __html: l.name }} />
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(l.itemId, l.quantity - 1)}
+                        className="w-6 h-6 flex items-center justify-center rounded border border-border hover:bg-muted"
+                      >
+                        <Minus size={12} />
+                      </button>
+                      <span className="w-5 text-center text-sm">{l.quantity}</span>
+                      <button
+                        type="button"
+                        onClick={() => updateQuantity(l.itemId, l.quantity + 1)}
+                        className="w-6 h-6 flex items-center justify-center rounded border border-border hover:bg-muted"
+                      >
+                        <Plus size={12} />
+                      </button>
+                    </div>
+                    <span className="text-sm font-medium text-emerald-700 w-20 text-right whitespace-nowrap">
+                      ₦{(priceFor(l) * l.quantity).toLocaleString()}
+                    </span>
+                    <button type="button" onClick={() => removeItem(l.itemId)} className="text-muted-foreground hover:text-destructive">
+                      <X size={14} />
+                    </button>
+                  </div>
                 ))}
-              </nav>
-
-              <div
-                key={activeCategory}
-                className="animate-in fade-in slide-in-from-bottom-2 duration-500"
-              >
-                <ul className="space-y-0">
-                  {visibleItems.map((item) => (
-                    <li
-                      key={item.id}
-                      className="flex items-baseline gap-3 py-2.5 border-b border-dotted border-border"
-                    >
-                      <span
-                        className="font-serif text-[16.5px] text-foreground"
-                        dangerouslySetInnerHTML={{ __html: item.name }}
-                      />
-                      <span className="flex-1 border-b border-dotted border-border/70 translate-y-[-4px]" />
-                      {item.guestPrice != null ? (
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <span className="text-sm font-medium text-emerald-700">
-                            ₦{Number(item.guestPrice).toLocaleString()}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() =>
-                              addItem({
-                                itemId: item.id,
-                                name: item.name,
-                                guestPrice: item.guestPrice != null ? Number(item.guestPrice) : null,
-                                memberPrice: item.memberPrice != null ? Number(item.memberPrice) : null,
-                              })
-                            }
-                            className="text-[10px] uppercase tracking-wide font-medium text-amber-700 border border-amber-500/50 rounded-full px-2.5 py-1 hover:bg-amber-50 transition-colors"
-                          >
-                            Order Now
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs italic text-muted-foreground whitespace-nowrap">
-                          Ask our staff
-                        </span>
-                      )}
-                    </li>
-                  ))}
-                </ul>
+                <div className="flex items-center justify-between pt-4">
+                  <span className="uppercase tracking-[0.14em] text-[11px] text-muted-foreground">Total</span>
+                  <span className="font-medium text-emerald-700">₦{total.toLocaleString()}</span>
+                </div>
               </div>
-            </>
-          )}
+            )}
+            <Button className="w-full h-12 mt-4" disabled={lines.length === 0} onClick={() => setStep("fulfillment")}>
+              Proceed to Checkout
+            </Button>
+          </>
+        )}
 
-          <p className="text-center text-[11px] uppercase tracking-[0.12em] text-muted-foreground mt-14">
-            Prices in Nigerian Naira (₦) · Subject to change without notice
-          </p>
-        </div>
-      </div>
+        {step === "fulfillment" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-serif italic">How would you like this?</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-3 py-4">
+              <button
+                type="button"
+                onClick={submitDineIn}
+                disabled={submitting}
+                className="text-left border border-border rounded-lg p-4 hover:border-amber-500 transition-colors disabled:opacity-60"
+              >
+                <p className="font-serif text-foreground">Dining In</p>
+                <p className="text-xs text-muted-foreground mt-1">No payment now — settle your bill with staff.</p>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStep("delivery-details")}
+                disabled={submitting}
+                className="text-left border border-border rounded-lg p-4 hover:border-amber-500 transition-colors disabled:opacity-60"
+              >
+                <p className="font-serif text-foreground">Delivery / Takeaway</p>
+                <p className="text-xs text-muted-foreground mt-1">Pay online now.</p>
+              </button>
+            </div>
+          </>
+        )}
 
-      <MenuCartDrawer />
-    </div>
+        {step === "delivery-details" && (
+          <>
+            <DialogHeader>
+              <DialogTitle className="font-serif italic">Delivery Details</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid gap-2">
+                <Label htmlFor="menu-email">Email</Label>
+                <Input id="menu-email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="menu-line1">Address Line 1</Label>
+                <Input id="menu-line1" value={shippingAddress.line1} onChange={(e) => setShippingAddress((p) => ({ ...p, line1: e.target.value }))} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="menu-city">City</Label>
+                <Input id="menu-city" value={shippingAddress.city} onChange={(e) => setShippingAddress((p) => ({ ...p, city: e.target.value }))} />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="menu-province">State</Label>
+                <Input
+                  id="menu-province"
+                  placeholder="e.g. Lagos, Ogun"
+                  value={shippingAddress.province}
+                  onChange={(e) => setShippingAddress((p) => ({ ...p, province: e.target.value }))}
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="grid gap-2">
+                  <Label htmlFor="menu-postal">Postal/Zip Code</Label>
+                  <Input id="menu-postal" value={shippingAddress.postalCode} onChange={(e) => setShippingAddress((p) => ({ ...p, postalCode: e.target.value }))} />
+                </div>
+                <div className="grid gap-2">
+                  <Label htmlFor="menu-country">Country</Label>
+                  <Input id="menu-country" disabled value={shippingAddress.country} />
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">Free delivery within Lagos. A flat delivery fee applies outside Lagos.</p>
+            </div>
+            <Button onClick={submitDelivery} disabled={submitting || !shippingAddress.country || !email} className="w-full h-12">
+              {submitting ? "Processing..." : "Continue to Payment"}
+            </Button>
+          </>
+        )}
+
+        {step === "dine-in-confirmed" && (
+          <div className="text-center py-8">
+            <DialogHeader>
+              <DialogTitle className="font-serif italic">Order Sent!</DialogTitle>
+            </DialogHeader>
+            <p className="text-sm text-muted-foreground mt-3 mb-6">
+              Your order{dineInOrderId ? ` #${dineInOrderId}` : ""} has been sent to our kitchen/bar — please settle your bill with staff when done.
+            </p>
+            <Button className="w-full h-12" onClick={resetAndClose}>
+              Done
+            </Button>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
