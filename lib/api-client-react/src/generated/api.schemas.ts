@@ -380,6 +380,7 @@ export interface MenuItem {
   /** @nullable */
   imageUrl: string | null;
   imageUrls?: string[];
+  videoUrls?: string[];
   type: MenuItemType;
   category: string;
   /** @nullable */
@@ -396,6 +397,7 @@ export interface MenuItemInput {
   /** @nullable */
   imageUrl?: string | null;
   imageUrls?: string[];
+  videoUrls?: string[];
   type: MenuItemType;
   category: string;
   /** @nullable */
@@ -411,6 +413,7 @@ export interface MenuItemUpdate {
   /** @nullable */
   imageUrl?: string | null;
   imageUrls?: string[];
+  videoUrls?: string[];
   type?: MenuItemType;
   category?: string;
   /** @nullable */
