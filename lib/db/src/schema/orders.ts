@@ -1,23 +1,21 @@
-import { pgTable, serial, text, numeric, timestamp, jsonb, integer } from "drizzle-orm/pg-core";
+import { pgTable, serial, integer, text, numeric, timestamp } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
-export const ordersTable = pgTable("orders", {
+import { ordersTable } from "./orders";
+
+export const orderItemsTable = pgTable("order_items", {
   id: serial("id").primaryKey(),
-  userId: integer("user_id"),
-  itemType: text("item_type").notNull(), // product | service
+  orderId: integer("order_id").notNull().references(() => ordersTable.id),
+  itemType: text("item_type").notNull(), // product | service | menuItem
   itemId: integer("item_id").notNull(),
-  promoCodeUsed: text("promo_code_used"),
-  itemAmount: numeric("item_amount", { precision: 10, scale: 2 }).notNull(),
-  shippingFee: numeric("shipping_fee", { precision: 10, scale: 2 }).notNull().default("0"),
-  totalAmount: numeric("total_amount", { precision: 10, scale: 2 }).notNull(),
-  shippingAddress: jsonb("shipping_address"),
-  paystackReference: text("paystack_reference"),
-  status: text("status").notNull().default("pending"), // pending | paid | failed | refunded
+  quantity: integer("quantity").notNull().default(1),
+  unitPrice: numeric("unit_price", { precision: 10, scale: 2 }).notNull(), // price snapshot at order time
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
-export const insertOrderSchema = createInsertSchema(ordersTable).omit({
+
+export const insertOrderItemSchema = createInsertSchema(orderItemsTable).omit({
   id: true,
   createdAt: true,
 });
-export type InsertOrder = z.infer<typeof insertOrderSchema>;
-export type Order = typeof ordersTable.$inferSelect;
+export type InsertOrderItem = z.infer<typeof insertOrderItemSchema>;
+export type OrderItem = typeof orderItemsTable.$inferSelect;
