@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useListMenuItems, getListMenuItemsQueryKey } from "@workspace/api-client-react";
+import { useMenuCart } from "@/hooks/use-menu-cart";
+import { MenuCartDrawer } from "@/components/menu-cart-drawer";
 
 export default function Food() {
   const { data: items, isLoading } = useListMenuItems(
     { type: "food" },
     { query: { queryKey: getListMenuItemsQueryKey({ type: "food" }) } }
   );
+  const { addItem } = useMenuCart();
 
   const categories = Array.from(new Set((items ?? []).map((i) => i.category)));
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -91,9 +94,25 @@ export default function Food() {
                       />
                       <span className="flex-1 border-b border-dotted border-border/70 translate-y-[-4px]" />
                       {item.guestPrice != null ? (
-                        <span className="text-sm font-medium text-emerald-700 whitespace-nowrap">
-                          ₦{Number(item.guestPrice).toLocaleString()}
-                        </span>
+                        <div className="flex items-center gap-2 whitespace-nowrap">
+                          <span className="text-sm font-medium text-emerald-700">
+                            ₦{Number(item.guestPrice).toLocaleString()}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() =>
+                              addItem({
+                                itemId: item.id,
+                                name: item.name,
+                                guestPrice: item.guestPrice != null ? Number(item.guestPrice) : null,
+                                memberPrice: item.memberPrice != null ? Number(item.memberPrice) : null,
+                              })
+                            }
+                            className="text-[10px] uppercase tracking-wide font-medium text-amber-700 border border-amber-500/50 rounded-full px-2.5 py-1 hover:bg-amber-50 transition-colors"
+                          >
+                            Order Now
+                          </button>
+                        </div>
                       ) : (
                         <span className="text-xs italic text-muted-foreground whitespace-nowrap">
                           Ask our staff
@@ -111,6 +130,8 @@ export default function Food() {
           </p>
         </div>
       </div>
+
+      <MenuCartDrawer />
     </div>
   );
 }
