@@ -16,6 +16,8 @@ import {
   Truck,
   ArrowLeft,
   Menu,
+  UtensilsCrossed,
+  X,
 } from "lucide-react";
 export function AdminLayout({ children }: { children: React.ReactNode }) {
   const { isAdmin, isLoading } = useAuth();
@@ -36,6 +38,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
     { label: "Services", path: "/admin/services", icon: Stethoscope },
     { label: "Courses", path: "/admin/courses", icon: GraduationCap },
     { label: "Rooms", path: "/admin/rooms", icon: DoorOpen },
+    { label: "Food & Drinks", path: "/admin/menu-items", icon: UtensilsCrossed },
     { label: "Testimonials & Events", path: "/admin/testimonials", icon: MessageSquareQuote },
     { label: "Company Events", path: "/admin/events", icon: CalendarDays },
     { label: "Members", path: "/admin/users", icon: Users },
@@ -102,7 +105,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         </SheetContent>
       </Sheet>
 
-      <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
+      <main className="flex min-w-0 flex-1 flex-col overflow-hidden relative">
         <header className="flex h-16 items-center justify-between border-b bg-background px-4 md:hidden">
           <button
             type="button"
@@ -115,6 +118,13 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
           <span className="font-serif text-lg font-medium">Admin Portal</span>
           <Link href="/" className="text-sm text-muted-foreground">Exit</Link>
         </header>
+        <Link
+          href="/"
+          aria-label="Close"
+          className="hidden md:flex absolute top-4 right-4 z-40 h-9 w-9 items-center justify-center rounded-full border border-border bg-card text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground"
+        >
+          <X size={18} />
+        </Link>
         <div className="flex-1 overflow-y-auto p-4 md:p-8">{children}</div>
       </main>
     </div>
