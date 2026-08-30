@@ -1954,6 +1954,10 @@ components:
           type: array
           items:
             type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
         type:
           type: string
           enum: [food, drink]
@@ -1983,6 +1987,10 @@ components:
           type: array
           items:
             type: string
+        videoUrls:
+          type: array
+          items:
+            type: string
         type:
           type: string
           enum: [food, drink]
@@ -2005,6 +2013,10 @@ components:
         imageUrl:
           type: ["string", "null"]
         imageUrls:
+          type: array
+          items:
+            type: string
+        videoUrls:
           type: array
           items:
             type: string
