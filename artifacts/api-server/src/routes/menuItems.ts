@@ -11,6 +11,7 @@ function formatMenuItem(m: typeof menuItemsTable.$inferSelect) {
     description: m.description,
     imageUrl: m.imageUrl,
     imageUrls: m.imageUrls ?? [],
+    videoUrls: m.videoUrls ?? [],
     type: m.type,
     category: m.category,
     guestPrice: m.guestPrice == null ? null : Number(m.guestPrice),
@@ -37,7 +38,7 @@ router.get("/menu-items", async (req, res) => {
 
 router.post("/menu-items", requireAdmin, async (req, res) => {
   try {
-    const { name, description, imageUrl, imageUrls, type, category, guestPrice, memberPrice, commissionPct } = req.body;
+    const { name, description, imageUrl, imageUrls, videoUrls, type, category, guestPrice, memberPrice, commissionPct } = req.body;
     if (!name || !description || !type || !category) {
       res.status(400).json({ error: "Missing required fields" });
       return;
@@ -53,6 +54,7 @@ router.post("/menu-items", requireAdmin, async (req, res) => {
         description,
         imageUrl: imageUrl ?? (imageUrls?.[0] ?? null),
         imageUrls: imageUrls ?? [],
+        videoUrls: videoUrls ?? [],
         type,
         category,
         guestPrice: guestPrice == null ? null : String(guestPrice),
@@ -85,7 +87,7 @@ router.get("/menu-items/:id", async (req, res) => {
 router.patch("/menu-items/:id", requireAdmin, async (req, res) => {
   try {
     const id = parseInt(req.params.id);
-    const { name, description, imageUrl, imageUrls, type, category, guestPrice, memberPrice, commissionPct } = req.body;
+    const { name, description, imageUrl, imageUrls, videoUrls, type, category, guestPrice, memberPrice, commissionPct } = req.body;
     if (type !== undefined && type !== "food" && type !== "drink") {
       res.status(400).json({ error: "type must be 'food' or 'drink'" });
       return;
@@ -98,6 +100,7 @@ router.patch("/menu-items/:id", requireAdmin, async (req, res) => {
       updates.imageUrls = imageUrls;
       if (imageUrl === undefined) updates.imageUrl = imageUrls[0] ?? null;
     }
+    if (videoUrls !== undefined) updates.videoUrls = videoUrls;
     if (type !== undefined) updates.type = type;
     if (category !== undefined) updates.category = category;
     if (guestPrice !== undefined) updates.guestPrice = guestPrice == null ? null : String(guestPrice);
