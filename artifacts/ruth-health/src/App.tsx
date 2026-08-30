@@ -31,6 +31,8 @@ import AdminUsers from "@/pages/admin/AdminUsers";
 import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminCommissions from "@/pages/admin/AdminCommissions";
 import AdminShipping from "@/pages/admin/AdminShipping";
+import AdminRooms from "@/pages/admin/AdminRooms";
+import AdminMenuItems from "@/pages/admin/AdminMenuItems";
 import NotFound from "@/pages/not-found";
 function AdminRoutes() {
   return (
@@ -46,6 +48,8 @@ function AdminRoutes() {
         <Route path="/admin/bookings" component={AdminBookings} />
         <Route path="/admin/commission" component={AdminCommissions} />
         <Route path="/admin/shipping" component={AdminShipping} />
+        <Route path="/admin/rooms" component={AdminRooms} />
+        <Route path="/admin/menu-items" component={AdminMenuItems} />
         <Route component={NotFound} />
       </Switch>
     </AdminLayout>
