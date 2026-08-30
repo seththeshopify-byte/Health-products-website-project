@@ -308,7 +308,7 @@ export default function AdminRooms() {
                 <p className="text-xs text-muted-foreground">
                   {textMode === "paste"
                     ? "Paste ready-made text from Word, Google Docs, or AI tools — formatting like bold, italic, and color will be kept."
-                    : "Paste raw HTML code (e.g. <h2>, <ul><li>, style="color:...") and it will render as real headings, lists, and colors."}
+                    : "Paste raw HTML code (e.g. <h2>, <ul><li>, style=\"color:...\") and it will render as real headings, lists, and colors."}
                 </p>
                 {textMode === "paste" ? (
                   <RichTextField key={`rich-${formKey}`} value={formData.description} onChange={(html) => setFormData((prev) => ({ ...prev, description: html }))} />
