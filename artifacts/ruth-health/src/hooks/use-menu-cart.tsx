@@ -10,7 +10,7 @@ export interface MenuCartLine {
 
 interface MenuCartContextValue {
   lines: MenuCartLine[];
-  addItem: (item: { itemId: number; name: string; guestPrice: number | null; memberPrice: number | null }) => void;
+  addItem: (item: { itemId: number; name: string; guestPrice: number | null; memberPrice: number | null }, quantity?: number) => void;
   updateQuantity: (itemId: number, quantity: number) => void;
   removeItem: (itemId: number) => void;
   clear: () => void;
@@ -19,16 +19,18 @@ interface MenuCartContextValue {
 
 const MenuCartContext = createContext<MenuCartContextValue | null>(null);
 
+// Wrap the app root with this provider so Food.tsx and Drinks.tsx share one
+// cart. In-memory only (no localStorage — per project constraints).
 export function MenuCartProvider({ children }: { children: ReactNode }) {
   const [lines, setLines] = useState<MenuCartLine[]>([]);
 
-  const addItem: MenuCartContextValue["addItem"] = (item) => {
+  const addItem: MenuCartContextValue["addItem"] = (item, quantity = 1) => {
     setLines((prev) => {
       const existing = prev.find((l) => l.itemId === item.itemId);
       if (existing) {
-        return prev.map((l) => (l.itemId === item.itemId ? { ...l, quantity: l.quantity + 1 } : l));
+        return prev.map((l) => (l.itemId === item.itemId ? { ...l, quantity: l.quantity + quantity } : l));
       }
-      return [...prev, { ...item, quantity: 1 }];
+      return [...prev, { ...item, quantity }];
     });
   };
 
