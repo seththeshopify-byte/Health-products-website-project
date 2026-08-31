@@ -22,6 +22,19 @@ export default function Food() {
 
   const visibleItems = (items ?? []).filter((i) => i.category === activeCategory);
 
+  const openItem = (item: (typeof visibleItems)[number]) => {
+    setSelectedItem({
+      itemId: item.id,
+      name: item.name,
+      description: item.description,
+      imageUrl: item.imageUrl,
+      guestPrice: item.guestPrice != null ? Number(item.guestPrice) : null,
+      memberPrice: item.memberPrice != null ? Number(item.memberPrice) : null,
+      menuType: "food",
+    });
+    setOrderModalOpen(true);
+  };
+
   return (
     <div className="relative">
       <style>{`
@@ -87,39 +100,41 @@ export default function Food() {
                   {visibleItems.map((item) => (
                     <li
                       key={item.id}
-                      className="flex items-baseline gap-3 py-2.5 border-b border-dotted border-border"
+                      className="flex flex-col gap-1 py-2.5 border-b border-dotted border-border"
                     >
-                      <span
-                        className="font-serif text-[16.5px] text-foreground"
-                        dangerouslySetInnerHTML={{ __html: item.name }}
-                      />
-                      <span className="flex-1 border-b border-dotted border-border/70 translate-y-[-4px]" />
-                      {item.guestPrice != null ? (
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <span className="text-sm font-medium text-emerald-700">
-                            ₦{Number(item.guestPrice).toLocaleString()}
+                      <div className="flex items-baseline gap-3">
+                        <span
+                          className="font-serif text-[16.5px] text-foreground"
+                          dangerouslySetInnerHTML={{ __html: item.name }}
+                        />
+                        <span className="flex-1 border-b border-dotted border-border/70 translate-y-[-4px]" />
+                        {item.guestPrice != null ? (
+                          <div className="flex items-center gap-2 whitespace-nowrap">
+                            <span className="text-sm font-medium text-emerald-700">
+                              ₦{Number(item.guestPrice).toLocaleString()}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => openItem(item)}
+                              className="text-[10px] uppercase tracking-wide font-medium text-amber-700 border border-amber-500/50 rounded-full px-2.5 py-1 hover:bg-amber-50 transition-colors"
+                            >
+                              Order Now
+                            </button>
+                          </div>
+                        ) : (
+                          <span className="text-xs italic text-muted-foreground whitespace-nowrap">
+                            Ask our staff
                           </span>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setSelectedItem({
-                                itemId: item.id,
-                                name: item.name,
-                                guestPrice: item.guestPrice != null ? Number(item.guestPrice) : null,
-                                memberPrice: item.memberPrice != null ? Number(item.memberPrice) : null,
-                                menuType: "food",
-                              });
-                              setOrderModalOpen(true);
-                            }}
-                            className="text-[10px] uppercase tracking-wide font-medium text-amber-700 border border-amber-500/50 rounded-full px-2.5 py-1 hover:bg-amber-50 transition-colors"
-                          >
-                            Order Now
-                          </button>
-                        </div>
-                      ) : (
-                        <span className="text-xs italic text-muted-foreground whitespace-nowrap">
-                          Ask our staff
-                        </span>
+                        )}
+                      </div>
+                      {item.description && (
+                        <button
+                          type="button"
+                          onClick={() => openItem(item)}
+                          className="self-start text-[11px] text-muted-foreground/70 underline underline-offset-2 hover:text-muted-foreground transition-colors"
+                        >
+                          More
+                        </button>
                       )}
                     </li>
                   ))}
