@@ -9,7 +9,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
-import { Plus, Edit2, Trash2, Image as ImageIcon, X } from "lucide-react";
+import { Plus, Edit2, Trash2, Image as ImageIcon } from "lucide-react";
+import { MediaUploader } from "@/components/MediaUploader";
 
 function sanitizeHtml(html: string): string {
   const container = document.createElement("div");
@@ -86,18 +87,6 @@ function TextModeToggle({ mode, onChange }: { mode: "paste" | "html"; onChange: 
   );
 }
 
-const CLOUDINARY_URL = "https://api.cloudinary.com/v1_1/djzigoye/image/upload";
-const CLOUDINARY_PRESET = "ruth_health_products";
-
-async function uploadToCloudinary(file: File): Promise<string | null> {
-  const data = new FormData();
-  data.append("file", file);
-  data.append("upload_preset", CLOUDINARY_PRESET);
-  const res = await fetch(CLOUDINARY_URL, { method: "POST", body: data });
-  const json = await res.json();
-  return json.secure_url ?? null;
-}
-
 export default function AdminMenuItems() {
   const { data: items, isLoading } = useListMenuItems(undefined, { query: { queryKey: getListMenuItemsQueryKey() } });
   const createMutation = useCreateMenuItem();
@@ -108,11 +97,9 @@ export default function AdminMenuItems() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
   const [formKey, setFormKey] = useState(0);
   const [nameMode, setNameMode] = useState<"paste" | "html">("paste");
   const [descMode, setDescMode] = useState<"paste" | "html">("paste");
-  const [videoInput, setVideoInput] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -129,75 +116,11 @@ export default function AdminMenuItems() {
 
   const existingCategories = Array.from(new Set((items ?? []).map((i) => i.category))).sort();
 
-  const uploadPrimaryImage = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const url = await uploadToCloudinary(file);
-      if (url) setFormData((prev) => ({ ...prev, imageUrl: url }));
-      else alert("Image upload failed. Please try again.");
-    } catch {
-      alert("Image upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const uploadExtraImage = async (file: File) => {
-    setIsUploading(true);
-    try {
-      const url = await uploadToCloudinary(file);
-      if (url) setFormData((prev) => ({ ...prev, imageUrls: [...prev.imageUrls, url] }));
-      else alert("Image upload failed. Please try again.");
-    } catch {
-      alert("Image upload failed. Please try again.");
-    } finally {
-      setIsUploading(false);
-    }
-  };
-
-  const handlePrimaryImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadPrimaryImage(file);
-  };
-
-  const handleExtraImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) uploadExtraImage(file);
-  };
-
-  const handleImagePaste = (e: React.ClipboardEvent<HTMLDivElement>) => {
-    const clipItems = e.clipboardData?.items;
-    if (!clipItems) return;
-    for (let i = 0; i < clipItems.length; i++) {
-      if (clipItems[i].type.startsWith("image/")) {
-        const file = clipItems[i].getAsFile();
-        if (file) uploadPrimaryImage(file);
-        break;
-      }
-    }
-  };
-
-  const removeExtraImage = (url: string) => {
-    setFormData((prev) => ({ ...prev, imageUrls: prev.imageUrls.filter((u) => u !== url) }));
-  };
-
-  const addVideoUrl = () => {
-    const trimmed = videoInput.trim();
-    if (!trimmed) return;
-    setFormData((prev) => ({ ...prev, videoUrls: [...prev.videoUrls, trimmed] }));
-    setVideoInput("");
-  };
-
-  const removeVideoUrl = (url: string) => {
-    setFormData((prev) => ({ ...prev, videoUrls: prev.videoUrls.filter((u) => u !== url) }));
-  };
-
   const resetForm = () => {
     setFormData({
       name: "", description: "", imageUrl: "", imageUrls: [], videoUrls: [],
       type: "food", category: "", guestPrice: "", memberPrice: "", commissionPct: 10,
     });
-    setVideoInput("");
     setNameMode("paste");
     setDescMode("paste");
     setFormKey((k) => k + 1);
@@ -223,7 +146,6 @@ export default function AdminMenuItems() {
       memberPrice: item.memberPrice == null ? "" : String(item.memberPrice),
       commissionPct: item.commissionPct,
     });
-    setVideoInput("");
     setNameMode("paste");
     setDescMode("paste");
     setFormKey((k) => k + 1);
@@ -408,62 +330,31 @@ export default function AdminMenuItems() {
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="imageUpload">Primary Photo</Label>
-                <Input id="imageUpload" type="file" accept="image/*" onChange={handlePrimaryImageChange} disabled={isUploading} />
-                <div
-                  tabIndex={0}
-                  onPaste={handleImagePaste}
-                  className="border-2 border-dashed rounded p-4 text-center text-sm text-muted-foreground cursor-text focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                  Click here, then press Ctrl+V (or Cmd+V) to paste a copied image
-                </div>
-                {isUploading && <p className="text-sm text-muted-foreground">Uploading...</p>}
-                {formData.imageUrl && !isUploading && (
-                  <img src={formData.imageUrl} alt="Preview" className="w-24 h-24 object-cover rounded border" />
-                )}
+                <Label>Primary Photo</Label>
+                {/* MediaUploader always renders an image + video dropzone together.
+                    This instance is the real video uploader for the item (videoUrls
+                    is fully wired). Image side is capped to a single photo — newest
+                    upload replaces the previous one instead of appending. */}
+                <MediaUploader
+                  imageUrls={formData.imageUrl ? [formData.imageUrl] : []}
+                  videoUrls={formData.videoUrls}
+                  onImagesChange={(urls) => setFormData((p) => ({ ...p, imageUrl: urls[urls.length - 1] ?? "" }))}
+                  onVideosChange={(urls) => setFormData((p) => ({ ...p, videoUrls: urls }))}
+                />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="extraImageUpload">Additional Photos (optional)</Label>
-                <Input id="extraImageUpload" type="file" accept="image/*" onChange={handleExtraImageChange} disabled={isUploading} />
-                {formData.imageUrls.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
-                    {formData.imageUrls.map((url) => (
-                      <div key={url} className="relative">
-                        <img src={url} alt="" className="w-16 h-16 object-cover rounded border" />
-                        <button type="button" onClick={() => removeExtraImage(url)} className="absolute -top-1.5 -right-1.5 bg-background border rounded-full p-0.5 text-muted-foreground hover:text-destructive">
-                          <X size={12} />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              <div className="grid gap-2">
-                <Label htmlFor="videoUrl">Video Links (optional)</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="videoUrl"
-                    value={videoInput}
-                    onChange={(e) => setVideoInput(e.target.value)}
-                    placeholder="Paste a video link (e.g. YouTube)"
-                    onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addVideoUrl(); } }}
-                  />
-                  <Button type="button" variant="outline" onClick={addVideoUrl}>Add</Button>
-                </div>
-                {formData.videoUrls.length > 0 && (
-                  <ul className="space-y-1">
-                    {formData.videoUrls.map((url) => (
-                      <li key={url} className="flex items-center justify-between text-xs bg-muted rounded px-2 py-1.5">
-                        <span className="truncate">{url}</span>
-                        <button type="button" onClick={() => removeVideoUrl(url)} className="text-muted-foreground hover:text-destructive ml-2 shrink-0">
-                          <X size={12} />
-                        </button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+                <Label>Additional Photos (optional)</Label>
+                {/* Same component reused for the extra-photos array. Its video
+                    dropzone is intentionally unused here (onVideosChange is a
+                    no-op) since videos are already handled above — avoids
+                    uploading/storing videos in two places. */}
+                <MediaUploader
+                  imageUrls={formData.imageUrls}
+                  videoUrls={[]}
+                  onImagesChange={(urls) => setFormData((p) => ({ ...p, imageUrls: urls }))}
+                  onVideosChange={() => {}}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">
