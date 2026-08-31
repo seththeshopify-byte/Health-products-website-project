@@ -100,8 +100,22 @@ export default function Drinks() {
                   {visibleItems.map((item) => (
                     <li
                       key={item.id}
-                      className="flex flex-col gap-1 py-2.5 border-b border-dotted border-border"
+                      className="flex flex-col gap-2 py-4 border-b border-dotted border-border"
                     >
+                      {item.imageUrl && (
+                        <button
+                          type="button"
+                          onClick={() => openItem(item)}
+                          className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
+                        >
+                          <img
+                            src={item.imageUrl}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                          />
+                        </button>
+                      )}
+
                       <div className="flex items-baseline gap-3">
                         <span
                           className="font-serif text-[16.5px] text-foreground"
@@ -127,6 +141,7 @@ export default function Drinks() {
                           </span>
                         )}
                       </div>
+
                       {item.description && (
                         <button
                           type="button"
