@@ -8,6 +8,8 @@ import { Minus, Plus } from "lucide-react";
 export interface MenuOrderItem {
   itemId: number;
   name: string;
+  description?: string | null;
+  imageUrl?: string | null;
   guestPrice: number | null;
   memberPrice: number | null;
   menuType: "food" | "drink";
@@ -47,7 +49,7 @@ export function MenuItemOrderModal({
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent className="sm:max-w-[380px]">
+      <DialogContent className="sm:max-w-[420px] max-h-[85vh] overflow-y-auto">
         <DialogHeader>
           <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-amber-600 mb-1">
             {item.menuType === "drink" ? "Bar" : "Kitchen"}
@@ -56,6 +58,19 @@ export function MenuItemOrderModal({
         </DialogHeader>
 
         <div className="py-2">
+          {item.imageUrl && (
+            <div className="w-full aspect-video rounded-lg overflow-hidden mb-4 bg-muted">
+              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+            </div>
+          )}
+
+          {item.description && (
+            <div
+              className="text-sm text-muted-foreground leading-relaxed mb-6 [&_p]:mb-2"
+              dangerouslySetInnerHTML={{ __html: item.description }}
+            />
+          )}
+
           <p className="text-2xl font-medium text-emerald-700 mb-6">₦{unitPrice.toLocaleString()}</p>
 
           <div className="flex items-center justify-between border-y border-dotted border-border py-4 mb-6">
