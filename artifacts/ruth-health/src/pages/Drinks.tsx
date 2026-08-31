@@ -1,17 +1,18 @@
 import { useEffect, useState } from "react";
 import { useListMenuItems, getListMenuItemsQueryKey } from "@workspace/api-client-react";
-import { useMenuCart } from "@/hooks/use-menu-cart";
 import { MenuCartDrawer } from "@/components/menu-cart-drawer";
+import { MenuItemOrderModal, type MenuOrderItem } from "@/components/menu-item-order-modal";
 
 export default function Drinks() {
   const { data: items, isLoading } = useListMenuItems(
     { type: "drink" },
     { query: { queryKey: getListMenuItemsQueryKey({ type: "drink" }) } }
   );
-  const { addItem } = useMenuCart();
 
   const categories = Array.from(new Set((items ?? []).map((i) => i.category)));
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [selectedItem, setSelectedItem] = useState<MenuOrderItem | null>(null);
+  const [orderModalOpen, setOrderModalOpen] = useState(false);
 
   useEffect(() => {
     if (!activeCategory && categories.length > 0) {
@@ -100,14 +101,16 @@ export default function Drinks() {
                           </span>
                           <button
                             type="button"
-                            onClick={() =>
-                              addItem({
+                            onClick={() => {
+                              setSelectedItem({
                                 itemId: item.id,
                                 name: item.name,
                                 guestPrice: item.guestPrice != null ? Number(item.guestPrice) : null,
                                 memberPrice: item.memberPrice != null ? Number(item.memberPrice) : null,
-                              })
-                            }
+                                menuType: "drink",
+                              });
+                              setOrderModalOpen(true);
+                            }}
                             className="text-[10px] uppercase tracking-wide font-medium text-amber-700 border border-amber-500/50 rounded-full px-2.5 py-1 hover:bg-amber-50 transition-colors"
                           >
                             Order Now
@@ -131,6 +134,7 @@ export default function Drinks() {
         </div>
       </div>
 
+      <MenuItemOrderModal item={selectedItem} open={orderModalOpen} onOpenChange={setOrderModalOpen} />
       <MenuCartDrawer />
     </div>
   );
