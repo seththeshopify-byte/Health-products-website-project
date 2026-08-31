@@ -32,41 +32,70 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
   if (isLoading || !isAdmin) {
     return <div className="min-h-screen flex items-center justify-center">Loading...</div>;
   }
-  const navItems = [
+
+  const topNavItems = [
     { label: "Overview", path: "/admin", icon: LayoutDashboard, exact: true },
+  ];
+
+  const ruthHealthNavItems = [
     { label: "Products", path: "/admin/products", icon: Package },
     { label: "Services", path: "/admin/services", icon: Stethoscope },
     { label: "Courses", path: "/admin/courses", icon: GraduationCap },
-    { label: "Rooms", path: "/admin/rooms", icon: DoorOpen },
-    { label: "Food & Drinks", path: "/admin/menu-items", icon: UtensilsCrossed },
     { label: "Testimonials & Events", path: "/admin/testimonials", icon: MessageSquareQuote },
     { label: "Company Events", path: "/admin/events", icon: CalendarDays },
     { label: "Members", path: "/admin/users", icon: Users },
-    { label: "Bookings", path: "/admin/bookings", icon: CalendarDays },
     { label: "Commissions", path: "/admin/commission", icon: Coins },
     { label: "Shipping", path: "/admin/shipping", icon: Truck },
   ];
 
+  const hotelNavItems = [
+    { label: "Rooms", path: "/admin/rooms", icon: DoorOpen },
+    { label: "Food & Drinks", path: "/admin/menu-items", icon: UtensilsCrossed },
+    { label: "Bookings", path: "/admin/bookings", icon: CalendarDays },
+  ];
+
+  const isItemActive = (item: { path: string; exact?: boolean }) =>
+    item.exact ? location === item.path : location.startsWith(item.path);
+
+  const NavLink = ({ item }: { item: { label: string; path: string; icon: any; exact?: boolean } }) => {
+    const isActive = isItemActive(item);
+    return (
+      <Link
+        href={item.path}
+        className={cn(
+          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+          isActive
+            ? "bg-sidebar-accent text-sidebar-accent-foreground"
+            : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
+        )}
+      >
+        <item.icon size={18} />
+        {item.label}
+      </Link>
+    );
+  };
+
+  const NavSectionLabel = ({ children }: { children: React.ReactNode }) => (
+    <p className="px-3 pb-1.5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+      {children}
+    </p>
+  );
+
   const NavLinks = () => (
     <nav className="space-y-1 px-3">
-      {navItems.map((item) => {
-        const isActive = item.exact ? location === item.path : location.startsWith(item.path);
-        return (
-          <Link
-            key={item.path}
-            href={item.path}
-            className={cn(
-              "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
-              isActive
-                ? "bg-sidebar-accent text-sidebar-accent-foreground"
-                : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
-            )}
-          >
-            <item.icon size={18} />
-            {item.label}
-          </Link>
-        );
-      })}
+      {topNavItems.map((item) => (
+        <NavLink key={item.path} item={item} />
+      ))}
+
+      <NavSectionLabel>Ruth Health</NavSectionLabel>
+      {ruthHealthNavItems.map((item) => (
+        <NavLink key={item.path} item={item} />
+      ))}
+
+      <NavSectionLabel>Hotel</NavSectionLabel>
+      {hotelNavItems.map((item) => (
+        <NavLink key={item.path} item={item} />
+      ))}
     </nav>
   );
 
