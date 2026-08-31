@@ -111,7 +111,7 @@ export function MenuCartDrawer() {
       <DialogTrigger asChild>
         <Button
           variant="outline"
-          className="fixed top-20 right-4 md:top-6 md:right-6 z-30 h-14 px-6 rounded-full shadow-lg gap-2.5 bg-background border-2 border-amber-500 hover:bg-amber-50"
+          className="fixed top-24 right-4 md:top-28 md:right-6 z-30 h-14 px-6 rounded-full shadow-lg gap-2.5 bg-background border-2 border-amber-500 hover:bg-amber-50"
         >
           <ShoppingBasket size={22} className="text-amber-700" />
           {count > 0 && (
