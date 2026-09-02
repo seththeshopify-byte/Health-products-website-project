@@ -13,7 +13,6 @@ import {
   Image as GalleryIcon,
   UtensilsCrossed,
   GlassWater,
-  Leaf,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -231,12 +230,6 @@ export default function Home() {
                   </span>
                 )
               )}
-              <Leaf
-                size={22}
-                className="brand-leaf text-amber-400 ml-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
-                style={{ animationDelay: `${-20 * 0.08 - 0.15}s` }}
-                aria-hidden="true"
-              />
             </div>
 
             <div className="grid grid-cols-1 xl:grid-cols-[1.15fr_0.55fr_1fr] gap-6 xl:gap-6 items-center">
@@ -385,12 +378,6 @@ export default function Home() {
                       </span>
                     )
                   )}
-                  <Leaf
-                    size={22}
-                    className="brand-leaf text-amber-400 ml-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
-                    style={{ animationDelay: `${-20 * 0.08 - 0.15}s` }}
-                    aria-hidden="true"
-                  />
                 </div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-1">
                   Benin City, Edo State
