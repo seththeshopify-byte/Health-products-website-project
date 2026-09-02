@@ -15,42 +15,46 @@ export default function Drinks() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [bgColors, setBgColors] = useState<Record<string, string>>({});
 
-  const extractEdgeColor = (
+  // Corners of a product photo are reliably backdrop (never the product itself,
+  // which is centered), so we sample the 4 corners and rebuild the backdrop's
+  // own gradient/vignette from them - not the product's color.
+  const extractBackdropColor = (
     e: React.SyntheticEvent<HTMLImageElement>,
     itemId: string
   ) => {
     try {
       const img = e.currentTarget;
-      const w = 40;
+      const size = 10; // small grid so each cell is a tiny corner patch
       const canvas = document.createElement("canvas");
-      canvas.width = w;
-      canvas.height = 1;
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      ctx.drawImage(img, 0, 0, w, 1);
-      const data = ctx.getImageData(0, 0, w, 1).data;
+      ctx.drawImage(img, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
 
-      const avg = (start: number, end: number) => {
-        let r = 0,
-          g = 0,
-          b = 0,
-          n = 0;
-        for (let x = start; x < end; x++) {
-          r += data[x * 4];
-          g += data[x * 4 + 1];
-          b += data[x * 4 + 2];
-          n++;
-        }
-        return `rgb(${Math.round(r / n)}, ${Math.round(g / n)}, ${Math.round(b / n)})`;
+      const pixelAt = (x: number, y: number) => {
+        const i = (y * size + x) * 4;
+        return `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
       };
 
-      const leftColor = avg(0, 4);
-      const rightColor = avg(w - 4, w);
+      const topLeft = pixelAt(0, 0);
+      const topRight = pixelAt(size - 1, 0);
+      const bottomLeft = pixelAt(0, size - 1);
+      const bottomRight = pixelAt(size - 1, size - 1);
 
-      setBgColors((prev) => ({
-        ...prev,
-        [itemId]: `linear-gradient(to right, ${leftColor}, ${rightColor})`,
-      }));
+      // Layer 4 corner-anchored radial gradients so the container reproduces
+      // the backdrop's own variation (e.g. darker in one corner, lighter in
+      // another) instead of a single flat guess.
+      const backdrop = [
+        `radial-gradient(circle at 0% 0%, ${topLeft}, transparent 70%)`,
+        `radial-gradient(circle at 100% 0%, ${topRight}, transparent 70%)`,
+        `radial-gradient(circle at 0% 100%, ${bottomLeft}, transparent 70%)`,
+        `radial-gradient(circle at 100% 100%, ${bottomRight}, transparent 70%)`,
+        `linear-gradient(to bottom, ${topLeft}, ${bottomLeft})`,
+      ].join(", ");
+
+      setBgColors((prev) => ({ ...prev, [itemId]: backdrop }));
     } catch {
       // Canvas may be tainted by cross-origin images without CORS headers; fall back silently.
     }
@@ -155,7 +159,7 @@ export default function Drinks() {
                             src={item.imageUrl}
                             alt={item.name}
                             crossOrigin="anonymous"
-                            onLoad={(e) => extractEdgeColor(e, item.id)}
+                            onLoad={(e) => extractBackdropColor(e, item.id)}
                             className="relative w-full h-full object-contain"
                           />
                         </button>
