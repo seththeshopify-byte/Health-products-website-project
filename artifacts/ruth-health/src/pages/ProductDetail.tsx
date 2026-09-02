@@ -2,7 +2,7 @@ import { useGetProduct, getGetProductQueryKey, useCreateOrder } from "@workspace
 import { useRoute, useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import { AppImage } from "@/components/ui/app-image";
+import { MediaGallery } from "@/components/media-gallery";
 import { formatPrice } from "@/lib/utils";
 import { REF_CODE_KEY } from "@/hooks/use-ref-code";
 import { Badge } from "@/components/ui/badge";
@@ -83,12 +83,11 @@ export default function ProductDetail() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
         {/* Image Gallery */}
         <div className="space-y-6">
-          <div className="aspect-square max-w-[480px] mx-auto md:mx-0 bg-muted rounded-2xl overflow-hidden relative">
-            <AppImage 
-              src={product.imageUrl || undefined} 
-              fallbackType="supplement"
-              alt={product.name} 
-              className="w-full h-full object-cover"
+          <div className="max-w-[480px] mx-auto md:mx-0">
+            <MediaGallery
+              images={product.imageUrl ? [product.imageUrl] : []}
+              alt={product.name}
+              aspectClassName="aspect-square"
             />
           </div>
         </div>
