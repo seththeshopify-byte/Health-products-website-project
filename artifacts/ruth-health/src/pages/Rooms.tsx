@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { MediaGallery } from "@/components/media-gallery";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatPrice } from "@/lib/utils";
@@ -185,14 +186,13 @@ export default function Rooms() {
 
               {step === "details" && (
                 <>
-                  <div className="aspect-[16/9] w-full bg-muted overflow-hidden relative">
-                    <AppImage
-                      src={openRoom.imageUrl || undefined}
-                      fallbackType="supplement"
-                      alt={openRoom.name}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
+                  <MediaGallery
+                    images={openRoom.imageUrls?.length ? openRoom.imageUrls : (openRoom.imageUrl ? [openRoom.imageUrl] : [])}
+                    videos={openRoom.videoUrls}
+                    alt={openRoom.name}
+                    aspectClassName="aspect-[16/9]"
+                    className="rounded-none"
+                  />
 
                   <div className="p-6 md:p-8">
                     <h2
