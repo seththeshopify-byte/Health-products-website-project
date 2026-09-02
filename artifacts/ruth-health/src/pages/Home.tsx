@@ -217,9 +217,9 @@ export default function Home() {
                 ))}
               </div>
 
-              {/* Right: quick-access tile grid — 2 cols on phones, 3 once there's room */}
+              {/* Right: quick-access tile grid — 4 cols on phones, 3 once there's room */}
               <div
-                className={`grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-3 transition-all duration-700 delay-500 ${
+                className={`grid grid-cols-4 sm:grid-cols-3 gap-2 sm:gap-3 transition-all duration-700 delay-500 ${
                   bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
@@ -227,12 +227,13 @@ export default function Home() {
                   <Link
                     key={href}
                     href={href}
-                    className="group flex flex-col items-center justify-center gap-1.5 h-24 md:h-24 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm px-2 text-center transition-all hover:-translate-y-0.5 hover:bg-white/20"
+                    className="group flex flex-col items-center justify-center gap-1 h-[4.5rem] sm:h-24 rounded-xl border border-white/20 bg-white/10 backdrop-blur-md shadow-sm px-1 text-center transition-all hover:-translate-y-0.5 hover:bg-white/20"
                   >
-                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
-                      <Icon size={15} />
+                    <span className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-white/20 text-white transition-colors group-hover:bg-white group-hover:text-stone-900">
+                      <Icon size={12} className="sm:hidden" />
+                      <Icon size={15} className="hidden sm:block" />
                     </span>
-                    <span className="text-[11px] font-medium leading-tight text-white">
+                    <span className="text-[9px] sm:text-[11px] font-medium leading-tight text-white">
                       {label}
                     </span>
                   </Link>
@@ -286,18 +287,19 @@ export default function Home() {
                 <p className="text-xs text-white/60">Tel: 07075-787-516</p>
               </div>
 
-              {/* Hotel quick-access tile grid — 2 cols on phones, 3 once there's room */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 md:gap-3 w-full max-w-sm mt-2">
+              {/* Hotel quick-access tile grid — 4 cols on phones, 3 once there's room */}
+              <div className="grid grid-cols-4 sm:grid-cols-3 gap-2 sm:gap-3 w-full max-w-sm mt-2">
                 {hotelQuickLinks.map(({ label, icon: Icon, href, action }) => {
                   const tileClasses =
-                    "flex flex-col items-center justify-center gap-1.5 h-24 md:h-24 rounded-xl border border-amber-400/20 bg-white/5 backdrop-blur-md shadow-sm px-2 text-center transition-all hover:-translate-y-0.5 hover:bg-white/10";
+                    "flex flex-col items-center justify-center gap-1 h-[4.5rem] sm:h-24 rounded-xl border border-amber-400/20 bg-white/5 backdrop-blur-md shadow-sm px-1 text-center transition-all hover:-translate-y-0.5 hover:bg-white/10";
 
                   const tileContent = (
                     <>
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-400">
-                        <Icon size={15} />
+                      <span className="flex h-6 w-6 sm:h-8 sm:w-8 items-center justify-center rounded-full bg-amber-400/15 text-amber-400">
+                        <Icon size={12} className="sm:hidden" />
+                        <Icon size={15} className="hidden sm:block" />
                       </span>
-                      <span className="text-[11px] font-medium leading-tight text-white">
+                      <span className="text-[9px] sm:text-[11px] font-medium leading-tight text-white">
                         {label}
                       </span>
                     </>
