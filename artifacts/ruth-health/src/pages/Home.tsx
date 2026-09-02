@@ -13,7 +13,6 @@ import {
   X,
   BedDouble,
   Image as GalleryIcon,
-  Phone,
   UtensilsCrossed,
   GlassWater,
   Leaf,
@@ -88,7 +87,6 @@ const hotelQuickLinks: {
   { label: "Food & Drinks", icon: UtensilsCrossed, action: "dialog" },
   { label: "Amenities", icon: Sparkles },
   { label: "Gallery", icon: GalleryIcon },
-  { label: "Contact", icon: Phone },
 ];
 
 export default function Home() {
@@ -473,10 +471,6 @@ export default function Home() {
                   </div>
                 </DialogContent>
               </Dialog>
-
-              <p className="text-[11px] text-white/40 mt-2">
-                Full hotel booking experience coming soon.
-              </p>
             </div>
           </div>
         </section>
