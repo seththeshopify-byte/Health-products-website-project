@@ -63,20 +63,20 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
       <Link
         href={item.path}
         className={cn(
-          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium transition-colors",
+          "flex items-center gap-2 rounded-md px-2 py-2 text-sm font-medium transition-colors",
           isActive
             ? "bg-sidebar-accent text-sidebar-accent-foreground"
             : "text-sidebar-foreground hover:bg-sidebar-accent/50 hover:text-sidebar-accent-foreground",
         )}
       >
-        <item.icon size={18} />
-        {item.label}
+        <item.icon size={18} className="shrink-0" />
+        <span className="leading-tight">{item.label}</span>
       </Link>
     );
   };
 
   const NavSectionLabel = ({ children }: { children: React.ReactNode }) => (
-    <p className="px-3 pb-1.5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
+    <p className="px-2 pb-1.5 pt-4 text-[11px] font-semibold uppercase tracking-wider text-sidebar-foreground/50">
       {children}
     </p>
   );
@@ -87,15 +87,28 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
         <NavLink key={item.path} item={item} />
       ))}
 
-      <NavSectionLabel>Ruth Health</NavSectionLabel>
-      {ruthHealthNavItems.map((item) => (
-        <NavLink key={item.path} item={item} />
-      ))}
+      {/* Ruth Health (left column) / Hotel (right column) side by side,
+          on both the desktop sidebar and the mobile sheet since both
+          render this same NavLinks component. */}
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <NavSectionLabel>Ruth Health</NavSectionLabel>
+          <div className="space-y-1">
+            {ruthHealthNavItems.map((item) => (
+              <NavLink key={item.path} item={item} />
+            ))}
+          </div>
+        </div>
 
-      <NavSectionLabel>Hotel</NavSectionLabel>
-      {hotelNavItems.map((item) => (
-        <NavLink key={item.path} item={item} />
-      ))}
+        <div className="border-l border-sidebar-border pl-2">
+          <NavSectionLabel>Hotel</NavSectionLabel>
+          <div className="space-y-1">
+            {hotelNavItems.map((item) => (
+              <NavLink key={item.path} item={item} />
+            ))}
+          </div>
+        </div>
+      </div>
     </nav>
   );
 
