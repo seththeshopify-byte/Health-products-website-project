@@ -31,7 +31,7 @@ function sanitizeHtml(html: string): string {
   return container.innerHTML;
 }
 
-function RichTextField({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+function RichTextField({ value, onChange, minHeight = "110px" }: { value: string; onChange: (html: string) => void; minHeight?: string }) {
   const ref = useRef<HTMLDivElement>(null);
   const initialized = useRef(false);
   useEffect(() => {
@@ -55,20 +55,68 @@ function RichTextField({ value, onChange }: { value: string; onChange: (html: st
         }, 0);
       }}
       onInput={() => { if (ref.current) onChange(ref.current.innerHTML); }}
-      className="min-h-[110px] w-full rounded-md border bg-background px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
+      style={{ minHeight }}
+      className="w-full rounded-md border bg-background px-3 py-2 text-sm leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
     />
   );
 }
 
-function HtmlSourceField({ value, onChange }: { value: string; onChange: (html: string) => void }) {
+function HtmlSourceField({ value, onChange, minHeight = "140px", placeholder }: { value: string; onChange: (html: string) => void; minHeight?: string; placeholder?: string }) {
   return (
     <textarea
       value={value}
       onChange={(event) => onChange(event.target.value)}
       spellCheck={false}
-      className="min-h-[140px] w-full rounded-md border bg-background px-3 py-2 font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
-      placeholder="<h2>Heading</h2>&#10;<ul><li>Benefit one</li></ul>"
+      style={{ minHeight }}
+      className="w-full rounded-md border bg-background px-3 py-2 font-mono text-xs leading-relaxed focus:outline-none focus:ring-2 focus:ring-primary"
+      placeholder={placeholder || "<h2>Heading</h2>&#10;<ul><li>Benefit one</li></ul>"}
     />
+  );
+}
+
+// Shared toggle-able text field: plain rich-text paste OR raw HTML source, with live preview in HTML mode.
+function HtmlToggleField({
+  value,
+  onChange,
+  mode,
+  onModeChange,
+  formKey,
+  minHeight,
+  singleLine,
+  placeholder,
+}: {
+  value: string;
+  onChange: (html: string) => void;
+  mode: "paste" | "html";
+  onModeChange: (mode: "paste" | "html") => void;
+  formKey: number;
+  minHeight?: string;
+  singleLine?: boolean;
+  placeholder?: string;
+}) {
+  return (
+    <div className="grid gap-2">
+      <div className="flex items-center justify-end">
+        <div className="flex rounded-full border bg-muted p-0.5 text-xs">
+          <button type="button" onClick={() => onModeChange("paste")} className={`rounded-full px-3 py-1 font-medium transition-colors ${mode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}>Paste formatted text</button>
+          <button type="button" onClick={() => onModeChange("html")} className={`rounded-full px-3 py-1 font-medium transition-colors ${mode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}>Paste HTML code</button>
+        </div>
+      </div>
+      {mode === "paste" ? (
+        <RichTextField key={`rich-${formKey}`} value={value} onChange={onChange} minHeight={singleLine ? "44px" : minHeight} />
+      ) : (
+        <>
+          <HtmlSourceField key={`html-${formKey}`} value={value} onChange={onChange} minHeight={singleLine ? "70px" : minHeight} placeholder={placeholder} />
+          <div className="grid gap-1.5">
+            <span className="text-xs font-medium text-muted-foreground">Live preview</span>
+            <div
+              className="min-h-[44px] rounded-md border bg-card p-3 text-sm leading-relaxed [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
+              dangerouslySetInnerHTML={{ __html: sanitizeHtml(value) || "<span class=\"text-muted-foreground\">Nothing to preview yet…</span>" }}
+            />
+          </div>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -85,7 +133,9 @@ export default function AdminRooms() {
   const [isUploading, setIsUploading] = useState(false);
   const [keywords, setKeywords] = useState("");
   const [formKey, setFormKey] = useState(0);
-  const [textMode, setTextMode] = useState<"paste" | "html">("paste");
+  const [nameMode, setNameMode] = useState<"paste" | "html">("paste");
+  const [keywordsMode, setKeywordsMode] = useState<"paste" | "html">("paste");
+  const [descriptionMode, setDescriptionMode] = useState<"paste" | "html">("paste");
 
   const [formData, setFormData] = useState({
     name: "",
@@ -137,16 +187,23 @@ export default function AdminRooms() {
     }
   };
 
+  const stripHtmlToText = (html: string) => {
+    const div = document.createElement("div");
+    div.innerHTML = html;
+    return div.textContent || div.innerText || "";
+  };
+
   const generateDescription = () => {
-    const name = formData.name.trim() || "This room";
-    const benefits = keywords.split(",").map(b => b.trim()).filter(Boolean);
+    const name = stripHtmlToText(formData.name).trim() || "This room";
+    const rawKeywords = stripHtmlToText(keywords);
+    const benefits = rawKeywords.split(",").map(b => b.trim()).filter(Boolean);
     if (benefits.length === 0) {
       setFormData(prev => ({ ...prev, description: `<p>${name} — a premium wellness space for your rejuvenation.</p>` }));
       return;
     }
     const bulletList = benefits.map(b => `<li>${b.charAt(0).toUpperCase() + b.slice(1)}</li>`).join("");
     setFormData(prev => ({ ...prev, description: `<p>${name}</p><ul>${bulletList}</ul>` }));
-    setTextMode("html");
+    setDescriptionMode("html");
     setFormKey((key) => key + 1);
   };
 
@@ -155,7 +212,9 @@ export default function AdminRooms() {
     setFormData({ name: "", description: "", imageUrl: "", guestPrice: 0, memberPrice: 0, commissionPct: 10 });
     setKeywords("");
     setFormKey((key) => key + 1);
-    setTextMode("paste");
+    setNameMode("paste");
+    setKeywordsMode("paste");
+    setDescriptionMode("paste");
     setIsModalOpen(true);
   };
 
@@ -171,7 +230,9 @@ export default function AdminRooms() {
     });
     setKeywords("");
     setFormKey((key) => key + 1);
-    setTextMode("paste");
+    setNameMode("paste");
+    setKeywordsMode("paste");
+    setDescriptionMode("paste");
     setIsModalOpen(true);
   };
 
@@ -189,6 +250,7 @@ export default function AdminRooms() {
     e.preventDefault();
     const dataToSubmit = {
       ...formData,
+      name: sanitizeHtml(formData.name),
       description: sanitizeHtml(formData.description),
       imageUrl: formData.imageUrl || null
     };
@@ -254,7 +316,7 @@ export default function AdminRooms() {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="font-medium">{room.name}</TableCell>
+                  <TableCell className="font-medium" dangerouslySetInnerHTML={{ __html: room.name }} />
                   <TableCell className="text-right">{formatPrice(room.guestPrice)}</TableCell>
                   <TableCell className="text-right font-medium text-primary">{formatPrice(room.memberPrice)}</TableCell>
                   <TableCell className="text-right">{room.commissionPct}%</TableCell>
@@ -283,47 +345,50 @@ export default function AdminRooms() {
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
-                <Label htmlFor="name">Name</Label>
-                <Input id="name" value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} required />
+                <Label>Name</Label>
+                <HtmlToggleField
+                  value={formData.name}
+                  onChange={(html) => setFormData((prev) => ({ ...prev, name: html }))}
+                  mode={nameMode}
+                  onModeChange={setNameMode}
+                  formKey={formKey}
+                  singleLine
+                  placeholder="Royal Suite - Room 301"
+                />
               </div>
 
               <div className="grid gap-2">
-                <Label htmlFor="keywords">Key Features (comma-separated, optional)</Label>
-                <Input id="keywords" value={keywords} onChange={e => setKeywords(e.target.value)} placeholder="e.g. private sauna, massage table, sound therapy" />
+                <Label>Key Features (comma-separated, optional)</Label>
+                <HtmlToggleField
+                  value={keywords}
+                  onChange={setKeywords}
+                  mode={keywordsMode}
+                  onModeChange={setKeywordsMode}
+                  formKey={formKey}
+                  singleLine
+                  placeholder="e.g. private sauna, massage table, sound therapy"
+                />
               </div>
 
               <div className="grid gap-2">
                 <div className="flex items-center justify-between">
-                  <Label htmlFor="description">Description</Label>
+                  <Label>Description</Label>
                   <Button type="button" variant="outline" size="sm" className="gap-1" onClick={generateDescription}>
                     <Sparkles size={14} /> Generate Description
                   </Button>
                 </div>
-                <div className="flex items-center justify-end">
-                  <div className="flex rounded-full border bg-muted p-0.5 text-xs">
-                    <button type="button" onClick={() => setTextMode("paste")} className={`rounded-full px-3 py-1 font-medium transition-colors ${textMode === "paste" ? "bg-background shadow-sm" : "text-muted-foreground"}`}>Paste formatted text</button>
-                    <button type="button" onClick={() => setTextMode("html")} className={`rounded-full px-3 py-1 font-medium transition-colors ${textMode === "html" ? "bg-background shadow-sm" : "text-muted-foreground"}`}>Paste HTML code</button>
-                  </div>
-                </div>
                 <p className="text-xs text-muted-foreground">
-                  {textMode === "paste"
+                  {descriptionMode === "paste"
                     ? "Paste ready-made text from Word, Google Docs, or AI tools — formatting like bold, italic, and color will be kept."
                     : "Paste raw HTML code (e.g. <h2>, <ul><li>, style=\"color:...\") and it will render as real headings, lists, and colors."}
                 </p>
-                {textMode === "paste" ? (
-                  <RichTextField key={`rich-${formKey}`} value={formData.description} onChange={(html) => setFormData((prev) => ({ ...prev, description: html }))} />
-                ) : (
-                  <>
-                    <HtmlSourceField key={`html-${formKey}`} value={formData.description} onChange={(html) => setFormData((prev) => ({ ...prev, description: html }))} />
-                    <div className="grid gap-1.5">
-                      <span className="text-xs font-medium text-muted-foreground">Live preview</span>
-                      <div
-                        className="min-h-[80px] rounded-md border bg-card p-4 text-sm leading-relaxed [&_h2]:font-serif [&_h2]:text-xl [&_h3]:font-serif [&_h3]:text-lg [&_ul]:list-disc [&_ul]:pl-5 [&_li]:mb-1"
-                        dangerouslySetInnerHTML={{ __html: sanitizeHtml(formData.description) || "<span class=\"text-muted-foreground\">Nothing to preview yet…</span>" }}
-                      />
-                    </div>
-                  </>
-                )}
+                <HtmlToggleField
+                  value={formData.description}
+                  onChange={(html) => setFormData((prev) => ({ ...prev, description: html }))}
+                  mode={descriptionMode}
+                  onModeChange={setDescriptionMode}
+                  formKey={formKey}
+                />
               </div>
 
               <div className="grid gap-2">
