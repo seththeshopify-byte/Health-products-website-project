@@ -190,7 +190,7 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-2">
 
         {/* ===================== LEFT COLUMN — THE ENTREPRENEUR ===================== */}
-        <section className="relative overflow-hidden bg-stone-900 min-h-[480px] sm:min-h-[520px] md:min-h-[560px] flex items-center">
+        <section className="relative overflow-hidden bg-stone-900 sm:min-h-[520px] md:min-h-[560px] flex items-center">
           {/* Background layer */}
           <div className="absolute inset-0">
             {/* Placeholder gradient shown until the photo finishes loading */}
@@ -345,7 +345,7 @@ export default function Home() {
         </section>
 
         {/* ===================== RIGHT COLUMN — HOTEL DASHBOARD ===================== */}
-        <section className="relative overflow-hidden bg-neutral-950 min-h-[480px] sm:min-h-[520px] md:min-h-[560px] flex items-center">
+        <section className="relative overflow-hidden bg-neutral-950 sm:min-h-[520px] md:min-h-[560px] flex items-center">
           {/* Background layer — same rotating photo as the left column */}
           <div className="absolute inset-0">
             {/* Placeholder gradient shown until the photo finishes loading */}
