@@ -6,11 +6,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { formatPrice } from "@/lib/utils";
-
 export default function Rooms() {
   const { data: rooms, isLoading } = useListRooms({ query: { queryKey: getListRoomsQueryKey() } });
   const { isMember } = useAuth();
-
   return (
     <div className="container mx-auto px-4 py-6 md:py-10 relative">
       <Link
@@ -56,8 +54,14 @@ export default function Rooms() {
                 </div>
                 <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-100%)]">
                   <div>
-                    <h3 className="font-serif text-lg mb-2 group-hover:text-primary transition-colors">{room.name}</h3>
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4">{room.description}</p>
+                    <h3
+                      className="font-serif text-lg mb-2 group-hover:text-primary transition-colors"
+                      dangerouslySetInnerHTML={{ __html: room.name }}
+                    />
+                    <div
+                      className="text-sm text-muted-foreground line-clamp-2 mb-4 [&_*]:inline [&_*]:m-0 [&_*]:p-0"
+                      dangerouslySetInnerHTML={{ __html: room.description }}
+                    />
                   </div>
                   <div className="mt-auto">
                     {isMember ? (
