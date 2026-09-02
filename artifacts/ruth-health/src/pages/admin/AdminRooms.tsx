@@ -293,15 +293,14 @@ export default function AdminRooms() {
               <TableHead>Name</TableHead>
               <TableHead className="text-right">Guest Price</TableHead>
               <TableHead className="text-right">Member Price</TableHead>
-              <TableHead className="text-right">Commission</TableHead>
               <TableHead className="w-24"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8">Loading...</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8">Loading...</TableCell></TableRow>
             ) : rooms?.length === 0 ? (
-              <TableRow><TableCell colSpan={6} className="text-center py-8 text-muted-foreground">No rooms found</TableCell></TableRow>
+              <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">No rooms found</TableCell></TableRow>
             ) : (
               rooms?.map(room => (
                 <TableRow key={room.id}>
@@ -319,7 +318,6 @@ export default function AdminRooms() {
                   <TableCell className="font-medium" dangerouslySetInnerHTML={{ __html: room.name }} />
                   <TableCell className="text-right">{formatPrice(room.guestPrice)}</TableCell>
                   <TableCell className="text-right font-medium text-primary">{formatPrice(room.memberPrice)}</TableCell>
-                  <TableCell className="text-right">{room.commissionPct}%</TableCell>
                   <TableCell>
                     <div className="flex justify-end gap-2">
                       <Button variant="ghost" size="icon" onClick={() => handleOpenEdit(room)}>
@@ -416,10 +414,6 @@ export default function AdminRooms() {
                   <Label htmlFor="memberPrice">Member Price (₦)</Label>
                   <Input id="memberPrice" type="number" step="0.01" value={formData.memberPrice} onChange={e => setFormData({...formData, memberPrice: parseFloat(e.target.value)})} required />
                 </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="commissionPct">Referral Commission (%)</Label>
-                <Input id="commissionPct" type="number" min="0" max="100" value={formData.commissionPct} onChange={e => setFormData({...formData, commissionPct: parseFloat(e.target.value)})} required />
               </div>
             </div>
             <DialogFooter>
