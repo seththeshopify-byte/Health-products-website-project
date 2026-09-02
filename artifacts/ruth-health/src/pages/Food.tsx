@@ -15,21 +15,46 @@ export default function Food() {
   const [orderModalOpen, setOrderModalOpen] = useState(false);
   const [bgColors, setBgColors] = useState<Record<string, string>>({});
 
-  const extractEdgeColor = (
+  // Corners of a product photo are reliably backdrop (never the product itself,
+  // which is centered), so we sample the 4 corners and rebuild the backdrop's
+  // own gradient/vignette from them - not the product's color.
+  const extractBackdropColor = (
     e: React.SyntheticEvent<HTMLImageElement>,
     itemId: string
   ) => {
     try {
       const img = e.currentTarget;
+      const size = 10; // small grid so each cell is a tiny corner patch
       const canvas = document.createElement("canvas");
-      canvas.width = 1;
-      canvas.height = 1;
+      canvas.width = size;
+      canvas.height = size;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      // Sample from the top-left corner pixel of the source image, scaled to 1x1
-      ctx.drawImage(img, 0, 0, 1, 1);
-      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-      setBgColors((prev) => ({ ...prev, [itemId]: `rgb(${r}, ${g}, ${b})` }));
+      ctx.drawImage(img, 0, 0, size, size);
+      const data = ctx.getImageData(0, 0, size, size).data;
+
+      const pixelAt = (x: number, y: number) => {
+        const i = (y * size + x) * 4;
+        return `rgb(${data[i]}, ${data[i + 1]}, ${data[i + 2]})`;
+      };
+
+      const topLeft = pixelAt(0, 0);
+      const topRight = pixelAt(size - 1, 0);
+      const bottomLeft = pixelAt(0, size - 1);
+      const bottomRight = pixelAt(size - 1, size - 1);
+
+      // Layer 4 corner-anchored radial gradients so the container reproduces
+      // the backdrop's own variation (e.g. darker in one corner, lighter in
+      // another) instead of a single flat guess.
+      const backdrop = [
+        `radial-gradient(circle at 0% 0%, ${topLeft}, transparent 70%)`,
+        `radial-gradient(circle at 100% 0%, ${topRight}, transparent 70%)`,
+        `radial-gradient(circle at 0% 100%, ${bottomLeft}, transparent 70%)`,
+        `radial-gradient(circle at 100% 100%, ${bottomRight}, transparent 70%)`,
+        `linear-gradient(to bottom, ${topLeft}, ${bottomLeft})`,
+      ].join(", ");
+
+      setBgColors((prev) => ({ ...prev, [itemId]: backdrop }));
     } catch {
       // Canvas may be tainted by cross-origin images without CORS headers; fall back silently.
     }
@@ -127,14 +152,14 @@ export default function Food() {
                         <button
                           type="button"
                           onClick={() => openItem(item)}
-                          style={{ backgroundColor: bgColors[item.id] ?? undefined }}
+                          style={{ backgroundImage: bgColors[item.id] ?? undefined }}
                           className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
                         >
                           <img
                             src={item.imageUrl}
                             alt={item.name}
                             crossOrigin="anonymous"
-                            onLoad={(e) => extractEdgeColor(e, item.id)}
+                            onLoad={(e) => extractBackdropColor(e, item.id)}
                             className="relative w-full h-full object-contain"
                           />
                         </button>
