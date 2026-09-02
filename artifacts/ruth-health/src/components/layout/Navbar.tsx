@@ -22,7 +22,13 @@ export function Navbar() {
     { label: "Products", path: "/products" },
     { label: "Services", path: "/services" },
     { label: "Courses", path: "/courses" },
-    { label: "Rooms", path: "/rooms" },
+  ];
+
+  const hotelNavItems: { label: string; path?: string }[] = [
+    { label: "Rooms & Suites", path: "/rooms" },
+    { label: "Food & Drinks", path: "/food" },
+    { label: "Amenities" },
+    { label: "Gallery" },
   ];
 
   return (
@@ -78,6 +84,26 @@ export function Navbar() {
           <span className="hidden lg:inline ml-2 font-serif text-xs font-semibold text-amber-700 whitespace-nowrap">
             Benington Hotel &amp; Suite
           </span>
+          <nav className="hidden xl:flex items-center gap-4 text-xs font-medium text-muted-foreground ml-5">
+            {hotelNavItems.map((item) =>
+              item.path ? (
+                <Link
+                  key={item.label}
+                  href={item.path}
+                  className={cn(
+                    "hover:text-amber-700 transition-colors whitespace-nowrap",
+                    location.startsWith(item.path) && "text-amber-700",
+                  )}
+                >
+                  {item.label}
+                </Link>
+              ) : (
+                <span key={item.label} className="whitespace-nowrap text-muted-foreground/50">
+                  {item.label}
+                </span>
+              ),
+            )}
+          </nav>
         </div>
 
         {/* Single mobile menu trigger for both sides */}
@@ -146,6 +172,22 @@ export function Navbar() {
                   Benington Hotel &amp; Suite
                 </span>
               </div>
+              {hotelNavItems.map((item) =>
+                item.path ? (
+                  <Link
+                    key={item.label}
+                    href={item.path}
+                    className="text-base font-medium"
+                    onClick={() => setIsOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ) : (
+                  <span key={item.label} className="text-base font-medium text-muted-foreground/50">
+                    {item.label}
+                  </span>
+                ),
+              )}
             </div>
           </div>
         </div>
