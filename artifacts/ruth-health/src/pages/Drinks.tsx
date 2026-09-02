@@ -21,15 +21,36 @@ export default function Drinks() {
   ) => {
     try {
       const img = e.currentTarget;
+      const w = 40;
       const canvas = document.createElement("canvas");
-      canvas.width = 1;
+      canvas.width = w;
       canvas.height = 1;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
-      // Sample from the top-left corner pixel of the source image, scaled to 1x1
-      ctx.drawImage(img, 0, 0, 1, 1);
-      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
-      setBgColors((prev) => ({ ...prev, [itemId]: `rgb(${r}, ${g}, ${b})` }));
+      ctx.drawImage(img, 0, 0, w, 1);
+      const data = ctx.getImageData(0, 0, w, 1).data;
+
+      const avg = (start: number, end: number) => {
+        let r = 0,
+          g = 0,
+          b = 0,
+          n = 0;
+        for (let x = start; x < end; x++) {
+          r += data[x * 4];
+          g += data[x * 4 + 1];
+          b += data[x * 4 + 2];
+          n++;
+        }
+        return `rgb(${Math.round(r / n)}, ${Math.round(g / n)}, ${Math.round(b / n)})`;
+      };
+
+      const leftColor = avg(0, 4);
+      const rightColor = avg(w - 4, w);
+
+      setBgColors((prev) => ({
+        ...prev,
+        [itemId]: `linear-gradient(to right, ${leftColor}, ${rightColor})`,
+      }));
     } catch {
       // Canvas may be tainted by cross-origin images without CORS headers; fall back silently.
     }
@@ -127,7 +148,7 @@ export default function Drinks() {
                         <button
                           type="button"
                           onClick={() => openItem(item)}
-                          style={{ backgroundColor: bgColors[item.id] ?? undefined }}
+                          style={{ backgroundImage: bgColors[item.id] ?? undefined }}
                           className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
                         >
                           <img
