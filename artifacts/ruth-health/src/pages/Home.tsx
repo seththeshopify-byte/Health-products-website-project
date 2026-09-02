@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "wouter";
 import {
   ArrowRight,
@@ -84,6 +84,32 @@ const hotelQuickLinks: {
   { label: "Gallery", icon: GalleryIcon },
 ];
 
+// Bank of whole-word text entrance/exit effects for the two animated
+// headline marks. Every ~5s (matching the animation duration) a new one
+// is picked at random — never the same effect twice in a row, and not
+// in any fixed sequence.
+const TEXT_EFFECTS = [
+  "clip-slide",
+  "stagger-rise",
+  "blur-focus",
+  "weight-morph",
+  "flip-3d",
+  "glitch-split",
+  "bounce-elastic",
+  "spiral-wrap",
+  "color-fill",
+  "shuffle-overlap",
+] as const;
+
+function randomEffect(exclude?: string) {
+  if (TEXT_EFFECTS.length <= 1) return TEXT_EFFECTS[0];
+  let next = exclude;
+  while (!next || next === exclude) {
+    next = TEXT_EFFECTS[Math.floor(Math.random() * TEXT_EFFECTS.length)];
+  }
+  return next;
+}
+
 export default function Home() {
   const [openMarker, setOpenMarker] = useState<string | null>(null);
   const [bg] = useState(
@@ -92,6 +118,24 @@ export default function Home() {
   const [bgLoaded, setBgLoaded] = useState(false);
   const [foodDrinksOpen, setFoodDrinksOpen] = useState(false);
   const { toast } = useToast();
+
+  // Each headline mark gets its own randomly-cycling text effect —
+  // picked independently so the two don't visually sync up.
+  const [healthEffect, setHealthEffect] = useState(() => randomEffect());
+  const [hotelEffect, setHotelEffect] = useState(() => randomEffect());
+
+  useEffect(() => {
+    const healthTimer = setInterval(() => {
+      setHealthEffect((prev) => randomEffect(prev));
+    }, 5000);
+    const hotelTimer = setInterval(() => {
+      setHotelEffect((prev) => randomEffect(prev));
+    }, 5000);
+    return () => {
+      clearInterval(healthTimer);
+      clearInterval(hotelTimer);
+    };
+  }, []);
 
   return (
     <div className="flex flex-col w-full">
@@ -108,74 +152,119 @@ export default function Home() {
           .hero-kenburns { animation: none; }
         }
 
-        /* "Health Code Business" brand-name reveal: each letter animates in
-           using one of several different entrance styles, alternating
-           randomly, then all hold, fade out, and loop. */
-        @keyframes brandLetterDrop {
-          0%   { transform: translateY(-26px) rotate(-10deg); opacity: 0; }
-          10%  { transform: translateY(3px) rotate(3deg); opacity: 1; }
-          16%  { transform: translateY(0) rotate(0deg); opacity: 1; }
-          78%  { transform: translateY(0) rotate(0deg); opacity: 1; }
-          90%  { transform: translateY(-14px) rotate(6deg); opacity: 0; }
-          100% { transform: translateY(-14px) rotate(6deg); opacity: 0; }
+        /* Brand-name text effects: a bank of distinct animated styles.
+           Only one style plays across all the letters at a time; a timer
+           in the component swaps in a different, randomly-picked style
+           every cycle (see TEXT_EFFECTS in the component below). */
+
+        /* 1. Masked Clip-Path Slide-Up */
+        @keyframes fxClipSlide {
+          0%   { clip-path: inset(100% 0 0 0); opacity: 0; transform: translateY(14px); }
+          16%  { clip-path: inset(0% 0 0 0); opacity: 1; transform: translateY(0); }
+          78%  { clip-path: inset(0% 0 0 0); opacity: 1; transform: translateY(0); }
+          90%  { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateY(-14px); }
+          100% { clip-path: inset(0 0 100% 0); opacity: 0; transform: translateY(-14px); }
         }
-        @keyframes brandLetterLeft {
-          0%   { transform: translateX(-28px) rotate(-8deg); opacity: 0; }
-          10%  { transform: translateX(3px) rotate(2deg); opacity: 1; }
+        /* 2. Staggered Character Rise */
+        @keyframes fxStaggerRise {
+          0%   { transform: translateY(34px); opacity: 0; }
+          16%  { transform: translateY(0); opacity: 1; }
+          78%  { transform: translateY(0); opacity: 1; }
+          90%  { transform: translateY(-20px); opacity: 0; }
+          100% { transform: translateY(-20px); opacity: 0; }
+        }
+        /* 3. Blur-to-Focus Fade */
+        @keyframes fxBlurFocus {
+          0%   { filter: blur(16px); opacity: 0; }
+          16%  { filter: blur(0px); opacity: 1; }
+          78%  { filter: blur(0px); opacity: 1; }
+          90%  { filter: blur(12px); opacity: 0; }
+          100% { filter: blur(12px); opacity: 0; }
+        }
+        /* 4. Variable Font Weight Morphing */
+        @keyframes fxWeightMorph {
+          0%   { font-weight: 300; opacity: 0; transform: scale(0.92); }
+          16%  { font-weight: 700; opacity: 1; transform: scale(1); }
+          50%  { font-weight: 400; }
+          78%  { font-weight: 700; opacity: 1; }
+          90%  { font-weight: 300; opacity: 0; transform: scale(0.92); }
+          100% { font-weight: 300; opacity: 0; transform: scale(0.92); }
+        }
+        /* 5. 3D Axis Character Flip */
+        @keyframes fxFlip3d {
+          0%   { transform: perspective(400px) rotateY(-110deg); opacity: 0; }
+          16%  { transform: perspective(400px) rotateY(0deg); opacity: 1; }
+          78%  { transform: perspective(400px) rotateY(0deg); opacity: 1; }
+          90%  { transform: perspective(400px) rotateY(90deg); opacity: 0; }
+          100% { transform: perspective(400px) rotateY(90deg); opacity: 0; }
+        }
+        /* 6. Text Glitch Split */
+        @keyframes fxGlitchSplit {
+          0%   { opacity: 0; transform: translateX(0); text-shadow: 2px 0 #ff2ecf, -2px 0 #21e6ff; }
+          8%   { opacity: 1; transform: translateX(-4px); }
+          11%  { transform: translateX(3px); }
+          14%  { transform: translateX(-1px); }
+          16%  { transform: translateX(0); text-shadow: none; }
+          78%  { opacity: 1; transform: translateX(0); text-shadow: none; }
+          85%  { transform: translateX(3px); text-shadow: -2px 0 #ff2ecf, 2px 0 #21e6ff; }
+          90%  { opacity: 0; transform: translateX(0); text-shadow: none; }
+          100% { opacity: 0; }
+        }
+        /* 7. Elastic Bounce-In */
+        @keyframes fxBounceElastic {
+          0%   { transform: scale(0); opacity: 0; }
+          12%  { transform: scale(1.45); opacity: 1; }
+          20%  { transform: scale(0.85); }
+          28%  { transform: scale(1.08); }
+          36%  { transform: scale(1); }
+          78%  { transform: scale(1); opacity: 1; }
+          90%  { transform: scale(0.25); opacity: 0; }
+          100% { transform: scale(0.25); opacity: 0; }
+        }
+        /* 8. Circular Spiral Wrap Reveal */
+        @keyframes fxSpiralWrap {
+          0%   { transform: rotate(220deg) scale(0); opacity: 0; }
+          16%  { transform: rotate(0deg) scale(1); opacity: 1; }
+          78%  { transform: rotate(0deg) scale(1); opacity: 1; }
+          90%  { transform: rotate(-160deg) scale(0.2); opacity: 0; }
+          100% { transform: rotate(-160deg) scale(0.2); opacity: 0; }
+        }
+        /* 9. Infilled Text Color Fill (sweeping gradient wipe) */
+        @keyframes fxColorFill {
+          0%   { background-position: 200% 50%; opacity: 0; }
+          16%  { background-position: 0% 50%; opacity: 1; }
+          78%  { background-position: 0% 50%; opacity: 1; }
+          90%  { background-position: -120% 50%; opacity: 0; }
+          100% { background-position: -120% 50%; opacity: 0; }
+        }
+        /* 10. Overlapping Character Shuffle */
+        @keyframes fxShuffleOverlap {
+          0%   { transform: translateX(var(--shuffle-x, 0)) rotate(var(--shuffle-r, 0deg)); opacity: 0; }
           16%  { transform: translateX(0) rotate(0deg); opacity: 1; }
           78%  { transform: translateX(0) rotate(0deg); opacity: 1; }
-          90%  { transform: translateX(-16px) rotate(-6deg); opacity: 0; }
-          100% { transform: translateX(-16px) rotate(-6deg); opacity: 0; }
+          90%  { transform: translateX(calc(var(--shuffle-x, 0) * -1)) rotate(calc(var(--shuffle-r, 0deg) * -1)); opacity: 0; }
+          100% { transform: translateX(calc(var(--shuffle-x, 0) * -1)) rotate(calc(var(--shuffle-r, 0deg) * -1)); opacity: 0; }
         }
-        @keyframes brandLetterRight {
-          0%   { transform: translateX(28px) rotate(8deg); opacity: 0; }
-          10%  { transform: translateX(-3px) rotate(-2deg); opacity: 1; }
-          16%  { transform: translateX(0) rotate(0deg); opacity: 1; }
-          78%  { transform: translateX(0) rotate(0deg); opacity: 1; }
-          90%  { transform: translateX(16px) rotate(6deg); opacity: 0; }
-          100% { transform: translateX(16px) rotate(6deg); opacity: 0; }
-        }
-        @keyframes brandLetterPop {
-          0%   { transform: scale(0) rotate(-16deg); opacity: 0; }
-          10%  { transform: scale(1.35) rotate(6deg); opacity: 1; }
-          16%  { transform: scale(1) rotate(0deg); opacity: 1; }
-          78%  { transform: scale(1) rotate(0deg); opacity: 1; }
-          90%  { transform: scale(0.3) rotate(10deg); opacity: 0; }
-          100% { transform: scale(0.3) rotate(10deg); opacity: 0; }
-        }
-        @keyframes brandLetterFlip {
-          0%   { transform: perspective(300px) rotateX(-90deg); opacity: 0; }
-          10%  { transform: perspective(300px) rotateX(15deg); opacity: 1; }
-          16%  { transform: perspective(300px) rotateX(0deg); opacity: 1; }
-          78%  { transform: perspective(300px) rotateX(0deg); opacity: 1; }
-          90%  { transform: perspective(300px) rotateX(-70deg); opacity: 0; }
-          100% { transform: perspective(300px) rotateX(-70deg); opacity: 0; }
-        }
+
         .brand-letter {
           display: inline-block;
+          background-size: 220% 100%;
           animation-duration: 5s;
           animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
           animation-iteration-count: infinite;
         }
-        .brand-anim-0 { animation-name: brandLetterDrop; }
-        .brand-anim-1 { animation-name: brandLetterLeft; }
-        .brand-anim-2 { animation-name: brandLetterRight; }
-        .brand-anim-3 { animation-name: brandLetterPop; }
-        .brand-anim-4 { animation-name: brandLetterFlip; }
-        @keyframes brandLeafLoop {
-          0%   { transform: scale(0) rotate(-50deg); opacity: 0; }
-          10%  { transform: scale(1.25) rotate(12deg); opacity: 1; }
-          16%  { transform: scale(1) rotate(0deg); opacity: 1; }
-          78%  { transform: scale(1) rotate(0deg); opacity: 1; }
-          90%  { transform: scale(0.4) rotate(-20deg); opacity: 0; }
-          100% { transform: scale(0.4) rotate(-20deg); opacity: 0; }
-        }
-        .brand-leaf {
-          display: inline-block;
-          animation: brandLeafLoop 5s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
-        }
+        .fx-clip-slide     { animation-name: fxClipSlide; }
+        .fx-stagger-rise   { animation-name: fxStaggerRise; }
+        .fx-blur-focus     { animation-name: fxBlurFocus; }
+        .fx-weight-morph   { animation-name: fxWeightMorph; }
+        .fx-flip-3d        { animation-name: fxFlip3d; }
+        .fx-glitch-split   { animation-name: fxGlitchSplit; }
+        .fx-bounce-elastic { animation-name: fxBounceElastic; }
+        .fx-spiral-wrap    { animation-name: fxSpiralWrap; }
+        .fx-color-fill     { animation-name: fxColorFill; }
+        .fx-shuffle-overlap{ animation-name: fxShuffleOverlap; }
         @media (prefers-reduced-motion: reduce) {
-          .brand-letter, .brand-leaf { animation: none; opacity: 1; transform: none; }
+          .brand-letter { animation: none; opacity: 1; transform: none; filter: none; }
         }
       `}</style>
 
@@ -223,8 +312,12 @@ export default function Home() {
                 ) : (
                   <span
                     key={i}
-                    className={`brand-letter brand-anim-${(i * 7 + 3) % 5} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
-                    style={{ animationDelay: `${-i * 0.08}s` }}
+                    className={`brand-letter fx-${healthEffect} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
+                    style={{
+                      animationDelay: `${-i * 0.08}s`,
+                      "--shuffle-x": `${((i % 3) - 1) * 26}px`,
+                      "--shuffle-r": `${((i % 3) - 1) * 12}deg`,
+                    } as React.CSSProperties}
                   >
                     {char}
                   </span>
@@ -365,14 +458,18 @@ export default function Home() {
                   className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 mb-3"
                   aria-label="Benington Hotel & Suite"
                 >
-                  {"Benington Hotel".split("").map((char, i) =>
+                  {"Benington Hotel & Suite".split("").map((char, i) =>
                     char === " " ? (
                       <span key={i} className="inline-block w-2 md:w-2.5" />
                     ) : (
                       <span
                         key={i}
-                        className={`brand-letter brand-anim-${(i * 7 + 3) % 5} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
-                        style={{ animationDelay: `${-i * 0.08}s` }}
+                        className={`brand-letter fx-${hotelEffect} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
+                        style={{
+                          animationDelay: `${-i * 0.08}s`,
+                          "--shuffle-x": `${((i % 3) - 1) * 26}px`,
+                          "--shuffle-r": `${((i % 3) - 1) * 12}deg`,
+                        } as React.CSSProperties}
                       >
                         {char}
                       </span>
