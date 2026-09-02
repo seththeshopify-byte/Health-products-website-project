@@ -225,7 +225,7 @@ export default function Home() {
               ) : (
                 <span
                   key={i}
-                  className={`brand-letter brand-anim-${(i * 7 + 3) % 5} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
+                  className={`brand-letter brand-anim-${(i * 7 + 3) % 5} font-serif text-xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
                   style={{ animationDelay: `${-i * 0.08}s` }}
                 >
                   {char}
@@ -241,7 +241,7 @@ export default function Home() {
           </div>
 
           <div
-            className={`container mx-auto px-4 relative z-10 pt-16 pb-6 sm:py-10 md:py-14 transition-all duration-700 ${
+            className={`container mx-auto px-4 relative z-10 pt-24 pb-6 sm:py-10 md:py-14 transition-all duration-700 ${
               bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
