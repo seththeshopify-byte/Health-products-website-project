@@ -106,12 +106,18 @@ export default function Drinks() {
                         <button
                           type="button"
                           onClick={() => openItem(item)}
-                          className="w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
+                          className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
                         >
                           <img
                             src={item.imageUrl}
+                            alt=""
+                            aria-hidden="true"
+                            className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-70"
+                          />
+                          <img
+                            src={item.imageUrl}
                             alt={item.name}
-                            className="w-full h-full object-contain"
+                            className="relative w-full h-full object-contain"
                           />
                         </button>
                       )}
