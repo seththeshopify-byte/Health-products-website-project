@@ -372,12 +372,33 @@ export default function Home() {
               />
 
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-400/80 mb-1">
+                <div
+                  className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 mb-3"
+                  aria-label="Benington Hotel & Suite Welcome"
+                >
+                  {"Benington Hotel & Suite Welcome".split("").map((char, i) =>
+                    char === " " ? (
+                      <span key={i} className="inline-block w-2 md:w-2.5" />
+                    ) : (
+                      <span
+                        key={i}
+                        className={`brand-letter brand-anim-${(i * 7 + 3) % 5} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
+                        style={{ animationDelay: `${-i * 0.08}s` }}
+                      >
+                        {char}
+                      </span>
+                    )
+                  )}
+                  <Leaf
+                    size={22}
+                    className="brand-leaf text-amber-400 ml-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
+                    style={{ animationDelay: `${-20 * 0.08 - 0.15}s` }}
+                    aria-hidden="true"
+                  />
+                </div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-1">
                   Benin City, Edo State
                 </p>
-                <h2 className="text-xl md:text-2xl font-serif text-white mb-1">
-                  Benington Hotel &amp; Suite
-                </h2>
                 <p className="text-xs text-white/60 max-w-xs mx-auto leading-relaxed">
                   46, 1st Federal Road, Off Medical Store Road
                 </p>
