@@ -5,8 +5,6 @@ import {
   ShieldCheck,
   HeartPulse,
   Sparkles,
-  ShoppingBag,
-  CalendarCheck,
   GraduationCap,
   MessagesSquare,
   UserRound,
@@ -26,10 +24,8 @@ import {
 } from "@/components/ui/dialog";
 
 const quickLinks = [
-  { href: "/products", label: "Shop Products", icon: ShoppingBag },
   { href: "/services", label: "Services", icon: Sparkles },
   { href: "/courses", label: "Courses", icon: GraduationCap },
-  { href: "/book-a-call", label: "Book a Call", icon: CalendarCheck },
   { href: "/testimonials", label: "Testimonials", icon: MessagesSquare },
   { href: "/login", label: "Member Login", icon: UserRound },
 ];
