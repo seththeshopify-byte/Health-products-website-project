@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { db, ordersTable, orderItemsTable, productsTable, servicesTable, menuItemsTable, commissionEventsTable, usersTable } from "@workspace/db";
+import { db, ordersTable, orderItemsTable, productsTable, servicesTable, menuItemsTable, roomsTable, commissionEventsTable, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import { requireAuth, requireAdmin, optionalAuth } from "../middlewares/requireAuth.js";
 import { calculateShipping } from "../lib/shipping.js";
@@ -41,7 +41,7 @@ function getBaseUrl(): string {
 //
 // Handles two shapes of order:
 //  - legacy single-item orders (itemType/itemId populated on the order row
-//    itself — product or service)
+//    itself — product, service, or room)
 //  - cart orders (itemType/itemId null on the order row, real line items
 //    live in order_items — product, service, or menuItem)
 async function handlePaidOrder(opts: {
@@ -82,6 +82,9 @@ async function handlePaidOrder(opts: {
     if (rows[0]) itemName = rows[0].name;
   } else if (order.itemType === "service") {
     const rows = await db.select().from(servicesTable).where(eq(servicesTable.id, order.itemId!));
+    if (rows[0]) itemName = rows[0].name;
+  } else if (order.itemType === "room") {
+    const rows = await db.select().from(roomsTable).where(eq(roomsTable.id, order.itemId!));
     if (rows[0]) itemName = rows[0].name;
   } else {
     // Cart order — itemType/itemId are null on the order row, real items
@@ -169,6 +172,10 @@ async function handlePaidOrder(opts: {
           if (rows[0]) commissionPct = Number(rows[0].commissionPct);
         }
         commissionAmount = (Number(order.itemAmount) * commissionPct) / 100;
+      } else if (order.itemType === "room") {
+        const rows = await db.select().from(roomsTable).where(eq(roomsTable.id, order.itemId!));
+        const commissionPct = rows[0] ? Number(rows[0].commissionPct) : 10;
+        commissionAmount = (Number(order.itemAmount) * commissionPct) / 100;
       } else {
         // Cart order — sum commission across each line item.
         for (const line of cartLines) {
@@ -200,10 +207,13 @@ async function handlePaidOrder(opts: {
 
 // POST /orders — create checkout session (Stripe by default, Paystack if
 // PAYMENT_PROVIDER=paystack)
-// UNCHANGED from before — single-item Product/Service checkout only.
+// itemType "product" and "service" — UNCHANGED from before.
+// itemType "room" — NEW. Accepts an optional `nights` field (defaults to 1);
+// itemAmount = per-night price × nights. `nights` is stored inside
+// shippingAddress.roomNights so no schema/column change is needed.
 router.post("/orders", optionalAuth, async (req, res) => {
   try {
-    const { itemType, itemId, promoCodeUsed, shippingAddress, email } = req.body;
+    const { itemType, itemId, promoCodeUsed, shippingAddress, email, nights } = req.body;
 
     if (!itemType || !itemId || !shippingAddress?.country) {
       res.status(400).json({ error: "itemType, itemId, and shippingAddress.country are required" });
@@ -221,6 +231,7 @@ router.post("/orders", optionalAuth, async (req, res) => {
     let itemAmount: number;
     let itemName: string;
     let commissionPct: number;
+    let roomNights = 1;
 
     if (itemType === "product") {
       const rows = await db.select().from(productsTable).where(eq(productsTable.id, itemId));
@@ -234,12 +245,20 @@ router.post("/orders", optionalAuth, async (req, res) => {
       itemAmount = isMember ? Number(rows[0].memberPrice) : Number(rows[0].guestPrice);
       itemName = rows[0].name;
       commissionPct = Number(rows[0].commissionPct);
+    } else if (itemType === "room") {
+      const rows = await db.select().from(roomsTable).where(eq(roomsTable.id, itemId));
+      if (!rows[0]) { res.status(404).json({ error: "Room not found" }); return; }
+      roomNights = Math.max(1, parseInt(nights, 10) || 1);
+      const perNight = isMember ? Number(rows[0].memberPrice) : Number(rows[0].guestPrice);
+      itemAmount = perNight * roomNights;
+      itemName = `${rows[0].name} (${roomNights} night${roomNights > 1 ? "s" : ""})`;
+      commissionPct = Number(rows[0].commissionPct);
     } else {
-      res.status(400).json({ error: "itemType must be product or service" });
+      res.status(400).json({ error: "itemType must be product, service, or room" });
       return;
     }
 
-    const shippingFee = await calculateShipping(shippingAddress);
+    const shippingFee = itemType === "room" ? 0 : await calculateShipping(shippingAddress);
     const totalAmount = itemAmount + shippingFee;
 
     // Validate promo code
@@ -251,6 +270,9 @@ router.post("/orders", optionalAuth, async (req, res) => {
       }
     }
 
+    const storedShippingAddress =
+      itemType === "room" ? { ...shippingAddress, roomNights } : shippingAddress;
+
     // Create order (pending) — amounts stored in Naira regardless of which
     // gateway processes payment, so reporting/admin views stay consistent.
     const [order] = await db.insert(ordersTable).values({
@@ -261,7 +283,7 @@ router.post("/orders", optionalAuth, async (req, res) => {
       itemAmount: String(itemAmount),
       shippingFee: String(shippingFee),
       totalAmount: String(totalAmount),
-      shippingAddress: JSON.stringify(shippingAddress),
+      shippingAddress: JSON.stringify(storedShippingAddress),
       status: "pending",
     }).returning();
 
@@ -368,6 +390,74 @@ router.post("/orders", optionalAuth, async (req, res) => {
     res.json({ checkoutUrl: stripeData.url, orderId: order.id });
   } catch (err) {
     req.log.error({ err }, "createOrder error");
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+// POST /orders/room/pay-at-counter — Book a room to pay in cash at the
+// front desk. No payment gateway involved. Creates the order immediately
+// with status "pending" and fulfillmentMethod "pay_at_counter", then
+// notifies staff by email + WhatsApp so they can confirm the booking. NEW.
+router.post("/orders/room/pay-at-counter", optionalAuth, async (req, res) => {
+  try {
+    const { roomId, nights, name, email, phone } = req.body;
+
+    if (!roomId) {
+      res.status(400).json({ error: "roomId is required" });
+      return;
+    }
+
+    const rows = await db.select().from(roomsTable).where(eq(roomsTable.id, roomId));
+    if (!rows[0]) { res.status(404).json({ error: "Room not found" }); return; }
+
+    const isMember = req.user?.role === "member" || req.user?.role === "admin";
+    const roomNights = Math.max(1, parseInt(nights, 10) || 1);
+    const perNight = isMember ? Number(rows[0].memberPrice) : Number(rows[0].guestPrice);
+    const itemAmount = perNight * roomNights;
+    const itemName = `${rows[0].name} (${roomNights} night${roomNights > 1 ? "s" : ""}) — Pay at Counter`;
+
+    const customerEmail = (req.user as any)?.email || email || null;
+
+    const [order] = await db.insert(ordersTable).values({
+      userId: req.user?.userId ?? null,
+      itemType: "room",
+      itemId: roomId,
+      fulfillmentMethod: "pay_at_counter",
+      itemAmount: String(itemAmount),
+      shippingFee: "0",
+      totalAmount: String(itemAmount),
+      shippingAddress: JSON.stringify({ roomNights, name: name ?? null, phone: phone ?? null }),
+      status: "pending",
+    }).returning();
+
+    // Staff notification only — nothing was charged yet, guest pays on
+    // arrival, staff confirms/updates status manually from the admin panel.
+    await sendAdminPaymentNotification({
+      orderId: order.id,
+      itemName: `[PAY AT COUNTER] ${itemName}`,
+      itemAmount,
+      shippingFee: 0,
+      totalAmount: itemAmount,
+      customerName: name ?? null,
+      customerEmail: customerEmail ?? "Not provided",
+      customerPhone: phone ?? null,
+      shippingAddress: null,
+      reference: "pay-at-counter",
+    });
+
+    await sendWhatsAppPaymentNotification({
+      orderId: order.id,
+      itemName: `[PAY AT COUNTER] ${itemName}`,
+      totalAmount: itemAmount,
+      customerName: name ?? null,
+      customerEmail: customerEmail ?? "Not provided",
+      customerPhone: phone ?? null,
+      reference: "pay-at-counter",
+    });
+
+    res.json({ orderId: order.id, status: "pending" });
+  } catch (err) {
+    req.log.error({ err }, "roomPayAtCounter error");
     res.status(500).json({ error: "Internal server error" });
   }
 });
