@@ -365,7 +365,7 @@ export default function Home() {
                   className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 mb-3"
                   aria-label="Benington Hotel & Suite"
                 >
-                  {"Benington Hotel & Suite".split("").map((char, i) =>
+                  {"Benington Hotel".split("").map((char, i) =>
                     char === " " ? (
                       <span key={i} className="inline-block w-2 md:w-2.5" />
                     ) : (
