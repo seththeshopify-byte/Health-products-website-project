@@ -112,7 +112,7 @@ export default function Drinks() {
                             src={item.imageUrl}
                             alt=""
                             aria-hidden="true"
-                            className="absolute inset-0 w-full h-full object-cover scale-110 blur-xl opacity-70"
+                            className="absolute inset-0 w-full h-full object-cover scale-110"
                           />
                           <img
                             src={item.imageUrl}
