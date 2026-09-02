@@ -270,7 +270,7 @@ export default function Home() {
               <img
                 src="/attached_assets/generated_images/RuthHotelLogo.png"
                 alt="Benington Hotel & Suite"
-                className="h-16 sm:h-20 md:h-28 w-auto object-contain"
+                className="h-7 sm:h-12 md:h-28 w-auto object-contain"
               />
 
               <div>
