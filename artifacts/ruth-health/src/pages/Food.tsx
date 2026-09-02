@@ -13,6 +13,27 @@ export default function Food() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [selectedItem, setSelectedItem] = useState<MenuOrderItem | null>(null);
   const [orderModalOpen, setOrderModalOpen] = useState(false);
+  const [bgColors, setBgColors] = useState<Record<string, string>>({});
+
+  const extractEdgeColor = (
+    e: React.SyntheticEvent<HTMLImageElement>,
+    itemId: string
+  ) => {
+    try {
+      const img = e.currentTarget;
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      // Sample from the top-left corner pixel of the source image, scaled to 1x1
+      ctx.drawImage(img, 0, 0, 1, 1);
+      const [r, g, b] = ctx.getImageData(0, 0, 1, 1).data;
+      setBgColors((prev) => ({ ...prev, [itemId]: `rgb(${r}, ${g}, ${b})` }));
+    } catch {
+      // Canvas may be tainted by cross-origin images without CORS headers; fall back silently.
+    }
+  };
 
   useEffect(() => {
     if (!activeCategory && categories.length > 0) {
@@ -106,17 +127,14 @@ export default function Food() {
                         <button
                           type="button"
                           onClick={() => openItem(item)}
+                          style={{ backgroundColor: bgColors[item.id] ?? undefined }}
                           className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
                         >
                           <img
                             src={item.imageUrl}
-                            alt=""
-                            aria-hidden="true"
-                            className="absolute inset-0 w-full h-full object-cover scale-110"
-                          />
-                          <img
-                            src={item.imageUrl}
                             alt={item.name}
+                            crossOrigin="anonymous"
+                            onLoad={(e) => extractEdgeColor(e, item.id)}
                             className="relative w-full h-full object-contain"
                           />
                         </button>
