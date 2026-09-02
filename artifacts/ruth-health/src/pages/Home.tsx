@@ -243,7 +243,7 @@ export default function Home() {
           </div>
 
           <div
-            className={`container mx-auto px-4 relative z-10 py-6 sm:py-10 md:py-14 transition-all duration-700 ${
+            className={`container mx-auto px-4 relative z-10 pt-16 pb-6 sm:py-10 md:py-14 transition-all duration-700 ${
               bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
