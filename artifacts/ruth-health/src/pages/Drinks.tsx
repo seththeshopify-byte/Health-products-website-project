@@ -111,7 +111,7 @@ export default function Drinks() {
                           <img
                             src={item.imageUrl}
                             alt={item.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-contain"
                           />
                         </button>
                       )}
