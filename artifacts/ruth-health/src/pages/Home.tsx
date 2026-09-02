@@ -260,11 +260,11 @@ export default function Home() {
                 <p className="text-xs md:text-sm text-white/80 mb-3 max-w-md mx-auto xl:mx-0 leading-relaxed">
                   Exclusive pricing on organic wellness products, private consultations, and educational resources designed for your holistic well-being.
                 </p>
-                <div className="flex flex-col sm:flex-row items-center justify-center xl:justify-start gap-2">
-                  <Link href="/products" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md bg-white text-stone-900 text-xs md:text-sm font-medium hover:bg-white/90 transition-colors gap-2">
+                <div className="flex flex-row items-center justify-center xl:justify-start gap-2">
+                  <Link href="/products" className="flex-[3] sm:flex-none inline-flex items-center justify-center h-9 px-5 rounded-md bg-white text-stone-900 text-xs md:text-sm font-medium hover:bg-white/90 transition-colors gap-2">
                     Shop Products <ArrowRight size={14} />
                   </Link>
-                  <Link href="/book-a-call" className="w-full sm:w-auto inline-flex items-center justify-center h-9 px-5 rounded-md border border-white/50 bg-white/5 backdrop-blur-sm text-white text-xs md:text-sm font-medium hover:bg-white/15 transition-colors">
+                  <Link href="/book-a-call" className="flex-[2] sm:flex-none inline-flex items-center justify-center h-9 px-5 rounded-md border border-stone-300 bg-white text-stone-900 text-xs md:text-sm font-medium hover:bg-white/90 transition-colors">
                     Book Consultation
                   </Link>
                 </div>
