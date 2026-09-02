@@ -190,7 +190,7 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-2">
 
         {/* ===================== LEFT COLUMN — THE ENTREPRENEUR ===================== */}
-        <section className="relative overflow-hidden bg-stone-900 min-h-[520px] md:min-h-[560px] flex items-center">
+        <section className="relative overflow-hidden bg-stone-900 min-h-[100dvh] sm:min-h-[520px] md:min-h-[560px] flex items-center">
           {/* Background layer */}
           <div className="absolute inset-0">
             {/* Placeholder gradient shown until the photo finishes loading */}
@@ -243,7 +243,7 @@ export default function Home() {
           </div>
 
           <div
-            className={`container mx-auto px-4 relative z-10 py-10 md:py-14 transition-all duration-700 ${
+            className={`container mx-auto px-4 relative z-10 py-6 sm:py-10 md:py-14 transition-all duration-700 ${
               bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
             }`}
           >
@@ -345,7 +345,7 @@ export default function Home() {
         </section>
 
         {/* ===================== RIGHT COLUMN — HOTEL DASHBOARD ===================== */}
-        <section className="relative overflow-hidden bg-neutral-950 min-h-[520px] md:min-h-[560px] flex items-center">
+        <section className="relative overflow-hidden bg-neutral-950 min-h-[100dvh] sm:min-h-[520px] md:min-h-[560px] flex items-center">
           {/* Background layer — same rotating photo as the left column */}
           <div className="absolute inset-0">
             {/* Placeholder gradient shown until the photo finishes loading */}
@@ -367,7 +367,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/80 to-black/90" />
           </div>
 
-          <div className="container mx-auto px-4 relative z-10 py-10 md:py-14">
+          <div className="container mx-auto px-4 relative z-10 py-6 sm:py-10 md:py-14">
             <div className="flex flex-col items-center text-center gap-4">
               <img
                 src="/attached_assets/generated_images/RuthHotelLogo.png"
