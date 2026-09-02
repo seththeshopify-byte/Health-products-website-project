@@ -16,6 +16,7 @@ import {
   Phone,
   UtensilsCrossed,
   GlassWater,
+  Leaf,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -113,6 +114,36 @@ export default function Home() {
         @media (prefers-reduced-motion: reduce) {
           .hero-kenburns { animation: none; }
         }
+
+        /* "Health Code Business" brand-name reveal: letters drop in one by one,
+           hold, fade out, then the whole thing repeats on a loop. */
+        @keyframes brandLetterLoop {
+          0%   { transform: translateY(-22px) rotate(-10deg); opacity: 0; }
+          10%  { transform: translateY(3px) rotate(3deg); opacity: 1; }
+          16%  { transform: translateY(0) rotate(0deg); opacity: 1; }
+          78%  { transform: translateY(0) rotate(0deg); opacity: 1; }
+          90%  { transform: translateY(-10px) rotate(6deg); opacity: 0; }
+          100% { transform: translateY(-10px) rotate(6deg); opacity: 0; }
+        }
+        .brand-letter {
+          display: inline-block;
+          animation: brandLetterLoop 5s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+        }
+        @keyframes brandLeafLoop {
+          0%   { transform: scale(0) rotate(-50deg); opacity: 0; }
+          10%  { transform: scale(1.25) rotate(12deg); opacity: 1; }
+          16%  { transform: scale(1) rotate(0deg); opacity: 1; }
+          78%  { transform: scale(1) rotate(0deg); opacity: 1; }
+          90%  { transform: scale(0.4) rotate(-20deg); opacity: 0; }
+          100% { transform: scale(0.4) rotate(-20deg); opacity: 0; }
+        }
+        .brand-leaf {
+          display: inline-block;
+          animation: brandLeafLoop 5s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .brand-letter, .brand-leaf { animation: none; opacity: 1; transform: none; }
+        }
       `}</style>
 
       {/* Two-column layout: Entrepreneur (left) / Hotel (right). Stacks on mobile. */}
@@ -153,6 +184,27 @@ export default function Home() {
                   bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
+                <div className="flex flex-wrap items-center justify-center xl:justify-start gap-x-1 gap-y-0.5 mb-1.5" aria-label="Health Code Business">
+                  {"Health Code Business".split("").map((char, i) =>
+                    char === " " ? (
+                      <span key={i} className="inline-block w-1.5" />
+                    ) : (
+                      <span
+                        key={i}
+                        className="brand-letter font-serif text-sm md:text-base font-semibold text-white"
+                        style={{ animationDelay: `${-i * 0.08}s` }}
+                      >
+                        {char}
+                      </span>
+                    )
+                  )}
+                  <Leaf
+                    size={14}
+                    className="brand-leaf text-white/80 ml-0.5"
+                    style={{ animationDelay: `${-20 * 0.08 - 0.15}s` }}
+                    aria-hidden="true"
+                  />
+                </div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-2">
                   Lagos, Nigeria
                 </p>
