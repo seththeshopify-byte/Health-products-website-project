@@ -115,20 +115,60 @@ export default function Home() {
           .hero-kenburns { animation: none; }
         }
 
-        /* "Health Code Business" brand-name reveal: letters drop in one by one,
-           hold, fade out, then the whole thing repeats on a loop. */
-        @keyframes brandLetterLoop {
-          0%   { transform: translateY(-22px) rotate(-10deg); opacity: 0; }
+        /* "Health Code Business" brand-name reveal: each letter animates in
+           using one of several different entrance styles, alternating
+           randomly, then all hold, fade out, and loop. */
+        @keyframes brandLetterDrop {
+          0%   { transform: translateY(-26px) rotate(-10deg); opacity: 0; }
           10%  { transform: translateY(3px) rotate(3deg); opacity: 1; }
           16%  { transform: translateY(0) rotate(0deg); opacity: 1; }
           78%  { transform: translateY(0) rotate(0deg); opacity: 1; }
-          90%  { transform: translateY(-10px) rotate(6deg); opacity: 0; }
-          100% { transform: translateY(-10px) rotate(6deg); opacity: 0; }
+          90%  { transform: translateY(-14px) rotate(6deg); opacity: 0; }
+          100% { transform: translateY(-14px) rotate(6deg); opacity: 0; }
+        }
+        @keyframes brandLetterLeft {
+          0%   { transform: translateX(-28px) rotate(-8deg); opacity: 0; }
+          10%  { transform: translateX(3px) rotate(2deg); opacity: 1; }
+          16%  { transform: translateX(0) rotate(0deg); opacity: 1; }
+          78%  { transform: translateX(0) rotate(0deg); opacity: 1; }
+          90%  { transform: translateX(-16px) rotate(-6deg); opacity: 0; }
+          100% { transform: translateX(-16px) rotate(-6deg); opacity: 0; }
+        }
+        @keyframes brandLetterRight {
+          0%   { transform: translateX(28px) rotate(8deg); opacity: 0; }
+          10%  { transform: translateX(-3px) rotate(-2deg); opacity: 1; }
+          16%  { transform: translateX(0) rotate(0deg); opacity: 1; }
+          78%  { transform: translateX(0) rotate(0deg); opacity: 1; }
+          90%  { transform: translateX(16px) rotate(6deg); opacity: 0; }
+          100% { transform: translateX(16px) rotate(6deg); opacity: 0; }
+        }
+        @keyframes brandLetterPop {
+          0%   { transform: scale(0) rotate(-16deg); opacity: 0; }
+          10%  { transform: scale(1.35) rotate(6deg); opacity: 1; }
+          16%  { transform: scale(1) rotate(0deg); opacity: 1; }
+          78%  { transform: scale(1) rotate(0deg); opacity: 1; }
+          90%  { transform: scale(0.3) rotate(10deg); opacity: 0; }
+          100% { transform: scale(0.3) rotate(10deg); opacity: 0; }
+        }
+        @keyframes brandLetterFlip {
+          0%   { transform: perspective(300px) rotateX(-90deg); opacity: 0; }
+          10%  { transform: perspective(300px) rotateX(15deg); opacity: 1; }
+          16%  { transform: perspective(300px) rotateX(0deg); opacity: 1; }
+          78%  { transform: perspective(300px) rotateX(0deg); opacity: 1; }
+          90%  { transform: perspective(300px) rotateX(-70deg); opacity: 0; }
+          100% { transform: perspective(300px) rotateX(-70deg); opacity: 0; }
         }
         .brand-letter {
           display: inline-block;
-          animation: brandLetterLoop 5s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+          animation-duration: 5s;
+          animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1);
+          animation-iteration-count: infinite;
         }
+        .brand-anim-0 { animation-name: brandLetterDrop; }
+        .brand-anim-1 { animation-name: brandLetterLeft; }
+        .brand-anim-2 { animation-name: brandLetterRight; }
+        .brand-anim-3 { animation-name: brandLetterPop; }
+        .brand-anim-4 { animation-name: brandLetterFlip; }
         @keyframes brandLeafLoop {
           0%   { transform: scale(0) rotate(-50deg); opacity: 0; }
           10%  { transform: scale(1.25) rotate(12deg); opacity: 1; }
@@ -172,6 +212,36 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-b from-black/65 via-black/55 to-black/70" />
           </div>
 
+          {/* "Health Code Business" — the headline mark for this dashboard.
+              Anchored near the very top of the hero, independent of the
+              vertically-centered content below, so it occupies the space
+              that used to sit empty above "Lagos, Nigeria" instead of
+              being squeezed into that block. */}
+          <div
+            className="absolute top-3 sm:top-4 xl:top-6 inset-x-0 z-20 flex flex-wrap items-center justify-center xl:justify-start gap-x-1.5 gap-y-1 px-4 xl:px-10"
+            aria-label="Health Code Business"
+          >
+            {"Health Code Business".split("").map((char, i) =>
+              char === " " ? (
+                <span key={i} className="inline-block w-2 md:w-2.5" />
+              ) : (
+                <span
+                  key={i}
+                  className={`brand-letter brand-anim-${(i * 7 + 3) % 5} font-serif text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-b from-amber-200 via-yellow-300 to-amber-500 bg-clip-text text-transparent drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]`}
+                  style={{ animationDelay: `${-i * 0.08}s` }}
+                >
+                  {char}
+                </span>
+              )
+            )}
+            <Leaf
+              size={22}
+              className="brand-leaf text-amber-400 ml-1 drop-shadow-[0_2px_6px_rgba(0,0,0,0.55)]"
+              style={{ animationDelay: `${-20 * 0.08 - 0.15}s` }}
+              aria-hidden="true"
+            />
+          </div>
+
           <div
             className={`container mx-auto px-4 relative z-10 py-10 md:py-14 transition-all duration-700 ${
               bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
@@ -184,27 +254,6 @@ export default function Home() {
                   bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
-                <div className="flex flex-wrap items-center justify-center xl:justify-start gap-x-1 gap-y-0.5 mb-1.5" aria-label="Health Code Business">
-                  {"Health Code Business".split("").map((char, i) =>
-                    char === " " ? (
-                      <span key={i} className="inline-block w-1.5" />
-                    ) : (
-                      <span
-                        key={i}
-                        className="brand-letter font-serif text-sm md:text-base font-semibold text-white"
-                        style={{ animationDelay: `${-i * 0.08}s` }}
-                      >
-                        {char}
-                      </span>
-                    )
-                  )}
-                  <Leaf
-                    size={14}
-                    className="brand-leaf text-white/80 ml-0.5"
-                    style={{ animationDelay: `${-20 * 0.08 - 0.15}s` }}
-                    aria-hidden="true"
-                  />
-                </div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-white/70 mb-2">
                   Lagos, Nigeria
                 </p>
