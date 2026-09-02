@@ -78,10 +78,16 @@ export function MediaGallery({ images, videos, alt, aspectClassName = "aspect-sq
             <div key={i} className="w-full h-full flex-shrink-0 snap-center relative">
               {slide.type === "image" ? (
                 <button type="button" onClick={() => openLightbox(i)} className="w-full h-full block" aria-label="Zoom image">
-                  <img src={slide.src} alt={alt} className="w-full h-full object-cover" />
+                  <img
+                    src={slide.src}
+                    alt={alt}
+                    className="w-full h-full object-cover"
+                    loading={i === 0 ? "eager" : "lazy"}
+                    decoding="async"
+                  />
                 </button>
               ) : (
-                <video src={slide.src} controls className="w-full h-full object-cover" />
+                <video src={slide.src} controls className="w-full h-full object-cover" preload="none" />
               )}
               {slide.type === "image" && (
                 <div className="absolute bottom-3 right-3 flex items-center justify-center h-8 w-8 rounded-full bg-black/50 text-white pointer-events-none">
@@ -138,7 +144,13 @@ export function MediaGallery({ images, videos, alt, aspectClassName = "aspect-sq
             {slides.map((slide, i) => (
               <div key={i} className="w-full h-full flex-shrink-0 snap-center flex items-center justify-center p-4">
                 {slide.type === "image" ? (
-                  <img src={slide.src} alt={alt} className="max-w-full max-h-full object-contain" />
+                  <img
+                    src={slide.src}
+                    alt={alt}
+                    className="max-w-full max-h-full object-contain"
+                    loading="lazy"
+                    decoding="async"
+                  />
                 ) : (
                   <video src={slide.src} controls autoPlay className="max-w-full max-h-full object-contain" />
                 )}
