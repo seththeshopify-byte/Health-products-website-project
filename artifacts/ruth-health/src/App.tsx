@@ -20,6 +20,7 @@ import CheckoutSuccess from "@/pages/CheckoutSuccess";
 import CheckoutCancel from "@/pages/CheckoutCancel";
 import Privacy from "@/pages/Privacy";
 import Rooms from "@/pages/Rooms";
+import RoomDetail from "@/pages/RoomDetail";
 import Food from "@/pages/Food";
 import Drinks from "@/pages/Drinks";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
@@ -79,6 +80,7 @@ function Router() {
             <Route path="/checkout/cancel" component={CheckoutCancel} />
             <Route path="/privacy" component={Privacy} />
             <Route path="/rooms" component={Rooms} />
+            <Route path="/rooms/:id" component={RoomDetail} />
             <Route path="/food" component={Food} />
             <Route path="/drinks" component={Drinks} />
             <Route component={NotFound} />
