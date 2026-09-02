@@ -1,11 +1,9 @@
 import { useGetRoom, getGetRoomQueryKey, useCreateOrder } from "@workspace/api-client-react";
 import { useRoute, useLocation, Link } from "wouter";
-import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { AppImage } from "@/components/ui/app-image";
 import { formatPrice } from "@/lib/utils";
 import { REF_CODE_KEY } from "@/hooks/use-ref-code";
-import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, ShieldCheck, Calendar, Users } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
@@ -23,7 +21,6 @@ export default function RoomDetail() {
     query: { enabled: !!id, queryKey: getGetRoomQueryKey(id) } 
   });
 
-  const { isMember } = useAuth();
   const createOrder = useCreateOrder();
 
   const [email, setEmail] = useState("");
@@ -36,7 +33,7 @@ export default function RoomDetail() {
   });
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  const price = isMember && room ? room.memberPrice : (room?.guestPrice || 0);
+  const price = room?.guestPrice || 0;
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
   const handleCheckout = () => {
@@ -94,19 +91,7 @@ export default function RoomDetail() {
             <div className="flex flex-col gap-2 mb-6 pb-6 border-b">
               <div className="flex items-end gap-3">
                 <span className="text-2xl md:text-3xl font-semibold text-primary">{formatPrice(price)}</span>
-                {isMember && room.guestPrice !== price ? (
-                  <span className="text-base text-muted-foreground line-through pb-0.5">{formatPrice(room.guestPrice)}</span>
-                ) : null}
               </div>
-
-              {isMember ? (
-                <Badge variant="secondary" className="w-fit">Member Pricing Applied</Badge>
-              ) : (
-                <div className="text-sm bg-accent/50 text-accent-foreground px-4 py-3 rounded-md mt-2 flex items-center gap-2">
-                  <ShieldCheck size={18} className="text-secondary shrink-0" />
-                  <span>Members pay {formatPrice(room.memberPrice)}. Contact an administrator to access member rates.</span>
-                </div>
-              )}
             </div>
 
             <div
