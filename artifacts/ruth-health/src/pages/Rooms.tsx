@@ -2,9 +2,7 @@ import { useState } from "react";
 import { Link } from "wouter";
 import { X } from "lucide-react";
 import { useListRooms, getListRoomsQueryKey } from "@workspace/api-client-react";
-import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -12,7 +10,6 @@ import { formatPrice } from "@/lib/utils";
 
 export default function Rooms() {
   const { data: rooms, isLoading } = useListRooms({ query: { queryKey: getListRoomsQueryKey() } });
-  const { isMember } = useAuth();
   const [openRoomId, setOpenRoomId] = useState<number | null>(null);
   const openRoom = rooms?.find(r => r.id === openRoomId) || null;
 
@@ -58,11 +55,7 @@ export default function Rooms() {
                     alt={room.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
-                  {isMember && (
-                    <div className="absolute top-3 left-3">
-                      <Badge variant="secondary" className="shadow-sm">Member Pricing</Badge>
-                    </div>
-                  )}
+
                 </div>
                 <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-100%)]">
                   <div>
@@ -76,14 +69,7 @@ export default function Rooms() {
                     />
                   </div>
                   <div className="mt-auto">
-                    {isMember ? (
-                      <div className="flex items-center gap-2">
-                        <span className="text-xl font-medium text-primary">{formatPrice(room.memberPrice)}</span>
-                        <span className="text-sm text-muted-foreground line-through">{formatPrice(room.guestPrice)}</span>
-                      </div>
-                    ) : (
-                      <span className="text-xl font-medium text-foreground">{formatPrice(room.guestPrice)}</span>
-                    )}
+                    <span className="text-xl font-medium text-foreground">{formatPrice(room.guestPrice)}</span>
                   </div>
                 </CardContent>
               </Card>
@@ -124,14 +110,7 @@ export default function Rooms() {
                 />
 
                 <div className="flex items-end gap-3 mb-6">
-                  {isMember ? (
-                    <>
-                      <span className="text-2xl font-semibold text-primary">{formatPrice(openRoom.memberPrice)}</span>
-                      <span className="text-base text-muted-foreground line-through pb-0.5">{formatPrice(openRoom.guestPrice)}</span>
-                    </>
-                  ) : (
-                    <span className="text-2xl font-semibold text-foreground">{formatPrice(openRoom.guestPrice)}</span>
-                  )}
+                  <span className="text-2xl font-semibold text-foreground">{formatPrice(openRoom.guestPrice)}</span>
                 </div>
 
                 <div
