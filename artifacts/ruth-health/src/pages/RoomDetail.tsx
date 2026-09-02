@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { AppImage } from "@/components/ui/app-image";
 import { formatPrice } from "@/lib/utils";
 import { REF_CODE_KEY } from "@/hooks/use-ref-code";
-import { ArrowLeft, ShieldCheck, Calendar, Users } from "lucide-react";
+import { ArrowLeft, ShieldCheck, Calendar, Users, Minus, Plus } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,10 @@ export default function RoomDetail() {
   const createOrder = useCreateOrder();
 
   const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [nights, setNights] = useState(1);
+  const [paymentMethod, setPaymentMethod] = useState<"online" | "counter">("online");
+  const [isPayAtCounterPending, setIsPayAtCounterPending] = useState(false);
   const [shippingAddress, setShippingAddress] = useState({
     line1: "",
     city: "",
@@ -33,14 +37,37 @@ export default function RoomDetail() {
   });
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
-  const price = room?.guestPrice || 0;
+  const perNightPrice = room?.guestPrice || 0;
+  const totalPrice = perNightPrice * nights;
   const isValidEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (!email || !isValidEmail(email)) {
-      toast({ title: "Required", description: "A valid email is required to receive your payment confirmation", variant: "destructive" });
+      toast({ title: "Required", description: "A valid email is required to receive your booking confirmation", variant: "destructive" });
       return;
     }
+
+    if (paymentMethod === "counter") {
+      setIsPayAtCounterPending(true);
+      try {
+        const res = await fetch("/api/orders/room/pay-at-counter", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ roomId: id, nights, email, phone: phone || undefined })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data?.error || "Failed to submit booking");
+        toast({ title: "Booking received", description: "We'll confirm your room and you'll pay at the counter on arrival." });
+        setIsCheckoutOpen(false);
+        setLocation("/rooms");
+      } catch (err: any) {
+        toast({ title: "Error", description: err.message || "Failed to submit booking", variant: "destructive" });
+      } finally {
+        setIsPayAtCounterPending(false);
+      }
+      return;
+    }
+
     if (!shippingAddress.country) {
       toast({ title: "Required", description: "Country is required", variant: "destructive" });
       return;
@@ -49,6 +76,7 @@ export default function RoomDetail() {
       data: {
         itemType: "room",
         itemId: id,
+        nights,
         promoCodeUsed: localStorage.getItem(REF_CODE_KEY) || undefined,
         shippingAddress,
         email
@@ -86,11 +114,15 @@ export default function RoomDetail() {
 
         <div className="flex flex-col">
           <div className="mb-8">
-            <h1 className="text-2xl md:text-3xl font-serif mb-3 text-foreground leading-tight">{room.name}</h1>
+            <h1
+              className="text-2xl md:text-3xl font-serif mb-3 text-foreground leading-tight"
+              dangerouslySetInnerHTML={{ __html: room.name }}
+            />
 
             <div className="flex flex-col gap-2 mb-6 pb-6 border-b">
               <div className="flex items-end gap-3">
-                <span className="text-2xl md:text-3xl font-semibold text-primary">{formatPrice(price)}</span>
+                <span className="text-2xl md:text-3xl font-semibold text-primary">{formatPrice(perNightPrice)}</span>
+                <span className="text-sm text-muted-foreground mb-1">/ night</span>
               </div>
             </div>
 
@@ -111,34 +143,105 @@ export default function RoomDetail() {
                 </DialogHeader>
                 <div className="grid gap-4 py-4">
                   <div className="grid gap-2">
+                    <Label>Number of Nights</Label>
+                    <div className="flex items-center gap-3">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setNights((n) => Math.max(1, n - 1))}
+                      >
+                        <Minus size={16} />
+                      </Button>
+                      <span className="w-8 text-center font-medium">{nights}</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setNights((n) => n + 1)}
+                      >
+                        <Plus size={16} />
+                      </Button>
+                      <span className="text-sm text-muted-foreground ml-auto">
+                        Total: {formatPrice(totalPrice)}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2">
+                    <Label>Payment Method</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      <Button
+                        type="button"
+                        variant={paymentMethod === "online" ? "default" : "outline"}
+                        onClick={() => setPaymentMethod("online")}
+                      >
+                        Pay Online
+                      </Button>
+                      <Button
+                        type="button"
+                        variant={paymentMethod === "counter" ? "default" : "outline"}
+                        onClick={() => setPaymentMethod("counter")}
+                      >
+                        Pay at Counter
+                      </Button>
+                    </div>
+                  </div>
+
+                  <div className="grid gap-2 mt-2">
                     <Label htmlFor="email">Email</Label>
                     <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={e => setEmail(e.target.value)} />
                   </div>
-                  <div className="grid gap-2 mt-4">
-                    <Label htmlFor="line1">Address Line 1</Label>
-                    <Input id="line1" value={shippingAddress.line1} onChange={e => setShippingAddress(prev => ({ ...prev, line1: e.target.value }))} />
-                  </div>
-                  <div className="grid gap-2 mt-4">
-                    <Label htmlFor="city">City</Label>
-                    <Input id="city" value={shippingAddress.city} onChange={e => setShippingAddress(prev => ({ ...prev, city: e.target.value }))} />
-                  </div>
-                  <div className="grid gap-2 mt-4">
-                    <Label htmlFor="province">State</Label>
-                    <Input id="province" required placeholder="e.g. Lagos, Ogun" value={shippingAddress.province} onChange={e => setShippingAddress(prev => ({ ...prev, province: e.target.value }))} />
-                  </div>
-                  <div className="grid grid-cols-2 gap-4 mt-4">
-                    <div className="grid gap-2">
-                      <Label htmlFor="postalCode">Postal/Zip Code</Label>
-                      <Input id="postalCode" value={shippingAddress.postalCode} onChange={e => setShippingAddress(prev => ({ ...prev, postalCode: e.target.value }))} />
+
+                  {paymentMethod === "counter" && (
+                    <div className="grid gap-2 mt-2">
+                      <Label htmlFor="phone">Phone (optional)</Label>
+                      <Input id="phone" value={phone} onChange={e => setPhone(e.target.value)} />
                     </div>
-                    <div className="grid gap-2">
-                      <Label htmlFor="country">Country</Label>
-                      <Input id="country" disabled value={shippingAddress.country} />
-                    </div>
-                  </div>
+                  )}
+
+                  {paymentMethod === "online" && (
+                    <>
+                      <div className="grid gap-2 mt-4">
+                        <Label htmlFor="line1">Address Line 1</Label>
+                        <Input id="line1" value={shippingAddress.line1} onChange={e => setShippingAddress(prev => ({ ...prev, line1: e.target.value }))} />
+                      </div>
+                      <div className="grid gap-2 mt-4">
+                        <Label htmlFor="city">City</Label>
+                        <Input id="city" value={shippingAddress.city} onChange={e => setShippingAddress(prev => ({ ...prev, city: e.target.value }))} />
+                      </div>
+                      <div className="grid gap-2 mt-4">
+                        <Label htmlFor="province">State</Label>
+                        <Input id="province" required placeholder="e.g. Lagos, Ogun" value={shippingAddress.province} onChange={e => setShippingAddress(prev => ({ ...prev, province: e.target.value }))} />
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 mt-4">
+                        <div className="grid gap-2">
+                          <Label htmlFor="postalCode">Postal/Zip Code</Label>
+                          <Input id="postalCode" value={shippingAddress.postalCode} onChange={e => setShippingAddress(prev => ({ ...prev, postalCode: e.target.value }))} />
+                        </div>
+                        <div className="grid gap-2">
+                          <Label htmlFor="country">Country</Label>
+                          <Input id="country" disabled value={shippingAddress.country} />
+                        </div>
+                      </div>
+                    </>
+                  )}
                 </div>
-                <Button onClick={handleCheckout} disabled={createOrder.isPending || !shippingAddress.country || !email} className="w-full h-12">
-                  {createOrder.isPending ? "Processing..." : "Continue to Payment"}
+                <Button
+                  onClick={handleCheckout}
+                  disabled={
+                    createOrder.isPending ||
+                    isPayAtCounterPending ||
+                    !email ||
+                    (paymentMethod === "online" && !shippingAddress.country)
+                  }
+                  className="w-full h-12"
+                >
+                  {createOrder.isPending || isPayAtCounterPending
+                    ? "Processing..."
+                    : paymentMethod === "online"
+                      ? `Continue to Payment — ${formatPrice(totalPrice)}`
+                      : `Confirm Booking (Pay at Counter) — ${formatPrice(totalPrice)}`}
                 </Button>
               </DialogContent>
             </Dialog>
