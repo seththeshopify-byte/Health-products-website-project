@@ -12,16 +12,25 @@ const FALLBACKS = {
   course: '/attached_assets/generated_images/course.jpg',
 };
 
-export function AppImage({ src, fallbackType = 'supplement', className, ...props }: AppImageProps) {
+export function AppImage({
+  src,
+  fallbackType = 'supplement',
+  className,
+  loading = 'lazy',
+  decoding = 'async',
+  ...props
+}: AppImageProps) {
   const [error, setError] = useState(false);
   const finalSrc = error || !src ? FALLBACKS[fallbackType] : src;
-  
+
   return (
-    <img 
-      src={finalSrc} 
-      onError={() => setError(true)} 
+    <img
+      src={finalSrc}
+      onError={() => setError(true)}
       className={cn("object-cover", className)}
-      {...props} 
+      loading={loading}
+      decoding={decoding}
+      {...props}
     />
   );
 }
