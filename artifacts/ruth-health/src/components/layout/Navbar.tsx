@@ -91,52 +91,62 @@ export function Navbar() {
       </div>
 
       {isOpen && (
-        <div className="lg:hidden border-t bg-background p-4 flex flex-col gap-3 animate-in slide-in-from-top-4">
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Wellness</p>
-          {navItems.map((item) => (
-            <Link
-              key={item.path}
-              href={item.path}
-              className="text-base font-medium"
-              onClick={() => setIsOpen(false)}
-            >
-              {item.label}
-            </Link>
-          ))}
-          {isLoggedIn && (
-            <>
-              <Link href="/dashboard" className="text-base font-medium" onClick={() => setIsOpen(false)}>
-                Dashboard
-              </Link>
-              {isAdmin && (
-                <Link href="/admin" className="text-base font-medium" onClick={() => setIsOpen(false)}>
-                  Admin
+        <div className="lg:hidden border-t bg-background p-4 animate-in slide-in-from-top-4">
+          <div className="grid grid-cols-2 gap-4">
+            {/* ===== Left column — Wellness ===== */}
+            <div className="flex flex-col gap-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Wellness
+              </p>
+              {navItems.map((item) => (
+                <Link
+                  key={item.path}
+                  href={item.path}
+                  className="text-base font-medium"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {item.label}
                 </Link>
+              ))}
+              {isLoggedIn && (
+                <>
+                  <Link href="/dashboard" className="text-base font-medium" onClick={() => setIsOpen(false)}>
+                    Dashboard
+                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin" className="text-base font-medium" onClick={() => setIsOpen(false)}>
+                      Admin
+                    </Link>
+                  )}
+                  <button
+                    className="text-base font-medium text-left text-destructive"
+                    onClick={() => {
+                      handleLogout();
+                      setIsOpen(false);
+                    }}
+                  >
+                    Logout
+                  </button>
+                </>
               )}
-              <button
-                className="text-base font-medium text-left text-destructive"
-                onClick={() => {
-                  handleLogout();
-                  setIsOpen(false);
-                }}
-              >
-                Logout
-              </button>
-            </>
-          )}
+            </div>
 
-          <div className="h-px bg-border my-1" />
-
-          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Hotel</p>
-          <div className="flex items-center gap-2">
-            <img
-              src="/attached_assets/generated_images/RuthHotelLogo.png"
-              alt="Benington Hotel & Suite"
-              className="h-7 w-auto"
-            />
-            <span className="font-serif text-sm font-semibold text-amber-700">
-              Benington Hotel &amp; Suite
-            </span>
+            {/* ===== Right column — Hotel ===== */}
+            <div className="flex flex-col gap-3 border-l pl-4">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Hotel
+              </p>
+              <div className="flex items-center gap-2">
+                <img
+                  src="/attached_assets/generated_images/RuthHotelLogo.png"
+                  alt="Benington Hotel & Suite"
+                  className="h-7 w-auto"
+                />
+                <span className="font-serif text-sm font-semibold text-amber-700">
+                  Benington Hotel &amp; Suite
+                </span>
+              </div>
+            </div>
           </div>
         </div>
       )}
