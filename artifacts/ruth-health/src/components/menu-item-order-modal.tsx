@@ -3,18 +3,19 @@ import { useMenuCart } from "@/hooks/use-menu-cart";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MediaGallery } from "@/components/media-gallery";
 import { Minus, Plus } from "lucide-react";
-
 export interface MenuOrderItem {
   itemId: number;
   name: string;
   description?: string | null;
   imageUrl?: string | null;
+  imageUrls?: string[] | null;
+  videoUrls?: string[] | null;
   guestPrice: number | null;
   memberPrice: number | null;
   menuType: "food" | "drink";
 }
-
 export function MenuItemOrderModal({
   item,
   open,
@@ -27,18 +28,14 @@ export function MenuItemOrderModal({
   const { addItem } = useMenuCart();
   const { isMember } = useAuth();
   const [quantity, setQuantity] = useState(1);
-
   // Reset quantity each time a new item is opened.
   const handleOpenChange = (next: boolean) => {
     if (next) setQuantity(1);
     onOpenChange(next);
   };
-
   if (!item) return null;
-
   const unitPrice = Number((isMember ? item.memberPrice ?? item.guestPrice : item.guestPrice) ?? 0);
   const total = unitPrice * quantity;
-
   const handleAddToCart = () => {
     addItem(
       { itemId: item.itemId, name: item.name, guestPrice: item.guestPrice, memberPrice: item.memberPrice },
@@ -46,7 +43,7 @@ export function MenuItemOrderModal({
     );
     handleOpenChange(false);
   };
-
+  const galleryImages = item.imageUrls?.length ? item.imageUrls : (item.imageUrl ? [item.imageUrl] : []);
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[420px] max-h-[85vh] overflow-y-auto">
@@ -56,23 +53,24 @@ export function MenuItemOrderModal({
           </p>
           <DialogTitle className="font-serif italic text-2xl" dangerouslySetInnerHTML={{ __html: item.name }} />
         </DialogHeader>
-
         <div className="py-2">
-          {item.imageUrl && (
-            <div className="w-full aspect-video rounded-lg overflow-hidden mb-4 bg-muted">
-              <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+          {(galleryImages.length > 0 || item.videoUrls?.length) && (
+            <div className="mb-4">
+              <MediaGallery
+                images={galleryImages}
+                videos={item.videoUrls}
+                alt={item.name}
+                aspectClassName="aspect-video"
+              />
             </div>
           )}
-
           {item.description && (
             <div
               className="text-sm text-muted-foreground leading-relaxed mb-6 [&_p]:mb-2"
               dangerouslySetInnerHTML={{ __html: item.description }}
             />
           )}
-
           <p className="text-2xl font-medium text-emerald-700 mb-6">₦{unitPrice.toLocaleString()}</p>
-
           <div className="flex items-center justify-between border-y border-dotted border-border py-4 mb-6">
             <span className="text-sm text-muted-foreground">Quantity</span>
             <div className="flex items-center gap-3">
@@ -93,12 +91,10 @@ export function MenuItemOrderModal({
               </button>
             </div>
           </div>
-
           <div className="flex items-center justify-between mb-6">
             <span className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Total</span>
             <span className="text-xl font-semibold text-emerald-700">₦{total.toLocaleString()}</span>
           </div>
-
           <Button onClick={handleAddToCart} className="w-full h-12 text-base">
             Add to Cart
           </Button>
