@@ -108,7 +108,7 @@ const onRequestServices: AmenityItem[] = [
 
 function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
-    <div className="mb-6 md:mb-8">
+    <div className="mb-5 md:mb-6">
       <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-amber-600/80 mb-1.5">
         {eyebrow}
       </p>
@@ -155,7 +155,7 @@ export default function Amenities() {
       </Link>
 
       {/* Hero */}
-      <div className="mb-14 md:mb-20 text-center max-w-2xl mx-auto pt-2">
+      <div className="mb-8 md:mb-10 text-center max-w-2xl mx-auto">
         <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-amber-600 mb-3">
           Benington Hotel &amp; Suite
         </p>
@@ -170,7 +170,7 @@ export default function Amenities() {
       </div>
 
       {/* Complimentary amenities */}
-      <section className="mb-16 md:mb-20">
+      <section className="mb-12 md:mb-14">
         <SectionHeading eyebrow="For Every Guest" title="Complimentary Amenities" />
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {complimentaryAmenities.map((item) => (
@@ -180,7 +180,7 @@ export default function Amenities() {
       </section>
 
       {/* Included services */}
-      <section className="mb-16 md:mb-20">
+      <section className="mb-12 md:mb-14">
         <SectionHeading eyebrow="Part of Your Stay" title="Included Services" />
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
           {includedServices.map((item) => (
