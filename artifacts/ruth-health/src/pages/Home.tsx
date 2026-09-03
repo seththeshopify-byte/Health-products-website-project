@@ -119,22 +119,35 @@ export default function Home() {
   const [foodDrinksOpen, setFoodDrinksOpen] = useState(false);
   const { toast } = useToast();
 
-  // Each headline mark gets its own randomly-cycling text effect —
-  // picked independently so the two don't visually sync up.
+  // Each headline mark gets its own text effect, but they take turns
+  // changing instead of both firing at once: Health Code Business
+  // changes, then after a random 3–5s pause Benington Hotel changes,
+  // then another random 3–5s pause, back to Health Code Business, etc.
   const [healthEffect, setHealthEffect] = useState(() => randomEffect());
   const [hotelEffect, setHotelEffect] = useState(() => randomEffect());
 
   useEffect(() => {
-    const healthTimer = setInterval(() => {
-      setHealthEffect((prev) => randomEffect(prev));
-    }, 5000);
-    const hotelTimer = setInterval(() => {
-      setHotelEffect((prev) => randomEffect(prev));
-    }, 5000);
-    return () => {
-      clearInterval(healthTimer);
-      clearInterval(hotelTimer);
+    let turn: "health" | "hotel" = "health";
+    let timeoutId: ReturnType<typeof setTimeout>;
+
+    const scheduleNext = () => {
+      // Random wait between 3 and 5 seconds — change these two numbers
+      // (3000 / 5000, in milliseconds) to adjust the range.
+      const delay = 3000 + Math.random() * (5000 - 3000);
+      timeoutId = setTimeout(() => {
+        if (turn === "health") {
+          setHealthEffect((prev) => randomEffect(prev));
+          turn = "hotel";
+        } else {
+          setHotelEffect((prev) => randomEffect(prev));
+          turn = "health";
+        }
+        scheduleNext();
+      }, delay);
     };
+
+    scheduleNext();
+    return () => clearTimeout(timeoutId);
   }, []);
 
   return (
@@ -354,7 +367,7 @@ export default function Home() {
 
               {/* Middle: click-to-reveal trust markers */}
               <div
-                className={`flex flex-row xl:flex-col items-center xl:items-start justify-center gap-2 xl:gap-2.5 transition-all duration-700 delay-300 ${
+                className={`relative z-30 flex flex-row xl:flex-col items-center xl:items-start justify-center gap-2 xl:gap-2.5 transition-all duration-700 delay-300 ${
                   bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
