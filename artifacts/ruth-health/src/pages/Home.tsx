@@ -80,7 +80,7 @@ const hotelQuickLinks: {
 }[] = [
   { label: "Rooms & Suites", icon: BedDouble, href: "/rooms" },
   { label: "Food & Drinks", icon: UtensilsCrossed, action: "dialog" },
-  { label: "Amenities", icon: Sparkles },
+  { label: "Amenities", icon: Sparkles, href: "/amenities" },
   { label: "Gallery", icon: GalleryIcon },
 ];
 
