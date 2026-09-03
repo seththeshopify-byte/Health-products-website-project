@@ -27,7 +27,7 @@ export function Navbar() {
   const hotelNavItems: { label: string; path?: string }[] = [
     { label: "Rooms & Suites", path: "/rooms" },
     { label: "Food & Drinks", path: "/food" },
-    { label: "Amenities" },
+    { label: "Amenities", path: "/amenities" },
     { label: "Gallery" },
   ];
 
