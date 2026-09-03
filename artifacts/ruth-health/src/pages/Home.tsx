@@ -285,9 +285,9 @@ export default function Home() {
       <div className="grid grid-cols-1 lg:grid-cols-2">
 
         {/* ===================== LEFT COLUMN — THE ENTREPRENEUR ===================== */}
-        <section className="relative overflow-hidden bg-stone-900 sm:min-h-[520px] md:min-h-[560px] flex items-center">
+        <section className="relative bg-stone-900 sm:min-h-[520px] md:min-h-[560px] flex items-center">
           {/* Background layer */}
-          <div className="absolute inset-0">
+          <div className="absolute inset-0 overflow-hidden">
             {/* Placeholder gradient shown until the photo finishes loading */}
             <div
               className={`absolute inset-0 bg-gradient-to-br from-stone-800 via-stone-900 to-stone-950 transition-opacity duration-700 ${
@@ -388,7 +388,7 @@ export default function Home() {
                     </button>
 
                     {openMarker === id && (
-                      <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-xl top-full mt-2 left-1/2 -translate-x-1/2 xl:left-full xl:top-0 xl:mt-0 xl:ml-2 xl:translate-x-0">
+                      <div className="absolute z-20 w-56 rounded-lg border border-border bg-popover p-3 shadow-xl top-full mt-0 left-1/2 -translate-x-1/2 xl:left-full xl:top-0 xl:mt-0 xl:ml-2 xl:translate-x-0">
                         <button
                           type="button"
                           onClick={() => setOpenMarker(null)}
@@ -411,7 +411,7 @@ export default function Home() {
 
               {/* Right: quick-access tile grid — 4 cols on phones, 3 once there's room */}
               <div
-                className={`grid grid-cols-4 sm:grid-cols-3 gap-2 sm:gap-3 transition-all duration-700 delay-500 ${
+                className={`grid grid-cols-4 sm:grid-cols-2 gap-2 sm:gap-3 transition-all duration-700 delay-500 ${
                   bgLoaded ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
                 }`}
               >
@@ -471,7 +471,7 @@ export default function Home() {
                   className="flex flex-wrap items-center justify-center gap-x-1.5 gap-y-1 mb-3"
                   aria-label="Benington Hotel & Suite"
                 >
-                  {"Benington Hotel".split("").map((char, i) =>
+                  {"Benington Hotel & Suite".split("").map((char, i) =>
                     char === " " ? (
                       <span key={i} className="inline-block w-2 md:w-2.5" />
                     ) : (
