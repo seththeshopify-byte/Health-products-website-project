@@ -8,11 +8,15 @@ const BOT_UA_REGEX =
 
 const API_BASE = "https://ruth-health-api.onrender.com/api";
 
+// apiPath is the API route segment to fetch from — food and drinks both live
+// under the single /menu-items/:id endpoint.
 const ROUTE_PATTERNS = [
-  { regex: /^\/products\/(\d+)$/, type: "products" },
-  { regex: /^\/services\/(\d+)$/, type: "services" },
-  { regex: /^\/courses\/(\d+)$/, type: "courses" },
-  { regex: /^\/rooms\/(\d+)$/, type: "rooms" },
+  { regex: /^\/products\/(\d+)$/, apiPath: "products" },
+  { regex: /^\/services\/(\d+)$/, apiPath: "services" },
+  { regex: /^\/courses\/(\d+)$/, apiPath: "courses" },
+  { regex: /^\/rooms\/(\d+)$/, apiPath: "rooms" },
+  { regex: /^\/food\/(\d+)$/, apiPath: "menu-items" },
+  { regex: /^\/drinks\/(\d+)$/, apiPath: "menu-items" },
 ];
 
 // WhatsApp will silently drop the image unless og:image:width/height are
@@ -63,7 +67,7 @@ export default async function middleware(request) {
   const id = matched.m[1];
 
   try {
-    const apiRes = await fetch(`${API_BASE}/${matched.type}/${id}`);
+    const apiRes = await fetch(`${API_BASE}/${matched.apiPath}/${id}`);
     if (!apiRes.ok) {
       return next();
     }
@@ -126,5 +130,12 @@ export default async function middleware(request) {
 }
 
 export const config = {
-  matcher: ["/products/:id*", "/services/:id*", "/courses/:id*", "/rooms/:id*"],
+  matcher: [
+    "/products/:id*",
+    "/services/:id*",
+    "/courses/:id*",
+    "/rooms/:id*",
+    "/food/:id*",
+    "/drinks/:id*",
+  ],
 };
