@@ -22,7 +22,9 @@ import Privacy from "@/pages/Privacy";
 import Rooms from "@/pages/Rooms";
 import RoomDetail from "@/pages/RoomDetail";
 import Food from "@/pages/Food";
+import FoodDetail from "@/pages/FoodDetail";
 import Drinks from "@/pages/Drinks";
+import DrinkDetail from "@/pages/DrinkDetail";
 import Amenities from "@/pages/Amenities";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminProducts from "@/pages/admin/AdminProducts";
@@ -83,7 +85,9 @@ function Router() {
             <Route path="/rooms" component={Rooms} />
             <Route path="/rooms/:id" component={RoomDetail} />
             <Route path="/food" component={Food} />
+            <Route path="/food/:id" component={FoodDetail} />
             <Route path="/drinks" component={Drinks} />
+            <Route path="/drinks/:id" component={DrinkDetail} />
             <Route path="/amenities" component={Amenities} />
             <Route component={NotFound} />
           </Switch>
