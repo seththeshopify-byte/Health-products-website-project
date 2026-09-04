@@ -3,6 +3,7 @@ import { useListCourses, getListCoursesQueryKey } from "@workspace/api-client-re
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
+import { ShareButton } from "@/components/share-button";
 import { PlayCircle, Lock } from "lucide-react";
 function stripHtml(html: string): string {
   const div = document.createElement("div");
@@ -42,6 +43,11 @@ export default function Courses() {
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
                   <div className="absolute inset-0 bg-black/20 group-hover:bg-transparent transition-colors duration-500" />
+                  <ShareButton
+                    url={`/courses/${course.id}`}
+                    title={course.name}
+                    text={course.description}
+                  />
                   <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center">
                     <Badge variant="secondary" className="bg-background/90 backdrop-blur-sm">Free Course</Badge>
                     <div className="w-10 h-10 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center text-primary group-hover:scale-110 transition-transform shadow-sm">
