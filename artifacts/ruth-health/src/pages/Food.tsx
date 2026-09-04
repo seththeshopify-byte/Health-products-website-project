@@ -166,7 +166,7 @@ export default function Food() {
                             />
                           </button>
                           <ShareButton
-                            url={`/food?item=${item.id}`}
+                            url={`/food/${item.id}`}
                             title={item.name}
                             text={item.description}
                             className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm text-foreground shadow-sm transition-transform hover:bg-background hover:scale-105"
