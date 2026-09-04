@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useListMenuItems, getListMenuItemsQueryKey } from "@workspace/api-client-react";
 import { MenuCartDrawer } from "@/components/menu-cart-drawer";
 import { MenuItemOrderModal, type MenuOrderItem } from "@/components/menu-item-order-modal";
+import { ShareButton } from "@/components/share-button";
 
 export default function Food() {
   const { data: items, isLoading } = useListMenuItems(
@@ -149,20 +150,28 @@ export default function Food() {
                       className="flex flex-col gap-2 py-4 border-b border-dotted border-border"
                     >
                       {item.imageUrl && (
-                        <button
-                          type="button"
-                          onClick={() => openItem(item)}
-                          style={{ backgroundImage: bgColors[item.id] ?? undefined }}
-                          className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
-                        >
-                          <img
-                            src={item.imageUrl}
-                            alt={item.name}
-                            crossOrigin="anonymous"
-                            onLoad={(e) => extractBackdropColor(e, item.id)}
-                            className="relative w-full h-full object-contain"
+                        <div className="relative">
+                          <button
+                            type="button"
+                            onClick={() => openItem(item)}
+                            style={{ backgroundImage: bgColors[item.id] ?? undefined }}
+                            className="relative w-full aspect-[16/9] rounded-lg overflow-hidden bg-muted"
+                          >
+                            <img
+                              src={item.imageUrl}
+                              alt={item.name}
+                              crossOrigin="anonymous"
+                              onLoad={(e) => extractBackdropColor(e, item.id)}
+                              className="relative w-full h-full object-contain"
+                            />
+                          </button>
+                          <ShareButton
+                            url={`/food?item=${item.id}`}
+                            title={item.name}
+                            text={item.description}
+                            className="absolute top-2 right-2 z-20 flex h-8 w-8 items-center justify-center rounded-full bg-background/90 backdrop-blur-sm text-foreground shadow-sm transition-transform hover:bg-background hover:scale-105"
                           />
-                        </button>
+                        </div>
                       )}
 
                       <div className="flex items-baseline gap-3">
