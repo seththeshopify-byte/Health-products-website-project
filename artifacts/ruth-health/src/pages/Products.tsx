@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AppImage } from "@/components/ui/app-image";
+import { ShareButton } from "@/components/share-button";
 import { formatPrice } from "@/lib/utils";
 export default function Products() {
   const { data: products, isLoading } = useListProducts({ query: { queryKey: getListProductsQueryKey() } });
@@ -43,6 +44,11 @@ export default function Products() {
                       <Badge variant="secondary" className="shadow-sm">Member Pricing</Badge>
                     </div>
                   )}
+                  <ShareButton
+                    url={`/products/${product.id}`}
+                    title={product.name}
+                    text={product.description}
+                  />
                 </div>
                 <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-100%)]">
                   <div>
