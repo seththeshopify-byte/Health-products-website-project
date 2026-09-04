@@ -15,6 +15,11 @@ const ROUTE_PATTERNS = [
   { regex: /^\/rooms\/(\d+)$/, type: "rooms" },
 ];
 
+// WhatsApp will silently drop the image unless og:image:width/height are
+// declared, so every image is forced through Cloudinary to this fixed size.
+const OG_IMAGE_WIDTH = 1200;
+const OG_IMAGE_HEIGHT = 630;
+
 function escapeHtml(str) {
   return str
     .replace(/&/g, "&amp;")
@@ -22,6 +27,20 @@ function escapeHtml(str) {
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#39;");
+}
+
+// Inserts a Cloudinary transformation so the image is always served at a
+// fixed, predictable size and as a JPEG (smaller, more compatible than PNG
+// for social previews). Falls back to the original URL if it isn't Cloudinary.
+function toSocialImageUrl(rawUrl) {
+  if (!rawUrl || !rawUrl.includes("res.cloudinary.com") || !rawUrl.includes("/upload/")) {
+    return { url: rawUrl, type: "image/png" };
+  }
+  const transformed = rawUrl.replace(
+    "/upload/",
+    `/upload/w_${OG_IMAGE_WIDTH},h_${OG_IMAGE_HEIGHT},c_fill,f_jpg,q_auto/`
+  );
+  return { url: transformed, type: "image/jpeg" };
 }
 
 export default async function middleware(request) {
@@ -53,7 +72,11 @@ export default async function middleware(request) {
     const title = escapeHtml(item.name || "Ruth Health Products & Services");
     const rawDescription = (item.description || "").replace(/\s+/g, " ").trim();
     const description = escapeHtml(rawDescription.slice(0, 200));
-    const image = item.imageUrl || `${url.origin}/RuthHotelLogo.png`;
+    const fallbackImage = `${url.origin}/RuthHotelLogo.png`;
+    const { url: image, type: imageType } = toSocialImageUrl(item.imageUrl) || {
+      url: fallbackImage,
+      type: "image/png",
+    };
     const pageUrl = url.toString();
 
     const htmlRes = await fetch(`${url.origin}/index.html`);
@@ -75,7 +98,13 @@ export default async function middleware(request) {
       )
       .replace(
         /<meta property="og:type" content=".*?"\s*\/>/,
-        `<meta property="og:type" content="website" />\n    <meta property="og:image" content="${image}" />\n    <meta property="og:url" content="${pageUrl}" />`
+        `<meta property="og:type" content="website" />
+    <meta property="og:image" content="${image}" />
+    <meta property="og:image:secure_url" content="${image}" />
+    <meta property="og:image:width" content="${OG_IMAGE_WIDTH}" />
+    <meta property="og:image:height" content="${OG_IMAGE_HEIGHT}" />
+    <meta property="og:image:type" content="${imageType}" />
+    <meta property="og:url" content="${pageUrl}" />`
       )
       .replace(
         /<meta name="twitter:title" content=".*?"\s*\/>/,
@@ -83,7 +112,8 @@ export default async function middleware(request) {
       )
       .replace(
         /<meta name="twitter:description" content=".*?"\s*\/>/,
-        `<meta name="twitter:description" content="${description}" />\n    <meta name="twitter:image" content="${image}" />`
+        `<meta name="twitter:description" content="${description}" />
+    <meta name="twitter:image" content="${image}" />`
       );
 
     return new Response(html, {
