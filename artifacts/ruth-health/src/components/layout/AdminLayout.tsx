@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   Menu,
   UtensilsCrossed,
+  Sparkles,
   X,
 } from "lucide-react";
 export function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -50,6 +51,7 @@ export function AdminLayout({ children }: { children: React.ReactNode }) {
 
   const hotelNavItems = [
     { label: "Rooms", path: "/admin/rooms", icon: DoorOpen },
+    { label: "Amenities", path: "/admin/amenities", icon: Sparkles },
     { label: "Food & Drinks", path: "/admin/menu-items", icon: UtensilsCrossed },
     { label: "Bookings", path: "/admin/bookings", icon: CalendarDays },
   ];
