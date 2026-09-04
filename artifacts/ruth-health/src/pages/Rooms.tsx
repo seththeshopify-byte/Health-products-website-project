@@ -9,6 +9,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { MediaGallery } from "@/components/media-gallery";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ShareButton } from "@/components/share-button";
 import { formatPrice } from "@/lib/utils";
 import { REF_CODE_KEY } from "@/hooks/use-ref-code";
 import { useToast } from "@/hooks/use-toast";
@@ -131,11 +132,18 @@ export default function Rooms() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-8">
           {rooms?.map(room => (
-            <button
+            <div
               key={room.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => setOpenRoomId(room.id)}
-              className="group block h-full text-left"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setOpenRoomId(room.id);
+                }
+              }}
+              className="group block h-full text-left cursor-pointer"
             >
               <Card className="h-full border-transparent shadow-none hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border">
                 <div className="aspect-square bg-muted w-full overflow-hidden relative">
@@ -145,7 +153,11 @@ export default function Rooms() {
                     alt={room.name}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                   />
-
+                  <ShareButton
+                    url={`/rooms/${room.id}`}
+                    title={room.name}
+                    text={room.description}
+                  />
                 </div>
                 <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-100%)]">
                   <div>
@@ -163,7 +175,7 @@ export default function Rooms() {
                   </div>
                 </CardContent>
               </Card>
-            </button>
+            </div>
           ))}
         </div>
       )}
