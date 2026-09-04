@@ -11,5 +11,6 @@ export * from "./bookings";
 export * from "./settings";
 export * from "./events";
 export * from "./rooms";
+export * from "./amenities";
 export * from "./menuItems";
 export * from "./menuCategoryBackgrounds";
