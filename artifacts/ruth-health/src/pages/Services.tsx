@@ -4,6 +4,7 @@ import { useListServices, getListServicesQueryKey } from "@workspace/api-client-
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent } from "@/components/ui/card";
 import { AppImage } from "@/components/ui/app-image";
+import { ShareButton } from "@/components/share-button";
 import { formatPrice } from "@/lib/utils";
 import { X } from "lucide-react";
 
@@ -41,11 +42,18 @@ export default function Services() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {services?.map(service => (
-            <button
+            <div
               key={service.id}
-              type="button"
+              role="button"
+              tabIndex={0}
               onClick={() => setSelected(service)}
-              className="group block h-full text-left"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setSelected(service);
+                }
+              }}
+              className="group block h-full text-left cursor-pointer"
             >
               <Card className="h-full border-transparent shadow-none hover:shadow-lg transition-all duration-300 overflow-hidden bg-card border-border">
                 <div className="aspect-video bg-muted w-full overflow-hidden relative">
@@ -54,6 +62,11 @@ export default function Services() {
                     fallbackType="consultation"
                     alt={service.name} 
                     className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-700"
+                  />
+                  <ShareButton
+                    url={`/services/${service.id}`}
+                    title={service.name}
+                    text={service.description}
                   />
                 </div>
                 <CardContent className="p-6 flex flex-col justify-between h-[calc(100%-56.25%)]">
@@ -79,7 +92,7 @@ export default function Services() {
                   </div>
                 </CardContent>
               </Card>
-            </button>
+            </div>
           ))}
         </div>
       )}
