@@ -22,9 +22,7 @@ import Privacy from "@/pages/Privacy";
 import Rooms from "@/pages/Rooms";
 import RoomDetail from "@/pages/RoomDetail";
 import Food from "@/pages/Food";
-import FoodDetail from "@/pages/FoodDetail";
 import Drinks from "@/pages/Drinks";
-import DrinkDetail from "@/pages/DrinkDetail";
 import Amenities from "@/pages/Amenities";
 import AdminDashboard from "@/pages/admin/AdminDashboard";
 import AdminProducts from "@/pages/admin/AdminProducts";
@@ -37,6 +35,7 @@ import AdminBookings from "@/pages/admin/AdminBookings";
 import AdminCommissions from "@/pages/admin/AdminCommissions";
 import AdminShipping from "@/pages/admin/AdminShipping";
 import AdminRooms from "@/pages/admin/AdminRooms";
+import AdminAmenities from "@/pages/admin/AdminAmenities";
 import AdminMenuItems from "@/pages/admin/AdminMenuItems";
 import NotFound from "@/pages/not-found";
 function AdminRoutes() {
@@ -54,6 +53,7 @@ function AdminRoutes() {
         <Route path="/admin/commission" component={AdminCommissions} />
         <Route path="/admin/shipping" component={AdminShipping} />
         <Route path="/admin/rooms" component={AdminRooms} />
+        <Route path="/admin/amenities" component={AdminAmenities} />
         <Route path="/admin/menu-items" component={AdminMenuItems} />
         <Route component={NotFound} />
       </Switch>
@@ -85,9 +85,7 @@ function Router() {
             <Route path="/rooms" component={Rooms} />
             <Route path="/rooms/:id" component={RoomDetail} />
             <Route path="/food" component={Food} />
-            <Route path="/food/:id" component={FoodDetail} />
             <Route path="/drinks" component={Drinks} />
-            <Route path="/drinks/:id" component={DrinkDetail} />
             <Route path="/amenities" component={Amenities} />
             <Route component={NotFound} />
           </Switch>
