@@ -1,110 +1,29 @@
 import { Link } from "wouter";
-import {
-  X,
-  Wifi,
-  ParkingCircle,
-  ShieldCheck,
-  Bell,
-  Sparkles,
-  Shirt,
-  Car,
-  PartyPopper,
-  Briefcase,
-  type LucideIcon,
-} from "lucide-react";
+import { X, Image as ImageIcon } from "lucide-react";
+import { useListAmenities, getListAmenitiesQueryKey, type Amenity } from "@workspace/api-client-react";
 import { Card, CardContent } from "@/components/ui/card";
 
-type Badge = "Complimentary" | "Included With Stay" | "Available on Request";
-
-type AmenityItem = {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  badge: Badge;
-  note?: string;
-};
-
-const BADGE_STYLES: Record<Badge, string> = {
-  "Complimentary": "bg-emerald-50 text-emerald-700 border-emerald-200",
-  "Included With Stay": "bg-amber-50 text-amber-700 border-amber-200",
-  "Available on Request": "bg-slate-100 text-slate-600 border-slate-200",
-};
-
-const complimentaryAmenities: AmenityItem[] = [
-  {
-    icon: Wifi,
-    title: "Complimentary Wi-Fi",
-    description:
-      "Stay effortlessly connected with high-speed wireless internet available throughout the property, at no additional cost.",
+const CATEGORY_META: Record<string, { eyebrow: string; title: string; badge: string; badgeClass: string }> = {
+  complimentary: {
+    eyebrow: "For Every Guest",
+    title: "Complimentary Amenities",
     badge: "Complimentary",
+    badgeClass: "bg-emerald-50 text-emerald-700 border-emerald-200",
   },
-  {
-    icon: ParkingCircle,
-    title: "Guest Parking",
-    description:
-      "Secure, on-site parking is provided for every guest for the full duration of their stay.",
-    badge: "Complimentary",
-  },
-  {
-    icon: ShieldCheck,
-    title: "24-Hour Security",
-    description:
-      "Round-the-clock security presence and monitoring, so you can rest with complete peace of mind, day and night.",
-    badge: "Complimentary",
-  },
-];
-
-const includedServices: AmenityItem[] = [
-  {
-    icon: Bell,
-    title: "Guest Assistance",
-    description:
-      "Our team is on hand around the clock to attend to requests, answer questions, and ensure every stay runs smoothly.",
+  included: {
+    eyebrow: "Part of Your Stay",
+    title: "Included Services",
     badge: "Included With Stay",
+    badgeClass: "bg-amber-50 text-amber-700 border-amber-200",
   },
-  {
-    icon: Sparkles,
-    title: "Daily Housekeeping",
-    description:
-      "Thoughtful, discreet housekeeping keeps your room refined and comfortable throughout your visit.",
-    badge: "Included With Stay",
-  },
-];
-
-const onRequestServices: AmenityItem[] = [
-  {
-    icon: Shirt,
-    title: "Laundry & Ironing",
-    description:
-      "Professional garment care is available on request, so you always step out looking your best.",
+  "on-request": {
+    eyebrow: "Tailored to You",
+    title: "On-Request Services",
     badge: "Available on Request",
-    note: "Additional charges may apply",
+    badgeClass: "bg-slate-100 text-slate-600 border-slate-200",
   },
-  {
-    icon: Car,
-    title: "Transportation Assistance",
-    description:
-      "Let our team arrange reliable transportation for airport transfers, appointments, or getting around the city.",
-    badge: "Available on Request",
-    note: "Additional charges may apply",
-  },
-  {
-    icon: PartyPopper,
-    title: "Event & Private Functions",
-    description:
-      "From intimate celebrations to larger gatherings, our staff can help coordinate a memorable private event.",
-    badge: "Available on Request",
-    note: "Additional charges may apply",
-  },
-  {
-    icon: Briefcase,
-    title: "Meeting & Business Services",
-    description:
-      "Dedicated support for meetings, business travel needs, and professional engagements during your stay.",
-    badge: "Available on Request",
-    note: "Additional charges may apply",
-  },
-];
+};
+const CATEGORY_ORDER = ["complimentary", "included", "on-request"];
 
 function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) {
   return (
@@ -117,25 +36,34 @@ function SectionHeading({ eyebrow, title }: { eyebrow: string; title: string }) 
   );
 }
 
-function AmenityCard({ icon: Icon, title, description, badge, note }: AmenityItem) {
+function AmenityCard({ item }: { item: Amenity }) {
+  const meta = CATEGORY_META[item.category] ?? CATEGORY_META["on-request"];
   return (
-    <Card className="group h-full border-border bg-card shadow-none hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
-      <CardContent className="p-6 flex flex-col gap-4 h-full">
-        <div className="flex items-start justify-between gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-amber-50 text-amber-600 transition-colors group-hover:bg-amber-600 group-hover:text-white">
-            <Icon size={20} />
-          </span>
-          <span
-            className={`text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border whitespace-nowrap ${BADGE_STYLES[badge]}`}
-          >
-            {badge}
-          </span>
+    <Card className="group h-full border-border bg-card shadow-none hover:shadow-lg hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+      {item.imageUrl ? (
+        <div className="aspect-[4/3] w-full overflow-hidden bg-muted">
+          <img
+            src={item.imageUrl}
+            alt={item.title}
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+          />
         </div>
+      ) : (
+        <div className="aspect-[4/3] w-full flex items-center justify-center bg-amber-50 text-amber-300">
+          <ImageIcon size={28} />
+        </div>
+      )}
+      <CardContent className="p-6 flex flex-col gap-3">
+        <span
+          className={`self-start text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 rounded-full border whitespace-nowrap ${meta.badgeClass}`}
+        >
+          {meta.badge}
+        </span>
         <div>
-          <h3 className="font-serif text-base md:text-lg text-foreground mb-1.5">{title}</h3>
-          <p className="text-sm text-muted-foreground leading-relaxed">{description}</p>
-          {note && (
-            <p className="text-[11px] text-muted-foreground/70 italic mt-2">{note}</p>
+          <h3 className="font-serif text-base md:text-lg text-foreground mb-1.5">{item.title}</h3>
+          <p className="text-sm text-muted-foreground leading-relaxed">{item.description}</p>
+          {item.note && (
+            <p className="text-[11px] text-muted-foreground/70 italic mt-2">{item.note}</p>
           )}
         </div>
       </CardContent>
@@ -144,6 +72,13 @@ function AmenityCard({ icon: Icon, title, description, badge, note }: AmenityIte
 }
 
 export default function Amenities() {
+  const { data: amenities, isLoading } = useListAmenities({ query: { queryKey: getListAmenitiesQueryKey() } });
+
+  const grouped = CATEGORY_ORDER.map((category) => ({
+    category,
+    items: (amenities ?? []).filter((a) => a.category === category),
+  })).filter((group) => group.items.length > 0);
+
   return (
     <div className="container mx-auto px-4 py-6 md:py-10 relative">
       <Link
@@ -169,35 +104,35 @@ export default function Amenities() {
         </p>
       </div>
 
-      {/* Complimentary amenities */}
-      <section className="mb-12 md:mb-14">
-        <SectionHeading eyebrow="For Every Guest" title="Complimentary Amenities" />
+      {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {complimentaryAmenities.map((item) => (
-            <AmenityCard key={item.title} {...item} />
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="animate-pulse flex flex-col gap-3">
+              <div className="aspect-[4/3] bg-muted rounded-xl" />
+              <div className="h-4 bg-muted rounded w-2/3" />
+              <div className="h-3 bg-muted rounded w-full" />
+            </div>
           ))}
         </div>
-      </section>
-
-      {/* Included services */}
-      <section className="mb-12 md:mb-14">
-        <SectionHeading eyebrow="Part of Your Stay" title="Included Services" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 max-w-3xl">
-          {includedServices.map((item) => (
-            <AmenityCard key={item.title} {...item} />
-          ))}
-        </div>
-      </section>
-
-      {/* On-request services */}
-      <section>
-        <SectionHeading eyebrow="Tailored to You" title="On-Request Services" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {onRequestServices.map((item) => (
-            <AmenityCard key={item.title} {...item} />
-          ))}
-        </div>
-      </section>
+      ) : grouped.length === 0 ? (
+        <p className="text-center text-sm text-muted-foreground py-12">
+          Amenities will appear here once they're added from the admin panel.
+        </p>
+      ) : (
+        grouped.map(({ category, items }) => {
+          const meta = CATEGORY_META[category] ?? CATEGORY_META["on-request"];
+          return (
+            <section key={category} className="mb-12 md:mb-14">
+              <SectionHeading eyebrow={meta.eyebrow} title={meta.title} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {items.map((item) => (
+                  <AmenityCard key={item.id} item={item} />
+                ))}
+              </div>
+            </section>
+          );
+        })
+      )}
     </div>
   );
 }
